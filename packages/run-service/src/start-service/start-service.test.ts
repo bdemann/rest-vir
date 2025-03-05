@@ -33,12 +33,12 @@ describe(startService.name, () => {
             const service = await mapServiceDevPort(
                 defineService({
                     ...mockService.init,
-                    serviceOrigin: 'http://localhost:2990',
+                    serviceOrigin: 'http://localhost:3690',
                 }),
             );
 
             assert.strictEquals(service.serviceOrigin, address);
-            assert.strictEquals(service.serviceOrigin, 'http://localhost:3000');
+            assert.strictEquals(service.serviceOrigin, 'http://localhost:3700');
         });
         it('fires websocket listeners', async ({connectWebSocket}) => {
             const webSocket = await connectWebSocket(

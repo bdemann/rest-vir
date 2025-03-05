@@ -2,6 +2,6 @@ import {mockServiceImplementation} from '@rest-vir/implement-service/src/impleme
 import {startService} from '../start-service.js';
 
 await startService(mockServiceImplementation, {
-    port: 3000,
+    port: 3700,
     workerCount: 1,
 });

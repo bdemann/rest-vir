@@ -1,6 +1,7 @@
 import {mergeDefinedProperties, type PartialWithUndefined} from '@augment-vir/common';
 import {cpus} from 'node:os';
 import {assertValidShape, defineShape} from 'object-shape-tester';
+import {parseUrl} from 'url-vir';
 
 /**
  * Shape definition for `startService` options.
@@ -88,10 +89,19 @@ export type StartServiceUserOptions = PartialWithUndefined<StartServiceOptions>;
  * @see {@link startServiceOptionsShape} for option explanations.
  */
 export function finalizeOptions(
+    serviceOrigin: string,
     userOptions: Readonly<StartServiceUserOptions>,
 ): StartServiceOptions {
+    const {hostname, port} = parseUrl(serviceOrigin);
+
     const options = mergeDefinedProperties<StartServiceOptions>(
         startServiceOptionsShape.defaultValue,
+        Number(port)
+            ? {
+                  host: hostname || undefined,
+                  port: Number(port),
+              }
+            : {},
         userOptions,
     );
     options.workerCount = Math.max(1, options.workerCount);

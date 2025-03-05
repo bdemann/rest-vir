@@ -76,9 +76,9 @@ export async function startService(
             }
         >
     >,
-    userOptions: Readonly<StartServiceUserOptions>,
+    userOptions: Readonly<StartServiceUserOptions> = {},
 ): Promise<StartServiceOutput> {
-    const options = finalizeOptions(userOptions);
+    const options = finalizeOptions(service.serviceOrigin, userOptions);
 
     const port: number | boolean =
         options.lockPort || check.isFalse(options.port)

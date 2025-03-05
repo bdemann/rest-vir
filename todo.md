@@ -1,5 +1,7 @@
 ## Required
 
+-   make `ServiceApi` a class with a origin member that is used by connection methods
+
 ## Not required
 
 -   add more info logging
