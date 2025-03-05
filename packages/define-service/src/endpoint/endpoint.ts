@@ -175,13 +175,13 @@ export type WithFinalEndpointProps<
               searchParamsShape: 'searchParamsShape' extends keyof Init
                   ? ShapeDefinition<Init['searchParamsShape'], true> | undefined
                   : undefined;
-              SearchParamsType: undefined extends Init['searchParamsShape']
-                  ? BaseSearchParams
-                  : ShapeToRuntimeType<
+              SearchParamsType: 'searchParamsShape' extends keyof Init
+                  ? ShapeToRuntimeType<
                         ShapeDefinition<Init['searchParamsShape'], true>,
                         false,
                         true
-                    >;
+                    >
+                  : BaseSearchParams;
               customProps: 'customProps' extends keyof Init ? Init['customProps'] : undefined;
           }
       >
