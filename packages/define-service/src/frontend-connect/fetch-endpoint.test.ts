@@ -1,9 +1,13 @@
 import {assert} from '@augment-vir/assert';
-import {HttpMethod} from '@augment-vir/common';
+import {HttpMethod, HttpStatus} from '@augment-vir/common';
 import {describe, it, itCases} from '@augment-vir/test';
 import {type EndpointDefinition} from '../endpoint/endpoint.js';
 import {mockService} from '../service/define-service.mock.js';
-import {createMockEndpointFetch, createMockEndpointResponse} from '../util/mock-fetch.js';
+import {
+    createMockEndpointFetch,
+    createMockEndpointResponse,
+    createMockResponse,
+} from '../util/mock-fetch.js';
 import {type NoParam} from '../util/no-param.js';
 import {
     buildEndpointUrl,
@@ -149,20 +153,26 @@ describe(fetchEndpoint.name, () => {
                 }),
             )
             .equals<
-                Readonly<{
-                    data: Readonly<{
-                        result:
-                            | number
-                            | Readonly<{
-                                  hello: string;
-                              }>;
-                        requestData: Readonly<{
-                            somethingHere: string;
-                            testValue: number;
-                        }>;
-                    }>;
-                    response: Readonly<Response>;
-                }>
+                | Readonly<{
+                      ok: true;
+                      data: Readonly<{
+                          result:
+                              | number
+                              | Readonly<{
+                                    hello: string;
+                                }>;
+                          requestData: Readonly<{
+                              somethingHere: string;
+                              testValue: number;
+                          }>;
+                      }>;
+                      response: Readonly<Response>;
+                  }>
+                | Readonly<{
+                      ok: false;
+                      data: string | undefined;
+                      response: Readonly<Response>;
+                  }>
             >();
     });
     it('uses the default fetch', async () => {
@@ -183,6 +193,33 @@ describe(fetchEndpoint.name, () => {
                 },
             ),
         );
+    });
+    it('handles a failed response', async () => {
+        const output = await fetchEndpoint(
+            {
+                ...mockService.endpoints['/test'],
+                service: {
+                    ...mockService.endpoints['/test'].service,
+                    serviceOrigin: 'localhost:0',
+                },
+            },
+            {
+                requestData: {
+                    somethingHere: 'hi',
+                    testValue: -1,
+                },
+                fetch() {
+                    return Promise.resolve(
+                        createMockResponse({
+                            status: HttpStatus.BadRequest,
+                        }),
+                    );
+                },
+            },
+        );
+
+        assert.isUndefined(output.data);
+        assert.isFalse(output.ok);
     });
 
     async function testFetchEndpoint(

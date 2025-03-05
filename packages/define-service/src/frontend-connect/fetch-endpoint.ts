@@ -153,18 +153,25 @@ export type FetchEndpointOutput<
               >
           >
         | NoParam,
-> = Readonly<{
-    data: EndpointToFetch extends SelectFrom<
-        EndpointDefinition,
-        {
-            requestDataShape: true;
-            responseDataShape: true;
-        }
-    >
-        ? EndpointExecutorData<EndpointToFetch>['response']
-        : any;
-    response: Readonly<Response>;
-}>;
+> =
+    | Readonly<{
+          ok: true;
+          data: EndpointToFetch extends SelectFrom<
+              EndpointDefinition,
+              {
+                  requestDataShape: true;
+                  responseDataShape: true;
+              }
+          >
+              ? EndpointExecutorData<EndpointToFetch>['response']
+              : any;
+          response: Readonly<Response>;
+      }>
+    | Readonly<{
+          ok: false;
+          data: string | undefined;
+          response: Readonly<Response>;
+      }>;
 
 /**
  * Extracts an array of all allowed methods for the given endpoint definition.
@@ -336,16 +343,26 @@ export async function fetchEndpoint<
         endpoint as EndpointDefinition,
     );
 
-    const responseData = endpoint.responseDataShape ? await response.json() : undefined;
+    if (response.ok) {
+        const responseData = endpoint.responseDataShape ? await response.json() : undefined;
 
-    if (endpoint.responseDataShape) {
-        assertValidShape(responseData, endpoint.responseDataShape, {allowExtraKeys: true});
+        if (endpoint.responseDataShape) {
+            assertValidShape(responseData, endpoint.responseDataShape, {allowExtraKeys: true});
+        }
+
+        return {
+            ok: true,
+            data: responseData,
+            response,
+        };
+    } else {
+        return {
+            ok: false,
+            /** This will be an error message. */
+            data: (await response.text()) || undefined,
+            response,
+        };
     }
-
-    return {
-        data: responseData,
-        response,
-    };
 }
 
 /**
