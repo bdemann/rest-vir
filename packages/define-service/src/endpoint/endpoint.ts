@@ -173,9 +173,7 @@ export type WithFinalEndpointProps<
                           true
                       >;
               searchParamsShape: 'searchParamsShape' extends keyof Init
-                  ? undefined extends Init['searchParamsShape']
-                      ? undefined
-                      : ShapeDefinition<Init['searchParamsShape'], true> | undefined
+                  ? ShapeDefinition<Init['searchParamsShape'], true> | undefined
                   : undefined;
               SearchParamsType: undefined extends Init['searchParamsShape']
                   ? BaseSearchParams

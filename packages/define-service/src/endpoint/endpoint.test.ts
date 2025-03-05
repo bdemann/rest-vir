@@ -7,6 +7,8 @@ import {assertValidEndpoint, EndpointDefinition, EndpointInit} from './endpoint.
 describe('EndpointDefinition', () => {
     it('can be assigned to from any endpoint', () => {
         const myEndpoint: EndpointDefinition = mockService.endpoints['/empty'];
+        const myEndpoint2: EndpointDefinition = mockService.endpoints['/with-search-params'];
+        const myEndpoint3: EndpointDefinition = mockService.endpoints['/custom-props'];
     });
 });
 
