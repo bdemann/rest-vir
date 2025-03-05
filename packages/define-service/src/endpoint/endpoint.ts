@@ -1,10 +1,4 @@
-import {
-    AnyObject,
-    HttpMethod,
-    JsonCompatibleValue,
-    Overwrite,
-    type SelectFrom,
-} from '@augment-vir/common';
+import {AnyObject, HttpMethod, Overwrite, type SelectFrom} from '@augment-vir/common';
 import {
     defineShape,
     enumShape,
@@ -24,15 +18,6 @@ import {BaseSearchParams} from '../util/search-params.js';
 import {assertValidEndpointPath, type EndpointPathBase} from './endpoint-path.js';
 
 /**
- * Base Endpoint request/response shape type.
- *
- * @category Internal
- * @category Package : @rest-vir/define-service
- * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
- */
-export type EndpointDataShapeBase = JsonCompatibleValue;
-
-/**
  * The type for setting up an individual endpoint, used in `defineService`.
  *
  * @category Internal
@@ -43,7 +28,7 @@ export type EndpointInit<
     AllowedMethods extends RequireAtLeastOne<Record<HttpMethod, boolean>> = RequireAtLeastOne<
         Record<HttpMethod, boolean>
     >,
-    RequestDataShape extends EndpointDataShapeBase | NoParam = EndpointDataShapeBase | NoParam,
+    RequestDataShape = unknown,
     ResponseDataShape = unknown,
 > = {
     /**
@@ -220,8 +205,8 @@ export type EndpointDefinition<
     AllowedMethods extends RequireAtLeastOne<Record<HttpMethod, boolean>> = RequireAtLeastOne<
         Record<HttpMethod, boolean>
     >,
-    RequestDataShape extends EndpointDataShapeBase | NoParam = NoParam,
-    ResponseDataShape extends EndpointDataShapeBase | NoParam = NoParam,
+    RequestDataShape = NoParam,
+    ResponseDataShape = NoParam,
     EndpointPath extends EndpointPathBase = EndpointPathBase,
 > = WithFinalEndpointProps<
     EndpointInit<AllowedMethods, RequestDataShape, ResponseDataShape>,
