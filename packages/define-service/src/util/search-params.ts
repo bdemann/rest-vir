@@ -6,4 +6,4 @@
  * @category Package : @rest-vir/define-service
  * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
  */
-export type BaseSearchParams = Record<string, string[]>;
+export type BaseSearchParams = Readonly<Record<string, ReadonlyArray<string>>>;

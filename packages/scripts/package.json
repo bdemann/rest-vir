@@ -1,6 +1,6 @@
 {
     "name": "@rest-vir/scripts",
-    "version": "0.3.3",
+    "version": "0.3.4",
     "private": true,
     "homepage": "https://github.com/electrovir/rest-vir",
     "bugs": {
@@ -25,8 +25,8 @@
     },
     "dependencies": {
         "@virmator/docs": "^13.13.1",
-        "type-fest": "^4.35.0",
-        "typedoc": "^0.27.7"
+        "type-fest": "^4.37.0",
+        "typedoc": "^0.27.9"
     },
     "engines": {
         "node": ">=22"
