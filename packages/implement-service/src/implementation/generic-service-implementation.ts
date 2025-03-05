@@ -46,6 +46,7 @@ export type GenericServiceImplementation = Omit<ServiceDefinition, 'endpoints' |
     webSockets: Record<EndpointPathBase, ImplementedWebSocket>;
     createContext: ContextInit<any, any, any, any> | undefined;
     logger: ServiceLogger;
+    customHeaders: string[];
 };
 
 /**

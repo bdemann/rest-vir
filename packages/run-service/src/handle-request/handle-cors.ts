@@ -51,6 +51,7 @@ export async function handleCors(
                         serviceName: true;
                         requiredClientOrigin: true;
                         logger: true;
+                        customHeaders: true;
                     };
                     methods: true;
                     isEndpoint: true;
@@ -67,7 +68,11 @@ export async function handleCors(
     if (request.method.toUpperCase() === HttpMethod.Options) {
         return {
             statusCode: HttpStatus.NoContent,
-            headers: buildOptionsRequestCorsHeaders(matchedOrigin, allowedMethods),
+            headers: buildOptionsRequestCorsHeaders(
+                matchedOrigin,
+                allowedMethods,
+                route.service.customHeaders,
+            ),
         };
     } else if (matchedOrigin) {
         return {
@@ -113,6 +118,7 @@ const contentLengthHeaders = {
 function buildOptionsRequestCorsHeaders(
     matchedOrigin: MatchedOrigin,
     allowedMethods: HttpMethod[],
+    customHeaders: string[],
 ): OutgoingHttpHeaders {
     if (matchedOrigin == undefined) {
         return contentLengthHeaders;
@@ -128,8 +134,12 @@ function buildOptionsRequestCorsHeaders(
             'Cookie',
             'Authorization',
             'Content-Type',
+            ...customHeaders,
         ].join(','),
-        'Access-Control-Expose-Headers': [restVirServiceNameHeader].join(','),
+        'Access-Control-Expose-Headers': [
+            restVirServiceNameHeader,
+            ...customHeaders,
+        ].join(','),
         'Access-Control-Max-Age': accessControlMaxAgeValue,
 
         ...contentLengthHeaders,

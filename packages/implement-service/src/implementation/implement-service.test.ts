@@ -51,6 +51,27 @@ describe(implementService.name, () => {
             },
         );
     });
+    it('preserves custom headers', () => {
+        const mockCustomHeaders = ['hi'];
+        const service = implementService(
+            {
+                customHeaders: mockCustomHeaders,
+                createContext() {
+                    return {
+                        context: 'hi',
+                    };
+                },
+                service: defineService({
+                    requiredClientOrigin: AnyOrigin,
+                    serviceName: 'test',
+                    serviceOrigin: '',
+                }),
+            },
+            {},
+        );
+
+        assert.deepEquals(service.customHeaders, mockCustomHeaders);
+    });
     it('blocks non-function endpoint implementations', () => {
         assert.throws(() =>
             implementService(

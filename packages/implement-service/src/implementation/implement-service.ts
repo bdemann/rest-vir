@@ -57,6 +57,8 @@ export type ServiceImplementationInit<
     EndpointsInit extends BaseServiceEndpointsInit,
     WebSocketsInit extends BaseServiceWebSocketsInit,
 > = {
+    /** Set all custom headers that you'll be using here so that CORS will allow them. */
+    customHeaders?: string[];
     service: ServiceDefinition<ServiceName, EndpointsInit, WebSocketsInit>;
     /**
      * Logger for the service. Use {@link silentServiceLogger} to disable logging entirely (even
@@ -140,6 +142,7 @@ export function implementService<
         service,
         createContext,
         logger,
+        customHeaders,
     }: ServiceImplementationInit<Context, ServiceName, EndpointsInit, WebSocketsInit>,
     {
         endpoints: endpointImplementations,
@@ -208,6 +211,7 @@ export function implementService<
         WebSocketsInit
     > = {
         ...service,
+        customHeaders: customHeaders || [],
         endpoints,
         webSockets,
         createContext,
@@ -276,6 +280,7 @@ export type ServiceImplementation<
     };
     createContext: ContextInit<Context, ServiceName, EndpointsInit, WebSocketsInit> | undefined;
     logger: ServiceLogger;
+    customHeaders: string[];
 };
 
 /**
