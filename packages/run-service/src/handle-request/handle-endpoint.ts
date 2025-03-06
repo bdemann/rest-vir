@@ -68,6 +68,7 @@ export async function handleEndpointRequest(
             return {
                 statusCode: endpointResult.statusCode,
                 body: endpointResult.responseErrorMessage,
+                headers: endpointResult.headers,
             };
         } else if (endpointResult.responseData) {
             if (!endpoint.responseDataShape) {
@@ -84,6 +85,7 @@ export async function handleEndpointRequest(
             return {
                 headers: {
                     'content-type': endpointResult.dataType || 'application/json',
+                    ...endpointResult.headers,
                 },
                 statusCode: HttpStatus.Ok,
                 body: endpointResult.responseData,
@@ -91,6 +93,7 @@ export async function handleEndpointRequest(
         } else {
             return {
                 statusCode: HttpStatus.Ok,
+                headers: endpointResult.headers,
             };
         }
     } catch (error) {
