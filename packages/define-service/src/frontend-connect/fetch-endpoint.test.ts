@@ -221,6 +221,17 @@ describe(fetchEndpoint.name, () => {
         assert.isUndefined(output.data);
         assert.isFalse(output.ok);
     });
+    it('fails on an invalid endpoint', async () => {
+        await assert.throws(() =>
+            fetchEndpoint({
+                ...mockService.endpoints['/empty'],
+                service: {
+                    ...mockService.endpoints['/empty'].service,
+                    serviceOrigin: 'localhost:0',
+                },
+            }),
+        );
+    });
 
     async function testFetchEndpoint(
         endpoint: EndpointDefinition,

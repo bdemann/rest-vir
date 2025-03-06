@@ -59,6 +59,25 @@ export type RestVirApi<SpecificService extends ServiceDefinition> = {
 };
 
 /**
+ * Options for {@link generateApi}.
+ *
+ * @category Internal
+ * @category Package : @rest-vir/define-service
+ * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
+ */
+export type GenerateApiOptions = Readonly<
+    PartialWithUndefined<{
+        endpointFetch: Readonly<Pick<GenericFetchEndpointParams, 'options' | 'fetch'>>;
+        webSocketConnect: Readonly<
+            Pick<
+                GenericConnectWebSocketParams<CommonWebSocket>,
+                'listeners' | 'protocols' | 'webSocketConstructor'
+            >
+        >;
+    }>
+>;
+
+/**
  * Creates an API from the given service definition, with automatically generated endpoint fetch and
  * WebSocket connect methods.
  *
@@ -84,13 +103,17 @@ export type RestVirApi<SpecificService extends ServiceDefinition> = {
  */
 export function generateApi<const SpecificService extends ServiceDefinition>(
     service: SpecificService,
+    {endpointFetch, webSocketConnect}: Readonly<GenerateApiOptions> = {},
 ): RestVirApi<SpecificService> {
     return {
         endpoints: mapObjectValues(service.endpoints, (endpointPath, endpointDefinition) => {
             return {
                 ...endpointDefinition,
                 fetch: (...params: CollapsedFetchEndpointParams<EndpointDefinition>) => {
-                    return fetchEndpoint(endpointDefinition, ...params);
+                    return fetchEndpoint(endpointDefinition, {
+                        ...endpointFetch,
+                        ...params[0],
+                    });
                 },
             };
         }),
@@ -100,7 +123,10 @@ export function generateApi<const SpecificService extends ServiceDefinition>(
                 connect: (
                     ...params: CollapsedConnectWebSocketParams<WebSocketDefinition, false>
                 ) => {
-                    return connectWebSocket(webSocketDefinition, ...(params as [any]));
+                    return connectWebSocket(webSocketDefinition, {
+                        ...webSocketConnect,
+                        ...params[0],
+                    });
                 },
             };
         }),
