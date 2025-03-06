@@ -1,7 +1,7 @@
 import {assert} from '@augment-vir/assert';
 import {HttpMethod, HttpStatus} from '@augment-vir/common';
 import {describe, it} from '@augment-vir/test';
-import {AnyOrigin} from '@rest-vir/define-service';
+import {AnyOrigin, restVirServiceNameHeader} from '@rest-vir/define-service';
 import {defaultServiceLogger} from '@rest-vir/implement-service';
 import {handleCors} from './handle-cors.js';
 
@@ -96,6 +96,7 @@ describe(handleCors.name, () => {
                     'Access-Control-Allow-Origin': 'http://example.com',
                     'Access-Control-Allow-Credentials': 'true',
                     Vary: 'Origin',
+                    'Access-Control-Expose-Headers': restVirServiceNameHeader,
                 },
             },
         );
@@ -129,6 +130,7 @@ describe(handleCors.name, () => {
             {
                 headers: {
                     'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Expose-Headers': restVirServiceNameHeader,
                 },
             },
         );

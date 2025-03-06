@@ -76,7 +76,7 @@ export async function handleCors(
         };
     } else if (matchedOrigin) {
         return {
-            headers: buildStandardCorsHeaders(matchedOrigin),
+            headers: buildStandardCorsHeaders(matchedOrigin, route.service.customHeaders),
         };
     } else {
         route.service.logger.error(
@@ -89,16 +89,27 @@ export async function handleCors(
     }
 }
 
-function buildStandardCorsHeaders(matchedOrigin: NonNullable<MatchedOrigin>): OutgoingHttpHeaders {
+function buildStandardCorsHeaders(
+    matchedOrigin: NonNullable<MatchedOrigin>,
+    customHeaders: string[],
+): OutgoingHttpHeaders {
     if (isAnyOrigin(matchedOrigin)) {
         return {
             'Access-Control-Allow-Origin': '*',
+            'Access-Control-Expose-Headers': [
+                restVirServiceNameHeader,
+                ...customHeaders,
+            ].join(','),
         };
     } else {
         return {
             'Access-Control-Allow-Origin': matchedOrigin,
             'Access-Control-Allow-Credentials': 'true',
             Vary: 'Origin',
+            'Access-Control-Expose-Headers': [
+                restVirServiceNameHeader,
+                ...customHeaders,
+            ].join(','),
         };
     }
 }
@@ -125,7 +136,7 @@ function buildOptionsRequestCorsHeaders(
     }
 
     return {
-        ...buildStandardCorsHeaders(matchedOrigin),
+        ...buildStandardCorsHeaders(matchedOrigin, customHeaders),
         'Access-Control-Allow-Methods': [
             allowedMethods,
             HttpMethod.Options,
@@ -134,10 +145,6 @@ function buildOptionsRequestCorsHeaders(
             'Cookie',
             'Authorization',
             'Content-Type',
-            ...customHeaders,
-        ].join(','),
-        'Access-Control-Expose-Headers': [
-            restVirServiceNameHeader,
             ...customHeaders,
         ].join(','),
         'Access-Control-Max-Age': accessControlMaxAgeValue,

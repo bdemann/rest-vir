@@ -332,6 +332,7 @@ describe(startService.name, () => {
                     headers: {
                         'access-control-allow-credentials': 'true',
                         'access-control-allow-origin': 'https://example.com',
+                        'access-control-expose-headers': restVirServiceNameHeader,
                         vary: 'Origin',
                     },
                 },
@@ -406,6 +407,7 @@ describe(startService.name, () => {
                     headers: {
                         'access-control-allow-credentials': 'true',
                         'access-control-allow-origin': 'https://example.com',
+                        'access-control-expose-headers': restVirServiceNameHeader,
                         vary: 'Origin',
                     },
                 },
@@ -461,6 +463,7 @@ describe(startService.name, () => {
                     status: HttpStatus.Ok,
                     headers: {
                         'access-control-allow-origin': '*',
+                        'access-control-expose-headers': restVirServiceNameHeader,
                     },
                 },
                 'accepts a get request without any origin',
@@ -498,6 +501,7 @@ describe(startService.name, () => {
                         'access-control-allow-origin': '*',
                         /** This header is automatically added by fastify. */
                         'content-type': 'text/plain; charset=utf-8',
+                        'access-control-expose-headers': restVirServiceNameHeader,
                     },
                 },
             );
@@ -516,6 +520,7 @@ describe(startService.name, () => {
                     status: HttpStatus.Unauthorized,
                     headers: {
                         'access-control-allow-origin': '*',
+                        'access-control-expose-headers': restVirServiceNameHeader,
                     },
                 },
             );
@@ -534,6 +539,7 @@ describe(startService.name, () => {
                     status: HttpStatus.InternalServerError,
                     headers: {
                         'access-control-allow-origin': '*',
+                        'access-control-expose-headers': restVirServiceNameHeader,
                     },
                 },
             );
@@ -555,6 +561,7 @@ describe(startService.name, () => {
                     headers: {
                         'access-control-allow-origin': '*',
                         'content-type': 'text/plain; charset=utf-8',
+                        'access-control-expose-headers': restVirServiceNameHeader,
                     },
                 },
             );
@@ -590,6 +597,7 @@ describe(startService.name, () => {
                 status: HttpStatus.Ok,
                 headers: {
                     'access-control-allow-origin': '*',
+                    'access-control-expose-headers': restVirServiceNameHeader,
                 },
             });
         });
@@ -615,11 +623,12 @@ describe(startService.name, () => {
         //     );
         //     assert.isBelow(await plainTime, await longRunningTime);
         // });
-        it('runs', async ({fetchEndpoint}) => {
+        it('runs on multiple threads', async ({fetchEndpoint}) => {
             const response = await fetchEndpoint(mockService.endpoints['/empty'].path);
             assert.deepEquals(await condenseResponse(response), {
                 headers: {
                     'access-control-allow-origin': '*',
+                    'access-control-expose-headers': restVirServiceNameHeader,
                 },
                 status: HttpStatus.Ok,
             });

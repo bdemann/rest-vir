@@ -1,6 +1,7 @@
 import {assert} from '@augment-vir/assert';
 import {HttpMethod, HttpStatus} from '@augment-vir/common';
 import {describe, it} from '@augment-vir/test';
+import {restVirServiceNameHeader} from '@rest-vir/define-service';
 import {mockServiceImplementation} from '@rest-vir/implement-service/src/implementation/implement-service.mock.js';
 import {testEndpoint} from './test-endpoint.js';
 import {condenseResponse} from './test-service.js';
@@ -10,7 +11,10 @@ describe(testEndpoint.name, () => {
         const response = await testEndpoint(mockServiceImplementation.endpoints['/empty']);
 
         assert.deepEquals(await condenseResponse(response), {
-            headers: {'access-control-allow-origin': '*'},
+            headers: {
+                'access-control-allow-origin': '*',
+                'access-control-expose-headers': restVirServiceNameHeader,
+            },
             status: HttpStatus.Ok,
         });
     });
@@ -25,6 +29,7 @@ describe(testEndpoint.name, () => {
             headers: {
                 'access-control-allow-origin': '*',
                 'content-type': 'text/plain; charset=utf-8',
+                'access-control-expose-headers': restVirServiceNameHeader,
             },
             status: HttpStatus.BadRequest,
             body: 'Invalid body.',
@@ -34,7 +39,10 @@ describe(testEndpoint.name, () => {
         const response = await testEndpoint(mockServiceImplementation.endpoints['/throws-error']);
 
         assert.deepEquals(await condenseResponse(response), {
-            headers: {'access-control-allow-origin': '*'},
+            headers: {
+                'access-control-allow-origin': '*',
+                'access-control-expose-headers': restVirServiceNameHeader,
+            },
             status: HttpStatus.InternalServerError,
         });
     });
@@ -50,6 +58,7 @@ describe(testEndpoint.name, () => {
             headers: {
                 'access-control-allow-origin': '*',
                 'content-type': 'application/json; charset=utf-8',
+                'access-control-expose-headers': restVirServiceNameHeader,
             },
             status: HttpStatus.Ok,
             body: JSON.stringify({

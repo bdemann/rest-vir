@@ -1,7 +1,13 @@
 import {assert, waitUntil} from '@augment-vir/assert';
 import {DeferredPromise, randomInteger} from '@augment-vir/common';
 import {describe, it} from '@augment-vir/test';
-import {AnyOrigin, defineService, HttpMethod, HttpStatus} from '@rest-vir/define-service';
+import {
+    AnyOrigin,
+    defineService,
+    HttpMethod,
+    HttpStatus,
+    restVirServiceNameHeader,
+} from '@rest-vir/define-service';
 import {implementService} from '@rest-vir/implement-service';
 import {mockServiceImplementation} from '@rest-vir/implement-service/src/implementation/implement-service.mock.js';
 import fastify from 'fastify';
@@ -120,6 +126,7 @@ describe(testService.name, () => {
             assert.deepEquals(await condenseResponse(await fetchEndpoint['/health']()), {
                 headers: {
                     'access-control-allow-origin': '*',
+                    'access-control-expose-headers': restVirServiceNameHeader,
                 },
                 status: HttpStatus.Ok,
             });
@@ -156,6 +163,7 @@ describe(testService.name, () => {
             assert.deepEquals(await condenseResponse(await fetchEndpoint['/health']()), {
                 headers: {
                     'access-control-allow-origin': '*',
+                    'access-control-expose-headers': restVirServiceNameHeader,
                 },
                 status: HttpStatus.Ok,
             });
@@ -207,6 +215,7 @@ describe(testExistingServer.name, () => {
                 {
                     headers: {
                         'access-control-allow-origin': '*',
+                        'access-control-expose-headers': restVirServiceNameHeader,
                     },
                     status: HttpStatus.Ok,
                 },
