@@ -145,6 +145,18 @@ describe(startService.name, () => {
                 },
             );
         });
+        it('accepts form data', async ({fetchEndpoint}) => {
+            const response = await fetchEndpoint(mockService.endpoints['/form-data'].path, {
+                method: HttpMethod.Post,
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+                body: new FormData(),
+            });
+
+            assert.isTrue(response.ok);
+            assert.strictEquals(await response.text(), 'ok');
+        });
         it('does not parse body when content type is not json', async ({fetchEndpoint}) => {
             assert.strictEquals(
                 (

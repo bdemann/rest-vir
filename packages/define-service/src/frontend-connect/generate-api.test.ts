@@ -51,6 +51,7 @@ describe(makeMockApi.name, () => {
                 .tsType(endpoint?.path)
                 .equals<
                     | undefined
+                    | '/form-data'
                     | '/custom-props'
                     | '/function-origin'
                     | '/array-origin'

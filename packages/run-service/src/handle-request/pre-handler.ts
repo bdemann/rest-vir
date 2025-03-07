@@ -8,6 +8,7 @@ import {
     type SelectFrom,
 } from '@augment-vir/common';
 import {
+    isFormDataShape,
     matchUrlToService,
     restVirServiceNameHeader,
     type EndpointDefinition,
@@ -21,6 +22,7 @@ import {
     ServerRequest,
     ServerResponse,
 } from '@rest-vir/implement-service';
+import type {IncomingHttpHeaders} from 'node:http';
 import {assertValidShape, isValidShape} from 'object-shape-tester';
 import {handleHandlerResult} from './endpoint-handler.js';
 import {handleCors} from './handle-cors.js';
@@ -125,7 +127,7 @@ export async function preHandler(
         return;
     }
 
-    const requestData = wrapInTry(() => extractRequestData(request.body, route));
+    const requestData = wrapInTry(() => extractRequestData(request.body, request.headers, route));
 
     if (requestData instanceof Error) {
         service.logger.error(
@@ -195,6 +197,7 @@ export async function preHandler(
 
 function extractRequestData(
     body: unknown,
+    headers: IncomingHttpHeaders,
     route: Readonly<
         SelectFrom<
             EndpointDefinition | WebSocketDefinition,
@@ -220,7 +223,9 @@ function extractRequestData(
         }
     }
 
-    if (
+    if (isFormDataShape(dataShape.shape) && headers['content-type'] === 'multipart/form-data') {
+        return body;
+    } else if (
         !isValidShape(body, dataShape, {
             /** Allow extra keys for forwards / backwards compatibility. */
             allowExtraKeys: true,

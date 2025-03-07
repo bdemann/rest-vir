@@ -166,6 +166,7 @@ describe(defineService.name, () => {
             .tsType(endpointPaths)
             .equals<
                 (
+                    | '/form-data'
                     | '/empty'
                     | '/with-search-params'
                     | '/missing'

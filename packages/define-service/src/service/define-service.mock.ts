@@ -3,6 +3,7 @@
 
 import {HttpMethod, wait} from '@augment-vir/common';
 import {exact, indexedKeys, or, tupleShape} from 'object-shape-tester';
+import {formDataShape} from '../util/custom-shapes.js';
 import {AnyOrigin} from '../util/origin.js';
 import {defineService} from './define-service.js';
 
@@ -70,6 +71,13 @@ export const mockService = defineService({
         },
     },
     endpoints: {
+        '/form-data': {
+            methods: {
+                [HttpMethod.Post]: true,
+            },
+            requestDataShape: formDataShape,
+            responseDataShape: exact('ok'),
+        },
         '/custom-props': {
             methods: {
                 [HttpMethod.Get]: true,

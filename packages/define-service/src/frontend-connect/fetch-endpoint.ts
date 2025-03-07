@@ -421,8 +421,12 @@ export function buildEndpointRequestInit<
         (headerKey) => headerKey.toLowerCase() === 'content-type',
     );
 
-    if (!hasContentTypeHeader && check.isObject(requestData)) {
-        headers['content-type'] = 'application/json';
+    if (!hasContentTypeHeader) {
+        if (requestData instanceof FormData) {
+            headers['content-type'] = 'multipart/form-data';
+        } else if (check.isObject(requestData)) {
+            headers['content-type'] = 'application/json';
+        }
     }
 
     const url = buildEndpointUrl(endpoint, {pathParams});
@@ -431,11 +435,15 @@ export function buildEndpointRequestInit<
         ...options,
         headers,
         method: filterToValidMethod(endpoint, method),
-        ...(requestData
+        ...(requestData instanceof FormData
             ? {
-                  body: JSON.stringify(requestData),
+                  body: requestData,
               }
-            : {}),
+            : requestData
+              ? {
+                    body: JSON.stringify(requestData),
+                }
+              : {}),
     };
 
     return {

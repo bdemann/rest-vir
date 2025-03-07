@@ -142,6 +142,12 @@ export const mockServiceImplementation = implementService(
             },
         },
         endpoints: {
+            '/form-data'() {
+                return {
+                    statusCode: HttpStatus.Ok,
+                    responseData: 'ok',
+                };
+            },
             '/with-search-params'({searchParams}) {
                 assert.tsType(searchParams).equals<
                     Readonly<{

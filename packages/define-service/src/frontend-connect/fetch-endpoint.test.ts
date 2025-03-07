@@ -1,5 +1,5 @@
 import {assert} from '@augment-vir/assert';
-import {HttpMethod, HttpStatus} from '@augment-vir/common';
+import {DeferredPromise, HttpMethod, HttpStatus} from '@augment-vir/common';
 import {describe, it, itCases} from '@augment-vir/test';
 import {type EndpointDefinition} from '../endpoint/endpoint.js';
 import {mockService} from '../service/define-service.mock.js';
@@ -220,6 +220,26 @@ describe(fetchEndpoint.name, () => {
 
         assert.isUndefined(output.data);
         assert.isFalse(output.ok);
+    });
+    it('sends form data', async () => {
+        const receivedData = new DeferredPromise<any>();
+
+        const output = await fetchEndpoint(mockService.endpoints['/form-data'], {
+            requestData: new FormData(),
+            fetch(url, requestInit) {
+                receivedData.resolve(requestInit.body);
+
+                return Promise.resolve(
+                    createMockResponse({
+                        status: HttpStatus.Ok,
+                        body: JSON.stringify('ok'),
+                    }),
+                );
+            },
+        });
+
+        assert.isTrue(output.ok);
+        assert.instanceOf(await receivedData.promise, FormData);
     });
     it('fails on an invalid endpoint', async () => {
         await assert.throws(() =>
