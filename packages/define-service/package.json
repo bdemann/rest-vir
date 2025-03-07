@@ -1,6 +1,6 @@
 {
     "name": "@rest-vir/define-service",
-    "version": "0.8.0",
+    "version": "0.8.1",
     "description": "Define an connect to a declarative and type safe REST and WebSocket service.",
     "keywords": [
         "rest",

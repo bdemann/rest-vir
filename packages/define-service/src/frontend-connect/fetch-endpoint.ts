@@ -423,7 +423,11 @@ export function buildEndpointRequestInit<
 
     if (!hasContentTypeHeader) {
         if (requestData instanceof FormData) {
-            headers['content-type'] = 'multipart/form-data';
+            /**
+             * Do not set `content-type` manually when submitting form data because the browser will
+             * set it automatically _and_ include a boundary in the content type, which is needed
+             * for reading the form data properly.
+             */
         } else if (check.isObject(requestData)) {
             headers['content-type'] = 'application/json';
         }

@@ -223,7 +223,10 @@ function extractRequestData(
         }
     }
 
-    if (isFormDataShape(dataShape.shape) && headers['content-type'] === 'multipart/form-data') {
+    if (
+        isFormDataShape(dataShape.shape) &&
+        headers['content-type']?.includes('multipart/form-data')
+    ) {
         return body;
     } else if (
         !isValidShape(body, dataShape, {
