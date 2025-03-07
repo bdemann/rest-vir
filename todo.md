@@ -1,6 +1,7 @@
 ## Required
 
 -   make `ServiceApi` a class with a origin member that is used by connection methods
+-   add a `searchParams` object to `fetchEndpoint` options
 
 ## Not required
 

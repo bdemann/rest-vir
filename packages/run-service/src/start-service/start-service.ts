@@ -1,8 +1,8 @@
 import {check} from '@augment-vir/assert';
-import {type SelectFrom} from '@augment-vir/common';
+import {awaitedForEach, type SelectFrom} from '@augment-vir/common';
 import {GenericServiceImplementation, ServiceImplementation} from '@rest-vir/implement-service';
 import {ClusterManager, runInCluster, type WorkerRunner} from 'cluster-vir';
-import fastify, {type FastifyInstance} from 'fastify';
+import fastify, {type FastifyInstance, type FastifyPluginCallback} from 'fastify';
 import {getPortPromise} from 'portfinder';
 import {attachService} from './attach-service.js';
 import {
@@ -52,6 +52,16 @@ export type StartServiceOutput = {
 };
 
 /**
+ * A list of plugins and their options that will be registered on the internal fastify instance
+ * created by {@link startService}.
+ *
+ * @category Internal
+ * @category Package : @rest-vir/run-service
+ * @package [`@rest-vir/run-service`](https://www.npmjs.com/package/@rest-vir/run-service)
+ */
+export type FastifyPlugins = [plugin: FastifyPluginCallback, options?: any][];
+
+/**
  * Starts the given {@link ServiceImplementation} inside of a backend [Fastify
  * server](https://www.npmjs.com/package/fastify).
  *
@@ -77,6 +87,7 @@ export async function startService(
         >
     >,
     userOptions: Readonly<StartServiceUserOptions> = {},
+    fastifyPlugins: Readonly<FastifyPlugins> = [],
 ): Promise<StartServiceOutput> {
     const options = finalizeOptions(service.serviceOrigin, userOptions);
 
@@ -90,7 +101,7 @@ export async function startService(
 
     if (options.workerCount === 1 || !check.isNumber(port)) {
         /** Only run a single server. */
-        const result = await startServer(service, options);
+        const result = await startServer(service, options, fastifyPlugins);
 
         if (options.port) {
             service.logger.info(
@@ -103,7 +114,7 @@ export async function startService(
         /** Run in a cluster. */
         const manager = runInCluster(
             async () => {
-                const {kill} = await startServer(service, options);
+                const {kill} = await startServer(service, options, fastifyPlugins);
 
                 return () => {
                     kill();
@@ -161,8 +172,19 @@ async function startServer(
         >
     >,
     {host, port}: Readonly<Pick<StartServiceOptions, 'host' | 'port'>>,
+    fastifyPlugins: Readonly<FastifyPlugins>,
 ): Promise<StartServiceOutput> {
     const server = fastify();
+
+    await awaitedForEach(
+        fastifyPlugins,
+        async ([
+            plugin,
+            options,
+        ]) => {
+            await server.register(plugin, options);
+        },
+    );
 
     await attachService(server, service, {
         throwErrorsForExternalHandling: false,
