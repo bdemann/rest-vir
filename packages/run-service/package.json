@@ -65,6 +65,7 @@
         "object-shape-tester": "^5.1.4"
     },
     "peerDependencies": {
+        "@augment-vir/test": ">=30",
         "object-shape-tester": ">=5"
     },
     "engines": {
