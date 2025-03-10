@@ -105,7 +105,7 @@ export async function startService(
 
         if (options.port) {
             service.logger.info(
-                `${service.serviceName} started on http://localhost:${options.port}`,
+                `${service.serviceName} started on http://${result.host}:${result.port}`,
             );
         }
 
@@ -131,7 +131,7 @@ export async function startService(
             await manager.startWorkers();
             if (options.port) {
                 service.logger.info(
-                    `${service.serviceName} started on http://localhost:${options.port}`,
+                    `${service.serviceName} started on http://${options.host}:${options.port}`,
                 );
             }
 

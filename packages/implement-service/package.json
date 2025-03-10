@@ -1,6 +1,6 @@
 {
     "name": "@rest-vir/implement-service",
-    "version": "0.8.2",
+    "version": "0.8.3",
     "description": "Implement a service defined by @rest-vir/define-service.",
     "keywords": [
         "rest",
@@ -41,7 +41,7 @@
     "dependencies": {
         "@augment-vir/assert": "^31.10.0",
         "@augment-vir/common": "^31.10.0",
-        "@rest-vir/define-service": "^0.8.2",
+        "@rest-vir/define-service": "^0.8.3",
         "@types/ws": "^8.18.0",
         "fastify": "^5.2.1",
         "path-to-regexp": "^8.2.0",
