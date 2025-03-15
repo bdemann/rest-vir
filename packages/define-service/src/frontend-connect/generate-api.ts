@@ -30,8 +30,12 @@ import {
  * @category Package : @rest-vir/define-service
  * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
  */
-export type RestVirApi<SpecificService extends ServiceDefinition> = {
-    endpoints: {
+export class RestVirApi<SpecificService extends ServiceDefinition> {
+    /**
+     * All supported endpoints within this API. Use `.fetch()` on an individual endpoint to send
+     * requests to it.
+     */
+    public readonly endpoints: {
         [EndpointPath in keyof SpecificService['endpoints']]: SpecificService['endpoints'][EndpointPath] extends GenericEndpointDefinition
             ? SpecificService['endpoints'][EndpointPath] & {
                   /** Send a fetch request to this endpoint. */
@@ -43,7 +47,11 @@ export type RestVirApi<SpecificService extends ServiceDefinition> = {
               }
             : never;
     };
-    webSockets: {
+    /**
+     * All supported WebSockets within this API. Use `.connect()` on an individual WebSocket to open
+     * up connections to it.
+     */
+    public readonly webSockets: {
         [WebSocketPath in keyof SpecificService['webSockets']]: SpecificService['webSockets'][WebSocketPath] extends WebSocketDefinition
             ? SpecificService['webSockets'][WebSocketPath] & {
                   /** Connect to this WebSocket. */
@@ -56,7 +64,70 @@ export type RestVirApi<SpecificService extends ServiceDefinition> = {
               }
             : never;
     };
-};
+
+    /**
+     * Where this API is hosted. This can be freely modified at any time and it will immediately
+     * affect all `endpoint.fetch()` and `webSocket.connect()` methods.
+     *
+     * @example 'https://example.com' 'http://localhost:3000'
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/Location for help on which part of the URL is the origin (if necessary).
+     */
+    public serviceOrigin: string;
+
+    constructor(
+        service: SpecificService,
+        {endpointFetch, webSocketConnect, serviceOrigin}: Readonly<GenerateApiOptions> = {},
+    ) {
+        this.serviceOrigin = serviceOrigin || service.serviceOrigin;
+
+        this.endpoints = mapObjectValues(service.endpoints, (endpointPath, endpointDefinition) => {
+            return {
+                ...endpointDefinition,
+                fetch: (...params: CollapsedFetchEndpointParams<EndpointDefinition>) => {
+                    return fetchEndpoint(
+                        {
+                            ...endpointDefinition,
+                            service: {
+                                ...endpointDefinition.service,
+                                serviceOrigin: this.serviceOrigin,
+                            },
+                        },
+                        {
+                            ...endpointFetch,
+                            ...params[0],
+                        },
+                    );
+                },
+            };
+        }) as any;
+        this.webSockets = mapObjectValues(
+            service.webSockets,
+            (webSocketPath, webSocketDefinition) => {
+                return {
+                    ...webSocketDefinition,
+                    connect: (
+                        ...params: CollapsedConnectWebSocketParams<WebSocketDefinition, false>
+                    ) => {
+                        return connectWebSocket(
+                            {
+                                ...webSocketDefinition,
+                                service: {
+                                    ...webSocketDefinition.service,
+                                    serviceOrigin: this.serviceOrigin,
+                                },
+                            },
+                            {
+                                ...webSocketConnect,
+                                ...params[0],
+                            },
+                        );
+                    },
+                };
+            },
+        ) as any;
+    }
+}
 
 /**
  * Options for {@link generateApi}.
@@ -74,6 +145,8 @@ export type GenerateApiOptions = Readonly<
                 'listeners' | 'protocols' | 'webSocketConstructor'
             >
         >;
+        /** Override the service definition's service origin. */
+        serviceOrigin: string;
     }>
 >;
 
@@ -103,34 +176,9 @@ export type GenerateApiOptions = Readonly<
  */
 export function generateApi<const SpecificService extends ServiceDefinition>(
     service: SpecificService,
-    {endpointFetch, webSocketConnect}: Readonly<GenerateApiOptions> = {},
+    options: Readonly<GenerateApiOptions> = {},
 ): RestVirApi<SpecificService> {
-    return {
-        endpoints: mapObjectValues(service.endpoints, (endpointPath, endpointDefinition) => {
-            return {
-                ...endpointDefinition,
-                fetch: (...params: CollapsedFetchEndpointParams<EndpointDefinition>) => {
-                    return fetchEndpoint(endpointDefinition, {
-                        ...endpointFetch,
-                        ...params[0],
-                    });
-                },
-            };
-        }),
-        webSockets: mapObjectValues(service.webSockets, (webSocketPath, webSocketDefinition) => {
-            return {
-                ...webSocketDefinition,
-                connect: (
-                    ...params: CollapsedConnectWebSocketParams<WebSocketDefinition, false>
-                ) => {
-                    return connectWebSocket(webSocketDefinition, {
-                        ...webSocketConnect,
-                        ...params[0],
-                    });
-                },
-            };
-        }),
-    } as RestVirApi<SpecificService>;
+    return new RestVirApi<SpecificService>(service, options);
 }
 
 /**
