@@ -214,7 +214,7 @@ export const webSocketInitShape = defineShape({
      *   service's origin requirement).
      * - Any other set value overrides the service's origin requirement (if it has any).
      */
-    requiredClientOrigin: originRequirementShape,
+    requiredClientOrigin: optional(originRequirementShape),
     customProps: optional(
         or(
             undefined,

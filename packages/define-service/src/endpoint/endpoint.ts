@@ -112,7 +112,7 @@ export const endpointInitShape = defineShape({
      *   service's origin requirement).
      * - Any other set value overrides the service's origin requirement (if it has any).
      */
-    requiredClientOrigin: originRequirementShape,
+    requiredClientOrigin: optional(originRequirementShape),
     methods: indexedKeys({
         keys: enumShape(HttpMethod),
         values: false,

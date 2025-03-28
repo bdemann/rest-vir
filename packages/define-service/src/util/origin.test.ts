@@ -1,3 +1,4 @@
+import {assert} from '@augment-vir/assert';
 import {describe, it, itCases} from '@augment-vir/test';
 import {assertValidShape, defineShape} from 'object-shape-tester';
 import {AnyOrigin, isAnyOrigin, originRequirementShape} from './origin.js';
@@ -24,6 +25,8 @@ describe('originRequirementShape', () => {
         assertValidShape(AnyOrigin, defineShape(originRequirementShape));
     });
     it('blocks a random object', () => {
-        assertValidShape({hello: 'there'}, defineShape(originRequirementShape));
+        assert.throws(() =>
+            assertValidShape({hello: 'there'}, defineShape(originRequirementShape)),
+        );
     });
 });
