@@ -1,6 +1,6 @@
 import {check} from '@augment-vir/assert';
 import {MaybePromise} from '@augment-vir/common';
-import {classShape, or} from 'object-shape-tester';
+import {classShape, defineShape, exact, or} from 'object-shape-tester';
 
 /**
  * Explicity denotes that any origin is allowed. Use {@link isAnyOrigin} to check if something is
@@ -66,6 +66,8 @@ export type OriginRequirement =
  * @category Package : @rest-vir/define-service
  * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
  */
-export const originRequirementShape = or(undefined, '', classShape(RegExp), () => {}, [
-    or('', classShape(RegExp), () => {}),
-]);
+export const originRequirementShape = defineShape(
+    or(undefined, '', exact(AnyOrigin), classShape(RegExp), () => {}, [
+        or('', exact(AnyOrigin), classShape(RegExp), () => {}),
+    ]),
+);

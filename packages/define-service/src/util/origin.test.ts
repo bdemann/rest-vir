@@ -1,5 +1,6 @@
-import {describe, itCases} from '@augment-vir/test';
-import {isAnyOrigin} from './origin.js';
+import {describe, it, itCases} from '@augment-vir/test';
+import {assertValidShape, defineShape} from 'object-shape-tester';
+import {AnyOrigin, isAnyOrigin, originRequirementShape} from './origin.js';
 
 describe(isAnyOrigin.name, () => {
     itCases(isAnyOrigin, [
@@ -16,4 +17,13 @@ describe(isAnyOrigin.name, () => {
             expect: false,
         },
     ]);
+});
+
+describe('originRequirementShape', () => {
+    it('works on AnyOrigin', () => {
+        assertValidShape(AnyOrigin, defineShape(originRequirementShape));
+    });
+    it('blocks a random object', () => {
+        assertValidShape({hello: 'there'}, defineShape(originRequirementShape));
+    });
 });
