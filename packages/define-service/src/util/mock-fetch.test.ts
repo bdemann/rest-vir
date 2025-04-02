@@ -184,7 +184,7 @@ describe(createMockResponse.name, () => {
         ]);
 
         assert.instanceOf(formEntries[2]?.[1], Blob);
-        assert.strictEquals(formEntries[2]?.[0], 'hi3');
+        assert.strictEquals(formEntries[2][0], 'hi3');
 
         assert.isTrue(response.bodyUsed);
         await assert.throws(() => response.formData());
