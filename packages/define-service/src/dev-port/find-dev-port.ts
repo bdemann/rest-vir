@@ -99,8 +99,8 @@ export type FindPortOptions = Pick<GenericFetchEndpointParams, 'fetch'> &
  * const {origin} = await findDevServicePort(myService);
  * ```
  *
- * @throws Error if no valid starting port can be found or if the max scan distance has been reached
- *   without finding a valid port.
+ * @returns `undefined` if the given service has no port in its service origin.
+ * @throws Error If the max scan distance has been reached without finding a valid port.
  * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
  */
 export async function findDevServicePort(
@@ -115,10 +115,13 @@ export async function findDevServicePort(
         >
     >,
     options: Readonly<Omit<FindPortOptions, 'isValidResponse'>> = {},
-): Promise<{
-    port: number;
-    origin: string;
-}> {
+): Promise<
+    | {
+          port: number;
+          origin: string;
+      }
+    | undefined
+> {
     try {
         const startingOrigin = options.startingOriginOverride || service.serviceOrigin;
 
@@ -127,20 +130,28 @@ export async function findDevServicePort(
             throw new Error(`Service has no endpoints.`);
         }
 
-        const port = await waitUntil.isNumber(
-            () =>
-                findLivePort(startingOrigin, endpoint.path, {
-                    ...options,
-                    isValidResponse(response) {
-                        return (
-                            response.headers.get(restVirServiceNameHeader) === service.serviceName
-                        );
-                    },
-                }),
+        const {port} = await waitUntil.isDefined(
+            async () => {
+                return {
+                    port: await findLivePort(startingOrigin, endpoint.path, {
+                        ...options,
+                        isValidResponse(response) {
+                            return (
+                                response.headers.get(restVirServiceNameHeader) ===
+                                service.serviceName
+                            );
+                        },
+                    }),
+                };
+            },
             {
                 timeout: options.timeout,
             },
         );
+
+        if (!port) {
+            return undefined;
+        }
 
         const {origin} = buildUrl(startingOrigin, {
             port,
@@ -164,8 +175,8 @@ export async function findDevServicePort(
  *
  * @category Internal
  * @category Package : @rest-vir/define-service
- * @throws Error if no valid starting port can be found or if the max scan distance has been reached
- *   without finding a valid port.
+ * @returns `undefined` if the given origin has no port number to start with
+ * @throws Error if the max scan distance has been reached without finding a valid port.
  * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
  */
 export async function findLivePort(
@@ -177,10 +188,10 @@ export async function findLivePort(
         isValidResponse,
         timeout = {seconds: 10},
     }: Readonly<Omit<FindPortOptions, 'overwriteOrigin'>> = {},
-): Promise<number> {
+): Promise<number | undefined> {
     const {port: originalPort} = parseUrl(originWithStartingPort);
     if (!originalPort) {
-        throw new Error(`Given origin doesn't use a port.`);
+        return undefined;
     }
 
     const startingPort = Number(originalPort);
@@ -245,6 +256,7 @@ export async function findLivePort(
  * const mappedService = await mapServiceDevPort(myServiceDefinition);
  * ```
  *
+ * @returns The service unchanged if it does not have a port number in its service origin.
  * @throws Error if no valid starting port can be found or if the max scan distance has been reached
  *   without finding a valid port.
  * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
@@ -253,7 +265,11 @@ export async function mapServiceDevPort<const SpecificService extends ServiceDef
     service: Readonly<SpecificService>,
     options: Readonly<Omit<FindPortOptions, 'isValidResponse'>> = {},
 ): Promise<SpecificService> {
-    const {origin} = await findDevServicePort(service, options);
+    const {origin} = (await findDevServicePort(service, options)) || {};
+
+    if (!origin) {
+        return service;
+    }
 
     return defineService({
         ...service.init,

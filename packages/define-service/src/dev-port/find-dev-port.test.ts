@@ -97,15 +97,13 @@ describe(findDevServicePort.name, () => {
             },
         },
         {
-            it: 'rejects an origin without a port',
+            it: 'ignores an origin without a port',
             input: {
                 origin: 'localhost',
                 workingPort: 3003,
                 maxScanDistance: 1,
             },
-            throws: {
-                matchMessage: "origin doesn't use a port",
-            },
+            expect: [],
         },
         {
             it: 'rejects an invalid port',
@@ -207,5 +205,9 @@ describe(mapServiceDevPort.name, () => {
             startingOriginOverride: 'http://localhost:3000',
         });
         assert.deepEquals(result.serviceOrigin, 'http://localhost:3005');
+    });
+    it('does not map a service without a port number', async () => {
+        const result = await mapServiceDevPort({...mockService, serviceOrigin: 'http://localhost'});
+        assert.deepEquals(result.serviceOrigin, 'http://localhost');
     });
 });
