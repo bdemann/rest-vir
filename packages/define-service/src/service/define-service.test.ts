@@ -166,24 +166,25 @@ describe(defineService.name, () => {
             .tsType(endpointPaths)
             .equals<
                 (
-                    | '/form-data'
+                    | '/array-origin'
+                    | '/async-rejection'
+                    | '/custom-props'
                     | '/empty'
-                    | '/with-search-params'
-                    | '/missing'
+                    | '/form-data'
+                    | '/function-origin'
+                    | '/health'
                     | '/incorrectly-has-response-data'
+                    | '/long-running'
+                    | '/missing'
+                    | '/plain'
                     | '/requires-admin'
+                    | '/requires-origin'
                     | '/returns-error-status'
                     | '/returns-response-error'
                     | '/test'
                     | '/throws-error'
+                    | '/with-search-params'
                     | '/with/:param1/:param2'
-                    | '/plain'
-                    | '/long-running'
-                    | '/function-origin'
-                    | '/custom-props'
-                    | '/array-origin'
-                    | '/health'
-                    | '/requires-origin'
                 )[]
             >();
     });

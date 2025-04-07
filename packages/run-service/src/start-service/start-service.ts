@@ -1,5 +1,5 @@
 import {check} from '@augment-vir/assert';
-import {awaitedForEach, type SelectFrom} from '@augment-vir/common';
+import {awaitedForEach, ensureErrorAndPrependMessage, type SelectFrom} from '@augment-vir/common';
 import {GenericServiceImplementation, ServiceImplementation} from '@rest-vir/implement-service';
 import {ClusterManager, runInCluster, type WorkerRunner} from 'cluster-vir';
 import fastify, {type FastifyInstance, type FastifyPluginCallback} from 'fastify';
@@ -89,6 +89,15 @@ export async function startService(
     userOptions: Readonly<StartServiceUserOptions> = {},
     fastifyPlugins: Readonly<FastifyPlugins> = [],
 ): Promise<StartServiceOutput> {
+    process.on('unhandledRejection', (reason) => {
+        service.logger.error(
+            ensureErrorAndPrependMessage(
+                reason,
+                `Unhandled async rejection in ${service.serviceName}:`,
+            ),
+        );
+    });
+
     const options = finalizeOptions(service.serviceOrigin, userOptions);
 
     const port: number | boolean =

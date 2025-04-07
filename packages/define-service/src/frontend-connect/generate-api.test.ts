@@ -51,24 +51,25 @@ describe(makeMockApi.name, () => {
                 .tsType(endpoint?.path)
                 .equals<
                     | undefined
-                    | '/form-data'
-                    | '/custom-props'
-                    | '/function-origin'
                     | '/array-origin'
-                    | '/health'
-                    | '/test'
-                    | '/plain'
-                    | '/requires-origin'
-                    | '/long-running'
-                    | '/with/:param1/:param2'
+                    | '/async-rejection'
+                    | '/custom-props'
                     | '/empty'
-                    | '/requires-admin'
-                    | '/missing'
+                    | '/form-data'
+                    | '/function-origin'
+                    | '/health'
                     | '/incorrectly-has-response-data'
-                    | '/throws-error'
-                    | '/returns-response-error'
+                    | '/long-running'
+                    | '/missing'
+                    | '/plain'
+                    | '/requires-admin'
+                    | '/requires-origin'
                     | '/returns-error-status'
+                    | '/returns-response-error'
+                    | '/test'
+                    | '/throws-error'
                     | '/with-search-params'
+                    | '/with/:param1/:param2'
                 >();
             return createMockResponse({
                 status: HttpStatus.Ok,

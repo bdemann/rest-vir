@@ -1,6 +1,6 @@
 /* eslint-disable sonarjs/no-commented-code */
 
-import {assert} from '@augment-vir/assert';
+import {assert, waitUntil} from '@augment-vir/assert';
 import {HttpMethod, HttpStatus, mergeDeep} from '@augment-vir/common';
 import {runShellCommand} from '@augment-vir/node';
 import {describe, it} from '@augment-vir/test';
@@ -28,6 +28,15 @@ describe(startService.name, () => {
             const serverMessage = await webSocket.sendAndWaitForReply();
 
             assert.strictEquals(serverMessage, 'ok');
+        });
+        it('handles an async rejection', async ({fetchEndpoint, stderr}) => {
+            const response = await fetchEndpoint(mockService.endpoints['/async-rejection'].path);
+
+            assert.strictEquals(response.status, HttpStatus.Ok);
+
+            await waitUntil.isTrue(() => {
+                return stderr.join('').includes('async crash');
+            });
         });
         it('can be dev port scanned', async ({address}) => {
             const service = await mapServiceDevPort(

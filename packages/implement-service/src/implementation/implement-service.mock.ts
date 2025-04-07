@@ -277,6 +277,18 @@ export const mockServiceImplementation = implementService(
                     responseData: pathParams,
                 };
             },
+            '/async-rejection'() {
+                async function delayedCrash() {
+                    await wait({milliseconds: 200});
+                    throw new Error('ASYNC CRASH');
+                }
+
+                void delayedCrash();
+
+                return {
+                    statusCode: HttpStatus.Ok,
+                };
+            },
         },
     },
 );

@@ -241,5 +241,16 @@ export const mockService = defineService({
                 [HttpMethod.Get]: true,
             },
         },
+        /**
+         * This endpoint will throw an unhandled async rejection which, if not handled correctly
+         * internally, will crash the whole server.
+         */
+        '/async-rejection': {
+            requestDataShape: undefined,
+            responseDataShape: undefined,
+            methods: {
+                [HttpMethod.Get]: true,
+            },
+        },
     },
 });
