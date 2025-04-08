@@ -68,6 +68,7 @@ describe(makeMockApi.name, () => {
                     | '/returns-response-error'
                     | '/test'
                     | '/throws-error'
+                    | '/unknown-response'
                     | '/with-search-params'
                     | '/with/:param1/:param2'
                 >();

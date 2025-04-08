@@ -2,7 +2,7 @@
 /** This is just a mock file. */
 
 import {HttpMethod, wait} from '@augment-vir/common';
-import {exact, indexedKeys, or, tupleShape} from 'object-shape-tester';
+import {exact, indexedKeys, or, tupleShape, unknownShape} from 'object-shape-tester';
 import {formDataShape} from '../util/custom-shapes.js';
 import {AnyOrigin} from '../util/origin.js';
 import {defineService} from './define-service.js';
@@ -251,6 +251,13 @@ export const mockService = defineService({
             methods: {
                 [HttpMethod.Get]: true,
             },
+        },
+        '/unknown-response': {
+            methods: {
+                [HttpMethod.Get]: true,
+            },
+            requestDataShape: undefined,
+            responseDataShape: unknownShape(),
         },
     },
 });

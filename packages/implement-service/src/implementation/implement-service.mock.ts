@@ -289,6 +289,12 @@ export const mockServiceImplementation = implementService(
                     statusCode: HttpStatus.Ok,
                 };
             },
+            '/unknown-response'() {
+                return {
+                    statusCode: HttpStatus.Ok,
+                    responseData: '',
+                };
+            },
         },
     },
 );
