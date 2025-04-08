@@ -1,6 +1,6 @@
 {
     "name": "@rest-vir/mono-root",
-    "version": "0.11.0",
+    "version": "0.11.1",
     "private": true,
     "homepage": "https://github.com/electrovir/rest-vir",
     "bugs": {
@@ -40,7 +40,7 @@
         "@eslint/js": "^9.24.0",
         "@stylistic/eslint-plugin": "^4.2.0",
         "@stylistic/eslint-plugin-ts": "^4.2.0",
-        "@typescript-eslint/eslint-plugin": "^8.29.0",
+        "@typescript-eslint/eslint-plugin": "^8.29.1",
         "cspell": "^8.18.1",
         "dependency-cruiser": "^16.10.1",
         "esbuild": "^0.25.2",
@@ -64,7 +64,7 @@
         "prettier-plugin-packagejson": "^2.5.10",
         "prettier-plugin-sort-json": "^4.1.1",
         "prettier-plugin-toml": "^2.0.4",
-        "typescript-eslint": "^8.29.0",
+        "typescript-eslint": "^8.29.1",
         "virmator": "^13.13.5"
     },
     "engines": {

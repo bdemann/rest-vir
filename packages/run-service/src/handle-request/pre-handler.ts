@@ -22,7 +22,8 @@ import {
     ServerRequest,
     ServerResponse,
 } from '@rest-vir/implement-service';
-import type {IncomingHttpHeaders} from 'node:http';
+import {type FastifyReply} from 'fastify';
+import {type IncomingHttpHeaders} from 'node:http';
 import {assertValidShape, isValidShape} from 'object-shape-tester';
 import {handleHandlerResult} from './endpoint-handler.js';
 import {handleCors} from './handle-cors.js';
@@ -54,14 +55,14 @@ export async function preHandler(
         >
     >,
     attachId: string,
-) {
+): Promise<FastifyReply | undefined> {
     response.header(restVirServiceNameHeader, service.serviceName);
 
     const pathMatch = matchUrlToService(service, request.originalUrl);
 
     if (!pathMatch) {
         /** Nothing to do. */
-        return;
+        return undefined;
     }
 
     const endpointDefinition = pathMatch.endpointPath
@@ -75,7 +76,7 @@ export async function preHandler(
     const route = endpointDefinition || webSocketDefinition;
 
     if (!route) {
-        return;
+        return undefined;
     }
 
     const protocols = webSocketDefinition
@@ -105,26 +106,27 @@ export async function preHandler(
 
         response.statusCode = HttpStatus.BadRequest;
         response.send('Invalid protocols.');
-        return;
+        return undefined;
     }
 
-    if (
+    const subHandlerResponse =
         handleHandlerResult(
             await handleCors({
                 request,
                 route,
             }),
             response,
-        ).responseSent ||
+        ) ||
         handleHandlerResult(
             handleRequestMethod({
                 request,
                 route,
             }),
             response,
-        ).responseSent
-    ) {
-        return;
+        );
+
+    if (subHandlerResponse) {
+        return subHandlerResponse;
     }
 
     const requestData = wrapInTry(() => extractRequestData(request.body, request.headers, route));
@@ -138,7 +140,7 @@ export async function preHandler(
         );
         response.statusCode = HttpStatus.BadRequest;
         response.send('Invalid body.');
-        return;
+        return undefined;
     }
 
     const contextParams: ContextInitParameters = {
@@ -155,8 +157,7 @@ export async function preHandler(
     const searchParams = handleSearchParams({request, route});
 
     if (!('data' in searchParams)) {
-        handleHandlerResult(searchParams, response);
-        return;
+        return handleHandlerResult(searchParams, response);
     }
 
     try {
@@ -169,7 +170,7 @@ export async function preHandler(
                     `Context creation rejected: '${request.originalUrl}'`,
                 ),
             );
-            handleHandlerResult(
+            return handleHandlerResult(
                 {
                     body: contextOutput.reject.responseErrorMessage,
                     statusCode: contextOutput.reject.statusCode,
@@ -177,7 +178,6 @@ export async function preHandler(
                 },
                 response,
             );
-            return;
         }
 
         if (!request.restVirContext) {
@@ -190,6 +190,8 @@ export async function preHandler(
             protocols,
             searchParams: searchParams.data,
         };
+
+        return undefined;
     } catch (error) {
         throw ensureErrorAndPrependMessage(error, 'Failed to generate request context.');
     }

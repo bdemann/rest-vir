@@ -34,7 +34,7 @@ export async function handleWebSocketRequest(
         implementedWebSocket: Readonly<ImplementedWebSocket>;
         webSocket: WsWebSocket;
     }>,
-) {
+): Promise<void> {
     const restVirContext = request.restVirContext?.[attachId];
 
     assert.isDefined(restVirContext, 'restVirContext is not defined');

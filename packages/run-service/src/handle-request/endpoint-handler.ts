@@ -7,6 +7,7 @@ import {
     type ImplementedEndpoint,
     type ImplementedWebSocket,
 } from '@rest-vir/implement-service';
+import type {FastifyReply} from 'fastify';
 import {OutgoingHttpHeaders} from 'node:http';
 import {setResponseHeaders} from '../util/headers.js';
 
@@ -91,7 +92,7 @@ export type EndpointHandler = (
 export function handleHandlerResult(
     result: Readonly<HandledOutput>,
     response: ServerResponse,
-): {responseSent: boolean} {
+): undefined | FastifyReply {
     if (result?.headers) {
         setResponseHeaders(response, result.headers);
     }
@@ -100,17 +101,11 @@ export function handleHandlerResult(
         response.statusCode = result.statusCode;
 
         if (result.body) {
-            response.send(result.body);
+            return response.send(result.body);
         } else {
-            response.send();
+            return response.send();
         }
-
-        return {
-            responseSent: true,
-        };
     }
 
-    return {
-        responseSent: false,
-    };
+    return undefined;
 }

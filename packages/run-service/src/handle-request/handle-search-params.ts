@@ -53,7 +53,9 @@ export function handleSearchParams({
            */
           statusCode: HttpStatusByCategory<ErrorHttpStatusCategories>;
       }
-    | {data: BaseSearchParams} {
+    | {
+          data: BaseSearchParams;
+      } {
     const searchParams = parseUrl(request.originalUrl).searchParams;
     const shape = route.searchParamsShape as undefined | ShapeDefinition<any, boolean>;
 

@@ -114,7 +114,7 @@ export async function attachService(
 
         server.addHook('preValidation', async (request, response) => {
             try {
-                await preHandler(request, response, service, attachId);
+                return await preHandler(request, response, service, attachId);
             } catch (error) {
                 service.logger.error(ensureError(error));
                 if (options.throwErrorsForExternalHandling) {
@@ -139,8 +139,8 @@ export async function attachService(
                 server.route({
                     method: endpointFastifyMethods,
                     url: path,
-                    async handler(request, response) {
-                        await handleRoute(
+                    handler(request, response) {
+                        return handleRoute(
                             undefined,
                             request,
                             response,
@@ -153,8 +153,8 @@ export async function attachService(
                 server.route({
                     method: HttpMethod.Get,
                     url: path,
-                    async handler(request, response) {
-                        await handleRoute(
+                    handler(request, response) {
+                        return handleRoute(
                             undefined,
                             request,
                             response,
@@ -163,8 +163,8 @@ export async function attachService(
                             options,
                         );
                     },
-                    async wsHandler(webSocket, request) {
-                        await handleRoute(
+                    wsHandler(webSocket, request) {
+                        return handleRoute(
                             webSocket,
                             request,
                             undefined,
@@ -181,8 +181,8 @@ export async function attachService(
                         HttpMethod.Get,
                     ],
                     url: path,
-                    async handler(request, response) {
-                        await handleRoute(
+                    handler(request, response) {
+                        return handleRoute(
                             undefined,
                             request,
                             response,
@@ -197,10 +197,10 @@ export async function attachService(
                     method: HttpMethod.Get,
                     url: path,
                     handler(request, response) {
-                        response.status(HttpStatus.NotFound).send();
+                        return response.status(HttpStatus.NotFound).send();
                     },
-                    async wsHandler(webSocket, request) {
-                        await handleRoute(
+                    wsHandler(webSocket, request) {
+                        return handleRoute(
                             webSocket,
                             request,
                             undefined,

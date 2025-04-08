@@ -52,20 +52,20 @@ export async function handleRoute(
                 attachId,
             });
 
-            if (handleHandlerResult(result, response).responseSent) {
-                return;
+            const sentResponse = handleHandlerResult(result, response);
+
+            if (sentResponse) {
+                return sentResponse;
             }
         } else if (route.isWebSocket as boolean) {
             assert.isDefined(webSocket);
 
-            await handleWebSocketRequest({
+            return await handleWebSocketRequest({
                 request,
                 implementedWebSocket: route,
                 webSocket,
                 attachId,
             });
-
-            return;
         }
 
         /* node:coverage ignore next: this can't actually be triggered but it should be covered as a potential future edge case. */
