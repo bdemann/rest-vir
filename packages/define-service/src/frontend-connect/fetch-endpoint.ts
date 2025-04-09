@@ -13,6 +13,7 @@ import {
 import {assertValidShape} from 'object-shape-tester';
 import {type IsEqual, type IsNever} from 'type-fest';
 import {buildUrl} from 'url-vir';
+import {parseJsonWithUndefined} from '../augments/json.js';
 import {type PathParams} from '../endpoint/endpoint-path.js';
 import {
     EndpointExecutorData,
@@ -344,7 +345,9 @@ export async function fetchEndpoint<
     );
 
     if (response.ok) {
-        const responseData = endpoint.responseDataShape ? await response.json() : undefined;
+        const responseData = endpoint.responseDataShape
+            ? parseJsonWithUndefined(await response.text())
+            : undefined;
 
         if (endpoint.responseDataShape) {
             assertValidShape(responseData, endpoint.responseDataShape, {allowExtraKeys: true});
