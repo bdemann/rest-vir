@@ -54,6 +54,7 @@ describe(makeMockApi.name, () => {
                     | '/array-origin'
                     | '/async-rejection'
                     | '/custom-props'
+                    | '/empty-string-response'
                     | '/empty'
                     | '/form-data'
                     | '/function-origin'

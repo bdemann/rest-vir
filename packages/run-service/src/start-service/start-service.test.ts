@@ -128,6 +128,16 @@ describe(startService.name, () => {
                 HttpStatus.InternalServerError,
             );
         });
+        it('allows empty string response shape', async ({fetchEndpoint}) => {
+            const output = await fetchEndpoint(
+                mockService.endpoints['/empty-string-response'].path,
+                {
+                    method: HttpMethod.Get,
+                },
+            );
+            assert.strictEquals(output.status, HttpStatus.Ok);
+            assert.strictEquals(await output.text(), '');
+        });
         it('rejects an unexpected method', async ({fetchEndpoint}) => {
             assert.strictEquals(
                 (

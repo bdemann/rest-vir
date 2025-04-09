@@ -142,6 +142,12 @@ export const mockServiceImplementation = implementService(
             },
         },
         endpoints: {
+            '/empty-string-response'() {
+                return {
+                    statusCode: HttpStatus.Ok,
+                    responseData: '',
+                };
+            },
             '/form-data'() {
                 return {
                     statusCode: HttpStatus.Ok,

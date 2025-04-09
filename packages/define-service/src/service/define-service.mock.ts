@@ -259,5 +259,12 @@ export const mockService = defineService({
             requestDataShape: undefined,
             responseDataShape: unknownShape(),
         },
+        '/empty-string-response': {
+            methods: {
+                [HttpMethod.Get]: true,
+            },
+            requestDataShape: undefined,
+            responseDataShape: '',
+        },
     },
 });

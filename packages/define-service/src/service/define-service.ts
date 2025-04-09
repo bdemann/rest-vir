@@ -66,12 +66,14 @@ function finalizeServiceDefinition<
             assertValidShape({searchParamsShape: undefined, ...endpointInit}, endpointInitShape);
             const endpoint = {
                 ...endpointInit,
-                requestDataShape: endpointInit.requestDataShape
-                    ? defineShape<any, true>(endpointInit.requestDataShape, true)
-                    : undefined,
-                responseDataShape: endpointInit.responseDataShape
-                    ? defineShape<any, true>(endpointInit.responseDataShape, true)
-                    : undefined,
+                requestDataShape:
+                    endpointInit.requestDataShape == undefined
+                        ? undefined
+                        : defineShape<any, true>(endpointInit.requestDataShape, true),
+                responseDataShape:
+                    endpointInit.responseDataShape == undefined
+                        ? undefined
+                        : defineShape<any, true>(endpointInit.responseDataShape, true),
 
                 path: endpointPath,
                 service: minimalService,
