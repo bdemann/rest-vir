@@ -71,7 +71,7 @@ export async function handleEndpointRequest(
                 headers: endpointResult.headers,
             };
         } else if (endpointResult.responseData) {
-            if (!endpoint.responseDataShape) {
+            if (endpoint.responseDataShape == undefined) {
                 throw new RestVirHandlerError(endpoint, 'Got response data but none was expected.');
             }
 

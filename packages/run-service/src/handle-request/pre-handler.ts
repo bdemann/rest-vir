@@ -217,7 +217,7 @@ function extractRequestData(
 ): unknown {
     const dataShape = 'requestDataShape' in route ? route.requestDataShape : undefined;
 
-    if (!dataShape) {
+    if (dataShape == undefined) {
         if (body) {
             throw new Error(`Did not expect any request data but received it.`);
         } else {
