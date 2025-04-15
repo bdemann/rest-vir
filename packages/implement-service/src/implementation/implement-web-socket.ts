@@ -21,6 +21,7 @@ import {type IncomingHttpHeaders} from 'node:http';
 import {type IsEqual} from 'type-fest';
 import {type ServerRequest, type ServerWebSocket} from '../util/data.js';
 import {type ServiceLogger} from '../util/service-logger.js';
+import {type RunningServerInfo} from './implement-endpoint.js';
 
 /**
  * A WebSocket implementation, with callbacks for WebSocket events.
@@ -101,6 +102,8 @@ export type WebSocketImplementationParams<
     searchParams: SpecificWebSocket extends NoParam
         ? BaseSearchParams
         : Exclude<SpecificWebSocket, NoParam>['SearchParamsType'];
+    /** The actual running server info. */
+    server: RunningServerInfo;
 } & (IsEqual<WithMessage, true> extends true
     ? {
           message: SpecificWebSocket extends NoParam

@@ -19,6 +19,7 @@ import {
     GenericServiceImplementation,
     HttpMethod,
     RestVirHandlerError,
+    RunningServerInfo,
     ServerRequest,
     ServerResponse,
 } from '@rest-vir/implement-service';
@@ -54,6 +55,7 @@ export async function preHandler(
             }
         >
     >,
+    server: Readonly<RunningServerInfo>,
     attachId: string,
 ): Promise<FastifyReply | undefined> {
     response.header(restVirServiceNameHeader, service.serviceName);
@@ -152,6 +154,7 @@ export async function preHandler(
         service,
         endpointDefinition: endpointDefinition,
         webSocketDefinition: webSocketDefinition,
+        server,
     };
 
     const searchParams = handleSearchParams({request, route});

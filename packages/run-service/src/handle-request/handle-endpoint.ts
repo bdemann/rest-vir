@@ -7,6 +7,7 @@ import {
     HttpMethod,
     ImplementedEndpoint,
     RestVirHandlerError,
+    type RunningServerInfo,
 } from '@rest-vir/implement-service';
 import {assertValidShape} from 'object-shape-tester';
 import {EndpointHandlerParams, type HandledOutput} from './endpoint-handler.js';
@@ -25,10 +26,12 @@ export async function handleEndpointRequest(
         request,
         response,
         attachId,
+        server,
     }: Readonly<
         Omit<EndpointHandlerParams, 'route'> & {
             attachId: string;
             endpoint: Readonly<ImplementedEndpoint>;
+            server: Readonly<RunningServerInfo>;
         }
     >,
 ): Promise<HandledOutput> {
@@ -52,6 +55,7 @@ export async function handleEndpointRequest(
             log: endpoint.service.logger,
             context,
             searchParams,
+            server,
         };
 
         const endpointResult = (await endpoint.implementation(

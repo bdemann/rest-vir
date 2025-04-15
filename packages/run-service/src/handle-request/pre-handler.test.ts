@@ -28,6 +28,9 @@ describe(preHandler.name, () => {
                 webSockets: {},
                 logger: defaultServiceLogger,
             },
+            {
+                serviceOrigin: '',
+            },
             '',
         );
     });

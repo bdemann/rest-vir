@@ -1,3 +1,4 @@
+import {check} from '@augment-vir/assert';
 import {
     ensureError,
     extractErrorMessage,
@@ -9,13 +10,15 @@ import {
     SelectFrom,
 } from '@augment-vir/common';
 import fastifyWs from '@fastify/websocket';
-import type {BaseSearchParams} from '@rest-vir/define-service';
+import type {BaseSearchParams, MinimalService} from '@rest-vir/define-service';
 import {
     GenericServiceImplementation,
     RestVirHandlerError,
     ServiceImplementation,
+    type RunningServerInfo,
 } from '@rest-vir/implement-service';
 import {type FastifyInstance} from 'fastify';
+import {buildUrl, parseUrl} from 'url-vir';
 import {HandleRouteOptions} from '../handle-request/endpoint-handler.js';
 import {handleRoute} from '../handle-request/handle-route.js';
 import {preHandler} from '../handle-request/pre-handler.js';
@@ -114,7 +117,13 @@ export async function attachService(
 
         server.addHook('preValidation', async (request, response) => {
             try {
-                return await preHandler(request, response, service, attachId);
+                return await preHandler(
+                    request,
+                    response,
+                    service,
+                    extractRunningServerInfo(service, server),
+                    attachId,
+                );
             } catch (error) {
                 service.logger.error(ensureError(error));
                 if (options.throwErrorsForExternalHandling) {
@@ -146,6 +155,7 @@ export async function attachService(
                             response,
                             endpoint,
                             attachId,
+                            extractRunningServerInfo(service, server),
                             options,
                         );
                     },
@@ -160,6 +170,7 @@ export async function attachService(
                             response,
                             endpoint,
                             attachId,
+                            extractRunningServerInfo(service, server),
                             options,
                         );
                     },
@@ -170,6 +181,7 @@ export async function attachService(
                             undefined,
                             webSocketDefinition,
                             attachId,
+                            extractRunningServerInfo(service, server),
                             options,
                         );
                     },
@@ -188,6 +200,7 @@ export async function attachService(
                             response,
                             endpoint,
                             attachId,
+                            extractRunningServerInfo(service, server),
                             options,
                         );
                     },
@@ -206,6 +219,7 @@ export async function attachService(
                             undefined,
                             webSocketDefinition,
                             attachId,
+                            extractRunningServerInfo(service, server),
                             options,
                         );
                     },
@@ -217,5 +231,42 @@ export async function attachService(
     } catch (error) {
         service.logger.error(ensureError(error));
         throw error;
+    }
+}
+
+/**
+ * Merge the running Fastify server's port with the given service's origin port (if it has a port).
+ *
+ * @category Internal
+ */
+export function extractRunningServerInfo(
+    service: Readonly<Pick<MinimalService, 'serviceOrigin'>>,
+    fastify: Readonly<
+        SelectFrom<
+            FastifyInstance,
+            {
+                server: {
+                    address: true;
+                };
+            }
+        >
+    >,
+): RunningServerInfo {
+    const address = fastify.server.address();
+
+    const {port: originalPort} = parseUrl(service.serviceOrigin);
+
+    if (!originalPort || check.isString(address) || !address) {
+        return {
+            serviceOrigin: service.serviceOrigin,
+        };
+    } else {
+        const {origin} = buildUrl(service.serviceOrigin, {
+            port: address.port,
+        });
+
+        return {
+            serviceOrigin: origin,
+        };
     }
 }

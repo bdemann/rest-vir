@@ -9,6 +9,7 @@ import {
     ImplementedWebSocket,
     RestVirHandlerError,
     ServerRequest,
+    type RunningServerInfo,
     type WebSocketImplementationParams,
 } from '@rest-vir/implement-service';
 import {assertValidShape} from 'object-shape-tester';
@@ -28,11 +29,13 @@ export async function handleWebSocketRequest(
         request,
         implementedWebSocket,
         webSocket: wsWebSocket,
+        server,
     }: Readonly<{
         request: ServerRequest;
         attachId: string;
         implementedWebSocket: Readonly<ImplementedWebSocket>;
         webSocket: WsWebSocket;
+        server: Readonly<RunningServerInfo>;
     }>,
 ): Promise<void> {
     const restVirContext = request.restVirContext?.[attachId];
@@ -55,6 +58,7 @@ export async function handleWebSocketRequest(
         webSocket,
         protocols: restVirContext.protocols,
         searchParams: restVirContext.searchParams,
+        server,
     };
 
     if (implementedWebSocket.implementation.close) {

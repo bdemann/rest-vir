@@ -13,7 +13,7 @@ import {
 import {type IncomingHttpHeaders} from 'node:http';
 import {type RequireExactlyOne} from 'type-fest';
 import {type ServerRequest, type ServerResponse} from '../util/data.js';
-import {EndpointImplementationErrorOutput} from './implement-endpoint.js';
+import {EndpointImplementationErrorOutput, type RunningServerInfo} from './implement-endpoint.js';
 
 /**
  * User-defined service implementation Context generator.
@@ -65,6 +65,8 @@ export type ContextInitParameters<
 
     request: ServerRequest;
     response: ServerResponse;
+    /** The actual running server info. */
+    server: RunningServerInfo;
 
     endpointDefinition?:
         | (EndpointsInit extends NoParam

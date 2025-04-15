@@ -113,6 +113,19 @@ export type EndpointImplementationParams<
     searchParams: SpecificEndpoint extends NoParam
         ? BaseSearchParams
         : Exclude<SpecificEndpoint, NoParam>['SearchParamsType'];
+    /** The actual running server info. */
+    server: RunningServerInfo;
+};
+
+/**
+ * Information passed to an endpoint or WebSocket about the currently running server.
+ *
+ * @category Internal
+ * @category Package : @rest-vir/implement-service
+ * @package [`@rest-vir/implement-service`](https://www.npmjs.com/package/@rest-vir/implement-service)
+ */
+export type RunningServerInfo = {
+    serviceOrigin: string;
 };
 
 /**
@@ -136,6 +149,8 @@ export type GenericEndpointImplementationParams = {
     request: ServerRequest;
     response: ServerResponse;
     log: Readonly<ServiceLogger>;
+    /** The actual running server info. */
+    server: RunningServerInfo;
 };
 
 /**

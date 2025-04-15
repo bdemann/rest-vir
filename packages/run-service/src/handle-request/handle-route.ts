@@ -2,10 +2,11 @@ import {assert, check} from '@augment-vir/assert';
 import {ensureError, HttpStatus} from '@augment-vir/common';
 import {
     ImplementedEndpoint,
+    ImplementedWebSocket,
     RestVirHandlerError,
+    RunningServerInfo,
     ServerRequest,
     ServerResponse,
-    type ImplementedWebSocket,
 } from '@rest-vir/implement-service';
 import cluster from 'node:cluster';
 import {type WebSocket as WsWebSocket} from 'ws';
@@ -28,6 +29,7 @@ export async function handleRoute(
     response: ServerResponse | undefined,
     route: Readonly<ImplementedEndpoint | ImplementedWebSocket>,
     attachId: string,
+    server: Readonly<RunningServerInfo>,
     options: Readonly<Pick<HandleRouteOptions, 'throwErrorsForExternalHandling'>> = {},
 ) {
     try {
@@ -50,6 +52,7 @@ export async function handleRoute(
                 response,
                 endpoint: route,
                 attachId,
+                server,
             });
 
             const sentResponse = handleHandlerResult(result, response);
@@ -65,6 +68,7 @@ export async function handleRoute(
                 implementedWebSocket: route,
                 webSocket,
                 attachId,
+                server,
             });
         }
 
