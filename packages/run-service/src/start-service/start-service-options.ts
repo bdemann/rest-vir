@@ -26,7 +26,9 @@ export const startServiceOptionsShape = defineShape({
      * If this property is set to `false`, no port will be listened to (so you can manually do that
      * later if you wish).
      *
-     * @default 3000
+     * @default
+     * // the service definition's port or
+     * 3000
      */
     port: 3000,
     /**
