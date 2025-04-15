@@ -61,6 +61,7 @@ describe(makeMockApi.name, () => {
                     | '/health'
                     | '/incorrectly-has-response-data'
                     | '/long-running'
+                    | '/missing-status-code'
                     | '/missing'
                     | '/plain'
                     | '/requires-admin'

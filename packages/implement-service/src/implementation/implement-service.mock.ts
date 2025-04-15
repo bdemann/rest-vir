@@ -301,6 +301,12 @@ export const mockServiceImplementation = implementService(
                     responseData: '',
                 };
             },
+            // @ts-expect-error: intentionally incorrect return type
+            '/missing-status-code'() {
+                return {
+                    statuscode: HttpStatus.Unauthorized,
+                };
+            },
         },
     },
 );

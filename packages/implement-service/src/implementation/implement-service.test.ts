@@ -148,6 +148,36 @@ describe(implementService.name, () => {
             ),
         );
     });
+    it('blocks endpoint with incorrect status code return', () => {
+        implementService(
+            {
+                service: defineService({
+                    endpoints: {
+                        '/test': {
+                            methods: {
+                                GET: true,
+                            },
+                            requestDataShape: undefined,
+                            responseDataShape: undefined,
+                        },
+                    },
+                    requiredClientOrigin: AnyOrigin,
+                    serviceName: 'test',
+                    serviceOrigin: '',
+                }),
+            },
+            {
+                endpoints: {
+                    // @ts-expect-error: this endpoint does not return a status code
+                    '/test'() {
+                        return {
+                            statuscode: HttpStatus.Unauthorized,
+                        };
+                    },
+                },
+            },
+        );
+    });
     it('does not require response data output when it is undefined', () => {
         implementService(
             {

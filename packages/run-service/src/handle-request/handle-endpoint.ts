@@ -62,6 +62,11 @@ export async function handleEndpointRequest(
             endpointParams,
         )) as EndpointImplementationOutput;
 
+        /** If the dev forgets to set a status code. */
+        if (!(endpointResult.statusCode as any)) {
+            throw new RestVirHandlerError(endpoint, 'Missing response status code.');
+        }
+
         if (isErrorHttpStatus(endpointResult.statusCode)) {
             endpoint.service.logger.error(
                 new RestVirHandlerError(

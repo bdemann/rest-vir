@@ -266,5 +266,12 @@ export const mockService = defineService({
             requestDataShape: undefined,
             responseDataShape: '',
         },
+        '/missing-status-code': {
+            methods: {
+                [HttpMethod.Get]: true,
+            },
+            requestDataShape: undefined,
+            responseDataShape: undefined,
+        },
     },
 });

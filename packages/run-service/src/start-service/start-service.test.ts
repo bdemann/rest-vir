@@ -128,6 +128,16 @@ describe(startService.name, () => {
                 HttpStatus.InternalServerError,
             );
         });
+        it('errors on invalid status code', async ({fetchEndpoint}) => {
+            assert.strictEquals(
+                (
+                    await fetchEndpoint(mockService.endpoints['/missing-status-code'].path, {
+                        method: HttpMethod.Get,
+                    })
+                ).status,
+                HttpStatus.InternalServerError,
+            );
+        });
         it('allows empty string response shape', async ({fetchEndpoint}) => {
             const output = await fetchEndpoint(
                 mockService.endpoints['/empty-string-response'].path,
