@@ -52,6 +52,7 @@ export type CustomErrorHandler = (error: Error) => MaybePromise<void>;
  * @package [`@rest-vir/implement-service`](https://www.npmjs.com/package/@rest-vir/implement-service)
  */
 export type ServiceImplementationInit<
+    Context,
     ServiceName extends string,
     EndpointsInit extends BaseServiceEndpointsInit,
     WebSocketsInit extends BaseServiceWebSocketsInit,
@@ -65,7 +66,25 @@ export type ServiceImplementationInit<
      * keys will fallback to the efault logger.
      */
     logger?: ServiceLoggerOption;
-};
+} & (IsEqual<Context, undefined> extends true
+    ? {
+          createContext?:
+              | undefined
+              | ContextInit<
+                    Context,
+                    NoInfer<ServiceName>,
+                    NoInfer<EndpointsInit>,
+                    NoInfer<WebSocketsInit>
+                >;
+      }
+    : {
+          createContext: ContextInit<
+              Context,
+              NoInfer<ServiceName>,
+              NoInfer<EndpointsInit>,
+              NoInfer<WebSocketsInit>
+          >;
+      });
 
 /**
  * Parameters for implementations for {@link implementService}.
@@ -106,7 +125,7 @@ export type ServiceImplementationsParams<
  * Creates an implemented service that is fully ready to be run as a server by attaching endpoint
  * implementations to the given {@link ServiceDefinition}.
  *
- * This can _only_ be run in backend code.
+ * This should _only_ be run in backend code.
  *
  * @category Implement Service
  * @category Package : @rest-vir/implement-service
@@ -116,120 +135,105 @@ export function implementService<
     const ServiceName extends string,
     const EndpointsInit extends BaseServiceEndpointsInit,
     const WebSocketsInit extends BaseServiceWebSocketsInit,
-    const Context = NoParam,
+    Context = undefined,
 >(
     /** Init must be first so that TypeScript can infer the type for `Context`. */
     {
         service,
+        createContext,
         logger,
         customHeaders,
-    }: ServiceImplementationInit<ServiceName, EndpointsInit, WebSocketsInit>,
-    createContext: IsEqual<NoInfer<Context>, undefined> extends true
-        ?
-              | undefined
-              | ContextInit<
-                    Context,
-                    NoInfer<ServiceName>,
-                    NoInfer<EndpointsInit>,
-                    NoInfer<WebSocketsInit>
-                >
-        : IsEqual<NoInfer<Context>, NoParam> extends true
-          ?
-                | undefined
-                | ContextInit<
-                      Context,
-                      NoInfer<ServiceName>,
-                      NoInfer<EndpointsInit>,
-                      NoInfer<WebSocketsInit>
-                  >
-          : ContextInit<
-                Context,
-                NoInfer<ServiceName>,
-                NoInfer<EndpointsInit>,
-                NoInfer<WebSocketsInit>
-            >,
-    {
-        endpoints: endpointImplementations,
-        webSockets: webSocketImplementations,
-    }: ServiceImplementationsParams<
+    }: ServiceImplementationInit<Context, ServiceName, EndpointsInit, WebSocketsInit>,
+): (
+    implementations: ServiceImplementationsParams<
         NoInfer<Context>,
         NoInfer<ServiceName>,
         NoInfer<EndpointsInit>,
         NoInfer<WebSocketsInit>
     >,
-): ServiceImplementation<NoInfer<Context>, ServiceName, EndpointsInit, WebSocketsInit> {
-    assertValidEndpointImplementations(service, endpointImplementations || {});
-    assertValidWebSocketImplementations(service, webSocketImplementations || {});
+) => ServiceImplementation<NoInfer<Context>, ServiceName, EndpointsInit, WebSocketsInit> {
+    return ({endpoints: endpointImplementations, webSockets: webSocketImplementations}) => {
+        assertValidEndpointImplementations(service, endpointImplementations || {});
+        assertValidWebSocketImplementations(service, webSocketImplementations || {});
 
-    const endpoints = mapObjectValues(service.endpoints, (endpointPath, endpoint) => {
-        const implementation = endpointImplementations?.[endpointPath as EndpointPathBase];
-
-        assert.isDefined(implementation);
-        assert.isNotString(implementation);
-
-        /**
-         * Note: this return object is actually wrong. The service property will not be correct as
-         * the `endpoint` here only has the minimal service. Below, after `serviceImplementation` is
-         * created, we attach the correct service to all endpoints.
-         */
-        return {
-            ...(endpoint as EndpointDefinition),
-            implementation,
-        } satisfies Omit<ImplementedEndpoint, 'service'>;
-    }) as AnyObject as ServiceImplementation<
-        Context,
-        ServiceName,
-        EndpointsInit,
-        WebSocketsInit
-    >['endpoints'];
-
-    const webSockets = mapObjectValues(
-        service.webSockets,
-        (webSocketPath, webSocketImplementation) => {
-            const implementation = webSocketImplementations?.[webSocketPath as EndpointPathBase];
+        const endpoints = mapObjectValues(service.endpoints, (endpointPath, endpoint) => {
+            const implementation = endpointImplementations?.[endpointPath as EndpointPathBase];
 
             assert.isDefined(implementation);
-            assert.isNotString(webSocketImplementation);
+            assert.isNotString(implementation);
 
             /**
              * Note: this return object is actually wrong. The service property will not be correct
-             * as the WebSocket here only has the minimal service. Below, after
-             * `serviceImplementation` is created, we attach the correct service to all WebSockets.
+             * as the `endpoint` here only has the minimal service. Below, after
+             * `serviceImplementation` is created, we attach the correct service to all endpoints.
              */
             return {
-                ...(webSocketImplementation as WebSocketDefinition),
+                ...(endpoint as EndpointDefinition),
                 implementation,
-            } satisfies Omit<ImplementedWebSocket, 'service'>;
-        },
-    ) as AnyObject as ServiceImplementation<
-        Context,
-        ServiceName,
-        EndpointsInit,
-        WebSocketsInit
-    >['webSockets'];
+            } satisfies Omit<ImplementedEndpoint, 'service'>;
+        }) as AnyObject as ServiceImplementation<
+            Context,
+            ServiceName,
+            EndpointsInit,
+            WebSocketsInit
+        >['endpoints'];
 
-    const serviceImplementation: ServiceImplementation<
-        Context,
-        ServiceName,
-        EndpointsInit,
-        WebSocketsInit
-    > = {
-        ...service,
-        customHeaders: customHeaders || [],
-        endpoints,
-        webSockets,
-        createContext,
-        logger: createServiceLogger(logger),
+        const webSockets = mapObjectValues(
+            service.webSockets,
+            (webSocketPath, webSocketImplementation) => {
+                const implementation =
+                    webSocketImplementations?.[webSocketPath as EndpointPathBase];
+
+                assert.isDefined(implementation);
+                assert.isNotString(webSocketImplementation);
+
+                /**
+                 * Note: this return object is actually wrong. The service property will not be
+                 * correct as the WebSocket here only has the minimal service. Below, after
+                 * `serviceImplementation` is created, we attach the correct service to all
+                 * WebSockets.
+                 */
+                return {
+                    ...(webSocketImplementation as WebSocketDefinition),
+                    implementation,
+                } satisfies Omit<ImplementedWebSocket, 'service'>;
+            },
+        ) as AnyObject as ServiceImplementation<
+            Context,
+            ServiceName,
+            EndpointsInit,
+            WebSocketsInit
+        >['webSockets'];
+
+        const serviceImplementation = {
+            ...service,
+            customHeaders: customHeaders || [],
+            endpoints,
+            webSockets,
+            createContext,
+            logger: createServiceLogger(logger),
+        } satisfies Omit<
+            ServiceImplementation<Context, ServiceName, EndpointsInit, WebSocketsInit>,
+            'ContextType'
+        > as ServiceImplementation<Context, ServiceName, EndpointsInit, WebSocketsInit>;
+        Object.defineProperties(serviceImplementation, {
+            ContextType: {
+                enumerable: false,
+                get(): any {
+                    throw new Error('.ContextType should not be used as a value.');
+                },
+            },
+        });
+
+        Object.values(endpoints).forEach((endpoint) => {
+            endpoint.service = serviceImplementation;
+        });
+        Object.values(webSockets).forEach((webSocket) => {
+            webSocket.service = serviceImplementation;
+        });
+
+        return serviceImplementation;
     };
-
-    Object.values(endpoints).forEach((endpoint) => {
-        endpoint.service = serviceImplementation;
-    });
-    Object.values(webSockets).forEach((webSocket) => {
-        webSocket.service = serviceImplementation;
-    });
-
-    return serviceImplementation;
 }
 
 /**
@@ -240,7 +244,7 @@ export function implementService<
  * @package [`@rest-vir/implement-service`](https://www.npmjs.com/package/@rest-vir/implement-service)
  */
 export type ServiceImplementation<
-    Context = any,
+    Context = undefined,
     ServiceName extends string = any,
     EndpointsInit extends BaseServiceEndpointsInit | NoParam = NoParam,
     WebSocketsInit extends BaseServiceWebSocketsInit | NoParam = NoParam,
@@ -282,6 +286,7 @@ export type ServiceImplementation<
               >
             : never;
     };
+    ContextType: Context;
     createContext: ContextInit<Context, ServiceName, EndpointsInit, WebSocketsInit> | undefined;
     logger: ServiceLogger;
     customHeaders: string[];

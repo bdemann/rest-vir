@@ -35,37 +35,35 @@ describeService({service: mockServiceImplementation}, ({fetchEndpoint}) => {
     });
 });
 
-const plainService = implementService(
-    {
-        service: defineService({
-            webSockets: {
-                '/socket': {
-                    messageFromClientShape: exact('from client'),
-                    messageFromHostShape: exact('from server'),
-                },
+const plainService = implementService({
+    service: defineService({
+        webSockets: {
+            '/socket': {
+                messageFromClientShape: exact('from client'),
+                messageFromHostShape: exact('from server'),
             },
-            endpoints: {
-                '/health': {
-                    methods: {
-                        [HttpMethod.Get]: true,
-                    },
-                    requestDataShape: undefined,
-                    responseDataShape: undefined,
+        },
+        endpoints: {
+            '/health': {
+                methods: {
+                    [HttpMethod.Get]: true,
                 },
-                '/internal-error': {
-                    methods: {
-                        [HttpMethod.Get]: true,
-                    },
-                    requestDataShape: undefined,
-                    responseDataShape: undefined,
-                },
+                requestDataShape: undefined,
+                responseDataShape: undefined,
             },
-            requiredClientOrigin: AnyOrigin,
-            serviceName: 'plain service',
-            serviceOrigin: 'https://example.com',
-        }),
-    },
-    ({requestHeaders}) => {
+            '/internal-error': {
+                methods: {
+                    [HttpMethod.Get]: true,
+                },
+                requestDataShape: undefined,
+                responseDataShape: undefined,
+            },
+        },
+        requiredClientOrigin: AnyOrigin,
+        serviceName: 'plain service',
+        serviceOrigin: 'https://example.com',
+    }),
+    createContext({requestHeaders}) {
         if (requestHeaders.authorization === 'reject') {
             throw new Error('context failed');
         }
@@ -74,29 +72,28 @@ const plainService = implementService(
             context: undefined,
         };
     },
-    {
-        endpoints: {
-            '/health'({context}) {
-                assert.tsType(context).equals<undefined>();
+})({
+    endpoints: {
+        '/health'({context}) {
+            assert.tsType(context).equals<undefined>();
 
-                return {
-                    statusCode: HttpStatus.Ok,
-                };
-            },
-            '/internal-error'() {
-                throw new Error('Intentional error.');
-            },
+            return {
+                statusCode: HttpStatus.Ok,
+            };
         },
-        webSockets: {
-            '/socket': {
-                message({message, webSocket}) {
-                    assert.strictEquals(message, 'from client');
-                    webSocket.send('from server');
-                },
+        '/internal-error'() {
+            throw new Error('Intentional error.');
+        },
+    },
+    webSockets: {
+        '/socket': {
+            message({message, webSocket}) {
+                assert.strictEquals(message, 'from client');
+                webSocket.send('from server');
             },
         },
     },
-);
+});
 
 describeService({service: plainService, options: {}}, ({fetchEndpoint}) => {
     it('responds to a request', async () => {

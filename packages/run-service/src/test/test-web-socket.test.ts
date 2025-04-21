@@ -17,38 +17,34 @@ describe(testWebSocket.name, () => {
             messageOnServer: false,
         };
         const webSocket = await testWebSocket(
-            implementService(
-                {
-                    service: defineService({
-                        requiredClientOrigin: AnyOrigin,
-                        serviceName: 'test',
-                        serviceOrigin: 'http://localhost:3000',
-                        webSockets: {
-                            '/socket': {
-                                messageFromClientShape: undefined,
-                                messageFromHostShape: undefined,
-                            },
-                        },
-                    }),
-                },
-                undefined,
-                {
+            implementService({
+                service: defineService({
+                    requiredClientOrigin: AnyOrigin,
+                    serviceName: 'test',
+                    serviceOrigin: 'http://localhost:3000',
                     webSockets: {
                         '/socket': {
-                            open() {
-                                listeners.openedOnServer = true;
-                            },
-                            close() {
-                                listeners.closedOnServer = true;
-                            },
-                            message({webSocket}) {
-                                listeners.messageOnServer = true;
-                                webSocket.send();
-                            },
+                            messageFromClientShape: undefined,
+                            messageFromHostShape: undefined,
+                        },
+                    },
+                }),
+            })({
+                webSockets: {
+                    '/socket': {
+                        open() {
+                            listeners.openedOnServer = true;
+                        },
+                        close() {
+                            listeners.closedOnServer = true;
+                        },
+                        message({webSocket}) {
+                            listeners.messageOnServer = true;
+                            webSocket.send();
                         },
                     },
                 },
-            ).webSockets['/socket'],
+            }).webSockets['/socket'],
             {
                 listeners: {
                     open() {
