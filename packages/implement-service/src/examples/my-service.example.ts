@@ -5,6 +5,7 @@ export const myServiceImplementation = implementService(
     {
         service: myService,
     },
+    undefined,
     {
         endpoints: {
             '/my-endpoint'() {

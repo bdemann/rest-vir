@@ -3,17 +3,77 @@ import {HttpStatus} from '@augment-vir/common';
 import {describe, it} from '@augment-vir/test';
 import {AnyOrigin, defineService} from '@rest-vir/define-service';
 import {or} from 'object-shape-tester';
+import type {
+    EndpointImplementationOutput,
+    EndpointImplementationParams,
+} from './implement-endpoint.js';
 import {implementService} from './implement-service.js';
+import {ContextInitOutput} from './service-context-init.js';
 
 describe(implementService.name, () => {
+    it('allows a separate function to be assigned to an endpoint implementation', () => {
+        type Context = {
+            value: string;
+        };
+        const service = defineService({
+            endpoints: {
+                '/test': {
+                    methods: {
+                        GET: true,
+                    },
+                    requestDataShape: {
+                        a: -1,
+                        b: or(undefined, ''),
+                    },
+                    responseDataShape: undefined,
+                },
+            },
+            requiredClientOrigin: AnyOrigin,
+            serviceName: 'test',
+            serviceOrigin: '',
+        });
+
+        type Service = typeof service;
+
+        function testEndpoint({
+            context,
+            requestData,
+        }: EndpointImplementationParams<
+            Context,
+            Service['endpoints']['/test']
+        >): EndpointImplementationOutput<Service['endpoints']['/test']['ResponseType']> {
+            assert.tsType<typeof requestData>().equals<
+                Readonly<{
+                    a: number;
+                    b: string | undefined;
+                }>
+            >();
+
+            return {
+                statusCode: HttpStatus.Ok,
+                responseData: undefined,
+            };
+        }
+
+        implementService(
+            {
+                service,
+            },
+            (): ContextInitOutput<Context> => {
+                return {
+                    context: {value: 'hi'},
+                };
+            },
+            {
+                endpoints: {
+                    '/test': testEndpoint,
+                },
+            },
+        );
+    });
     it('handles shape definitions', () => {
         implementService(
             {
-                createContext() {
-                    return {
-                        context: 'hi',
-                    };
-                },
                 service: defineService({
                     endpoints: {
                         '/test': {
@@ -31,6 +91,11 @@ describe(implementService.name, () => {
                     serviceName: 'test',
                     serviceOrigin: '',
                 }),
+            },
+            () => {
+                return {
+                    context: 'hi',
+                };
             },
             {
                 endpoints: {
@@ -56,16 +121,16 @@ describe(implementService.name, () => {
         const service = implementService(
             {
                 customHeaders: mockCustomHeaders,
-                createContext() {
-                    return {
-                        context: 'hi',
-                    };
-                },
                 service: defineService({
                     requiredClientOrigin: AnyOrigin,
                     serviceName: 'test',
                     serviceOrigin: '',
                 }),
+            },
+            () => {
+                return {
+                    context: 'hi',
+                };
             },
             {},
         );
@@ -90,11 +155,10 @@ describe(implementService.name, () => {
                         serviceName: 'test',
                         serviceOrigin: '',
                     }),
-
-                    // @ts-expect-error: the messed up `/test` implementation (which should be a function) messes up this type for some reason
-                    createContext() {
-                        return 'hi';
-                    },
+                },
+                // @ts-expect-error: the messed up `/test` implementation (which should be a function) messes up this type for some reason
+                () => {
+                    return 'hi';
                 },
                 {
                     endpoints: {
@@ -122,11 +186,11 @@ describe(implementService.name, () => {
                         serviceName: 'test',
                         serviceOrigin: '',
                     }),
-                    createContext() {
-                        return {
-                            context: 'hi',
-                        };
-                    },
+                },
+                () => {
+                    return {
+                        context: 'hi',
+                    };
                 },
                 {
                     endpoints: {
@@ -166,6 +230,7 @@ describe(implementService.name, () => {
                     serviceOrigin: '',
                 }),
             },
+            undefined,
             {
                 endpoints: {
                     // @ts-expect-error: this endpoint does not return a status code
@@ -195,11 +260,11 @@ describe(implementService.name, () => {
                     serviceName: 'test',
                     serviceOrigin: '',
                 }),
-                createContext() {
-                    return {
-                        context: 'hi',
-                    };
-                },
+            },
+            () => {
+                return {
+                    context: 'hi',
+                };
             },
             {
                 endpoints: {
@@ -231,11 +296,11 @@ describe(implementService.name, () => {
                     serviceName: 'test',
                     serviceOrigin: '',
                 }),
-                createContext() {
-                    return {
-                        context: 'hi',
-                    };
-                },
+            },
+            () => {
+                return {
+                    context: 'hi',
+                };
             },
             {
                 endpoints: {
@@ -267,10 +332,10 @@ describe(implementService.name, () => {
                         serviceName: 'test',
                         serviceOrigin: '',
                     }),
-                    // @ts-expect-error: for some reason the missing endpoint implementation error shows up here
-                    createContext() {
-                        return 'hi';
-                    },
+                },
+                // @ts-expect-error: for some reason the missing endpoint implementation error shows up here
+                () => {
+                    return 'hi';
                 },
                 {},
             ),
@@ -291,10 +356,10 @@ describe(implementService.name, () => {
                         serviceName: 'test',
                         serviceOrigin: '',
                     }),
-                    // @ts-expect-error: for some reason the missing WebSocket implementation error shows up here
-                    createContext() {
-                        return 'hi';
-                    },
+                },
+                // @ts-expect-error: for some reason the missing WebSocket implementation error shows up here
+                () => {
+                    return 'hi';
                 },
                 {},
             ),
@@ -314,11 +379,11 @@ describe(implementService.name, () => {
                     serviceName: 'test',
                     serviceOrigin: '',
                 }),
-                createContext() {
-                    return {
-                        context: 'hi',
-                    };
-                },
+            },
+            () => {
+                return {
+                    context: 'hi',
+                };
             },
             {
                 webSockets: {
@@ -343,10 +408,10 @@ describe(implementService.name, () => {
                             serviceName: 'test',
                             serviceOrigin: '',
                         }),
-                        // @ts-expect-error: the messed up `/test` implementation (which should be a function) messes up this type for some reason
-                        createContext() {
-                            return 'hi';
-                        },
+                    },
+                    // @ts-expect-error: the messed up `/test` implementation (which should be a function) messes up this type for some reason
+                    () => {
+                        return 'hi';
                     },
                     {
                         webSockets: {
@@ -377,11 +442,11 @@ describe(implementService.name, () => {
                             serviceName: 'test',
                             serviceOrigin: '',
                         }),
-                        createContext() {
-                            return {
-                                context: 'hi',
-                            };
-                        },
+                    },
+                    () => {
+                        return {
+                            context: 'hi',
+                        };
                     },
                     {
                         webSockets: {

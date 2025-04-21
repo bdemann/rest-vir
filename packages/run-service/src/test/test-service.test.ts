@@ -64,15 +64,15 @@ const plainService = implementService(
             serviceName: 'plain service',
             serviceOrigin: 'https://example.com',
         }),
-        createContext({requestHeaders}) {
-            if (requestHeaders.authorization === 'reject') {
-                throw new Error('context failed');
-            }
+    },
+    ({requestHeaders}) => {
+        if (requestHeaders.authorization === 'reject') {
+            throw new Error('context failed');
+        }
 
-            return {
-                context: undefined,
-            };
-        },
+        return {
+            context: undefined,
+        };
     },
     {
         endpoints: {

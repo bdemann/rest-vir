@@ -52,7 +52,6 @@ export type CustomErrorHandler = (error: Error) => MaybePromise<void>;
  * @package [`@rest-vir/implement-service`](https://www.npmjs.com/package/@rest-vir/implement-service)
  */
 export type ServiceImplementationInit<
-    Context,
     ServiceName extends string,
     EndpointsInit extends BaseServiceEndpointsInit,
     WebSocketsInit extends BaseServiceWebSocketsInit,
@@ -66,25 +65,7 @@ export type ServiceImplementationInit<
      * keys will fallback to the efault logger.
      */
     logger?: ServiceLoggerOption;
-} & (IsEqual<Context, undefined> extends true
-    ? {
-          createContext?:
-              | undefined
-              | ContextInit<
-                    Context,
-                    NoInfer<ServiceName>,
-                    NoInfer<EndpointsInit>,
-                    NoInfer<WebSocketsInit>
-                >;
-      }
-    : {
-          createContext: ContextInit<
-              Context,
-              NoInfer<ServiceName>,
-              NoInfer<EndpointsInit>,
-              NoInfer<WebSocketsInit>
-          >;
-      });
+};
 
 /**
  * Parameters for implementations for {@link implementService}.
@@ -105,8 +86,8 @@ export type ServiceImplementationsParams<
     : {
           endpoints: EndpointImplementations<
               NoInfer<Context>,
-              NoInfer<ServiceName>,
-              NoInfer<EndpointsInit>
+              NoInfer<EndpointsInit>,
+              NoInfer<ServiceName>
           >;
       }) &
     (KeyCount<OmitIndexSignature<WebSocketsInit>> extends 0
@@ -135,15 +116,38 @@ export function implementService<
     const ServiceName extends string,
     const EndpointsInit extends BaseServiceEndpointsInit,
     const WebSocketsInit extends BaseServiceWebSocketsInit,
-    const Context = undefined,
+    const Context = NoParam,
 >(
     /** Init must be first so that TypeScript can infer the type for `Context`. */
     {
         service,
-        createContext,
         logger,
         customHeaders,
-    }: ServiceImplementationInit<Context, ServiceName, EndpointsInit, WebSocketsInit>,
+    }: ServiceImplementationInit<ServiceName, EndpointsInit, WebSocketsInit>,
+    createContext: IsEqual<NoInfer<Context>, undefined> extends true
+        ?
+              | undefined
+              | ContextInit<
+                    Context,
+                    NoInfer<ServiceName>,
+                    NoInfer<EndpointsInit>,
+                    NoInfer<WebSocketsInit>
+                >
+        : IsEqual<NoInfer<Context>, NoParam> extends true
+          ?
+                | undefined
+                | ContextInit<
+                      Context,
+                      NoInfer<ServiceName>,
+                      NoInfer<EndpointsInit>,
+                      NoInfer<WebSocketsInit>
+                  >
+          : ContextInit<
+                Context,
+                NoInfer<ServiceName>,
+                NoInfer<EndpointsInit>,
+                NoInfer<WebSocketsInit>
+            >,
     {
         endpoints: endpointImplementations,
         webSockets: webSocketImplementations,
@@ -153,7 +157,7 @@ export function implementService<
         NoInfer<EndpointsInit>,
         NoInfer<WebSocketsInit>
     >,
-): ServiceImplementation<Context, ServiceName, EndpointsInit, WebSocketsInit> {
+): ServiceImplementation<NoInfer<Context>, ServiceName, EndpointsInit, WebSocketsInit> {
     assertValidEndpointImplementations(service, endpointImplementations || {});
     assertValidWebSocketImplementations(service, webSocketImplementations || {});
 
@@ -252,12 +256,12 @@ export type ServiceImplementation<
         >['endpoints']]: EndpointPath extends EndpointPathBase
             ? ImplementedEndpoint<
                   Context,
-                  ServiceName,
                   ServiceDefinition<
                       ServiceName,
                       EndpointsInit,
                       WebSocketsInit
-                  >['endpoints'][EndpointPath]
+                  >['endpoints'][EndpointPath],
+                  ServiceName
               >
             : never;
     };

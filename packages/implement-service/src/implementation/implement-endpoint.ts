@@ -79,15 +79,15 @@ export type EndpointImplementationOutput<ResponseDataType = unknown> =
  */
 export type EndpointImplementationParams<
     Context = any,
-    ServiceName extends string = any,
     SpecificEndpoint extends EndpointDefinition | NoParam = NoParam,
+    ServiceName extends string = any,
 > = {
     pathParams: SpecificEndpoint extends NoParam
         ? Readonly<Record<string, string>>
         : PathParams<Exclude<SpecificEndpoint, NoParam>['path']> extends string
           ? Readonly<Record<PathParams<Exclude<SpecificEndpoint, NoParam>['path']>, string>>
           : Readonly<Record<string, string>>;
-    context: Context;
+    context: NoInfer<Context>;
     method: IsEqual<Extract<SpecificEndpoint, NoParam>, NoParam> extends true
         ? HttpMethod
         : ExtractKeysWithMatchingValues<
@@ -162,14 +162,14 @@ export type GenericEndpointImplementationParams = {
  */
 export type EndpointImplementation<
     Context = any,
-    ServiceName extends string = any,
     SpecificEndpoint extends EndpointDefinition | NoParam = NoParam,
+    ServiceName extends string = any,
 > =
     IsEqual<Extract<SpecificEndpoint, NoParam>, NoParam> extends true
         ? (params: GenericEndpointImplementationParams) => any
         : (
               params: Readonly<
-                  EndpointImplementationParams<Context, ServiceName, SpecificEndpoint>
+                  EndpointImplementationParams<NoInfer<Context>, SpecificEndpoint, ServiceName>
               >,
           ) => MaybePromise<
               EndpointImplementationOutput<
@@ -186,17 +186,17 @@ export type EndpointImplementation<
  */
 export type EndpointImplementations<
     Context = any,
-    ServiceName extends string = any,
     EndpointsInit extends BaseServiceEndpointsInit | NoParam = NoParam,
+    ServiceName extends string = any,
 > = EndpointsInit extends NoParam
     ? Record<EndpointPathBase, EndpointImplementation>
     : {
           [EndpointPath in keyof EndpointsInit]: EndpointsInit[EndpointPath] extends EndpointInit
               ? EndpointPath extends EndpointPathBase
                   ? EndpointImplementation<
-                        Context,
-                        ServiceName,
-                        WithFinalEndpointProps<EndpointsInit[EndpointPath], EndpointPath>
+                        NoInfer<Context>,
+                        WithFinalEndpointProps<EndpointsInit[EndpointPath], EndpointPath>,
+                        ServiceName
                     >
                   : never
               : never;

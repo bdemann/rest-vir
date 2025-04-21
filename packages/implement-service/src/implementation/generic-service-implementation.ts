@@ -22,15 +22,15 @@ import {type ContextInit} from './service-context-init.js';
  */
 export type ImplementedEndpoint<
     Context = any,
-    ServiceName extends string = any,
     SpecificEndpoint extends EndpointDefinition = GenericEndpointDefinition,
+    ServiceName extends string = any,
 > = Overwrite<
     SpecificEndpoint,
     {
         service: GenericServiceImplementation;
     }
 > & {
-    implementation: EndpointImplementation<Context, ServiceName>;
+    implementation: EndpointImplementation<Context, NoParam, ServiceName>;
 };
 
 /**

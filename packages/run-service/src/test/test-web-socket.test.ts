@@ -31,6 +31,7 @@ describe(testWebSocket.name, () => {
                         },
                     }),
                 },
+                undefined,
                 {
                     webSockets: {
                         '/socket': {

@@ -16,6 +16,23 @@ import {type ServerRequest, type ServerResponse} from '../util/data.js';
 import {EndpointImplementationErrorOutput, type RunningServerInfo} from './implement-endpoint.js';
 
 /**
+ * Output of {@link ContextInit}.
+ *
+ * @category Internal
+ * @category Package : @rest-vir/implement-service
+ * @package [`@rest-vir/implement-service`](https://www.npmjs.com/package/@rest-vir/implement-service)
+ */
+export type ContextInitOutput<Context> = RequireExactlyOne<{
+    /** The context created for this request. */
+    context: Context;
+    /**
+     * Instead of creating a context object for the current request, instead, reject the request
+     * with the specified status code and other options.
+     */
+    reject: EndpointImplementationErrorOutput;
+}>;
+
+/**
  * User-defined service implementation Context generator.
  *
  * @category Internal
@@ -29,17 +46,7 @@ export type ContextInit<
     WebSocketsInit extends BaseServiceWebSocketsInit | NoParam,
 > = (
     params: Readonly<ContextInitParameters<ServiceName, EndpointsInit, WebSocketsInit>>,
-) => MaybePromise<
-    RequireExactlyOne<{
-        /** The context created for this request. */
-        context: Context;
-        /**
-         * Instead of creating a context object for the current request, instead, reject the request
-         * with the specified status code and other options.
-         */
-        reject: EndpointImplementationErrorOutput;
-    }>
->;
+) => MaybePromise<ContextInitOutput<Context>>;
 
 /**
  * Parameters for {@link ContextInit}.

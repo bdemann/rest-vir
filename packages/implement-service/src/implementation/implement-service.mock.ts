@@ -12,25 +12,25 @@ export type MockServiceContext = {
 export const mockServiceImplementation = implementService(
     {
         service: mockService,
-        createContext({requestHeaders, endpointDefinition: endpoint}) {
-            assert.tsType(endpoint?.customProps).equals<undefined | {somethingElse: string}>();
+    },
+    ({requestHeaders, endpointDefinition: endpoint}) => {
+        assert.tsType(endpoint?.customProps).equals<undefined | {somethingElse: string}>();
 
-            if (requestHeaders.authorization === 'reject') {
-                return {
-                    reject: {
-                        statusCode: HttpStatus.Unauthorized,
-                    },
-                };
-            } else if (requestHeaders.authorization === 'error') {
-                throw new Error('Context creation failed.');
-            } else {
-                return {
-                    context: {
-                        date: Date.now(),
-                    },
-                };
-            }
-        },
+        if (requestHeaders.authorization === 'reject') {
+            return {
+                reject: {
+                    statusCode: HttpStatus.Unauthorized,
+                },
+            };
+        } else if (requestHeaders.authorization === 'error') {
+            throw new Error('Context creation failed.');
+        } else {
+            return {
+                context: {
+                    date: Date.now(),
+                },
+            };
+        }
     },
     {
         webSockets: {
