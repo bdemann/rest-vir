@@ -3,13 +3,13 @@ import {HttpStatus} from '@augment-vir/common';
 import {describe, it} from '@augment-vir/test';
 import {AnyOrigin, defineService} from '@rest-vir/define-service';
 import {or} from 'object-shape-tester';
-import type {
-    EndpointImplementationOutput,
-    EndpointImplementationParams,
+import {
+    type EndpointImplementationOutput,
+    type EndpointImplementationParams,
 } from './implement-endpoint.js';
 import {implementService} from './implement-service.js';
 import {mockServiceImplementation} from './implement-service.mock.js';
-import type {ContextInitOutput} from './service-context-init.js';
+import {type ContextInitOutput} from './service-context-init.js';
 
 describe(implementService.name, () => {
     it('allows a separate function to be assigned to an endpoint implementation', () => {

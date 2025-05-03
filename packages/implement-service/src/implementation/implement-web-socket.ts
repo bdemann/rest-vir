@@ -6,16 +6,16 @@ import {
     getObjectTypedKeys,
 } from '@augment-vir/common';
 import {
-    BaseSearchParams,
-    BaseServiceWebSocketsInit,
-    EndpointPathBase,
-    MinimalService,
-    NoParam,
-    ServiceDefinition,
+    type BaseSearchParams,
+    type BaseServiceWebSocketsInit,
+    type EndpointPathBase,
+    type MinimalService,
+    type NoParam,
+    type ServiceDefinition,
     ServiceDefinitionError,
-    WebSocketDefinition,
-    WebSocketInit,
-    WithFinalWebSocketProps,
+    type WebSocketDefinition,
+    type WebSocketInit,
+    type WithFinalWebSocketProps,
 } from '@rest-vir/define-service';
 import {type IncomingHttpHeaders} from 'node:http';
 import {type IsEqual} from 'type-fest';

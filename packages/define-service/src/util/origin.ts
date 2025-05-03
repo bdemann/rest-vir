@@ -1,5 +1,5 @@
 import {check} from '@augment-vir/assert';
-import {MaybePromise} from '@augment-vir/common';
+import {type MaybePromise} from '@augment-vir/common';
 import {classShape, defineShape, exact, or} from 'object-shape-tester';
 
 /**

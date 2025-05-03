@@ -4,10 +4,10 @@ import {describe, it, itCases} from '@augment-vir/test';
 import {mockService} from '../service/define-service.mock.js';
 import {CommonWebSocketState} from '../web-socket/common-web-socket.js';
 import {
-    GenericConnectWebSocketParams,
     getOppositeWebSocketLocation,
     WebSocketLocation,
     type ClientWebSocket,
+    type GenericConnectWebSocketParams,
 } from '../web-socket/overwrite-web-socket-methods.js';
 import {
     buildWebSocketUrl,

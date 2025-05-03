@@ -6,7 +6,7 @@ import {
     type HttpStatusByCategory,
     type SelectFrom,
 } from '@augment-vir/common';
-import type {BaseSearchParams} from '@rest-vir/define-service';
+import {type BaseSearchParams} from '@rest-vir/define-service';
 import {
     RestVirHandlerError,
     type ImplementedEndpoint,

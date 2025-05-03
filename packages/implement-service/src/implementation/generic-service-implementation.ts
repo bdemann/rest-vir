@@ -1,12 +1,12 @@
 import {type Overwrite} from '@augment-vir/common';
 import {
-    EndpointDefinition,
-    EndpointPathBase,
-    ServiceDefinition,
-    WebSocketDefinition,
+    type EndpointDefinition,
+    type EndpointPathBase,
     type GenericEndpointDefinition,
     type GenericWebSocketDefinition,
     type NoParam,
+    type ServiceDefinition,
+    type WebSocketDefinition,
 } from '@rest-vir/define-service';
 import {type ServiceLogger} from '../util/service-logger.js';
 import {type EndpointImplementation} from './implement-endpoint.js';

@@ -2,13 +2,13 @@
 
 import {type HttpStatus, type MaybePromise, type PartialWithUndefined} from '@augment-vir/common';
 import {
-    ServerRequest,
-    ServerResponse,
     type ImplementedEndpoint,
     type ImplementedWebSocket,
+    type ServerRequest,
+    type ServerResponse,
 } from '@rest-vir/implement-service';
-import type {FastifyReply} from 'fastify';
-import {OutgoingHttpHeaders} from 'node:http';
+import {type FastifyReply} from 'fastify';
+import {type OutgoingHttpHeaders} from 'node:http';
 import {setResponseHeaders} from '../util/headers.js';
 
 /**

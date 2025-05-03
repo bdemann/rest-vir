@@ -2,7 +2,7 @@ import {assert} from '@augment-vir/assert';
 import {wait} from '@augment-vir/common';
 import {describe, it, itCases} from '@augment-vir/test';
 import {parseUrl} from 'url-vir';
-import type {EndpointDefinition} from '../endpoint/endpoint.js';
+import {type EndpointDefinition} from '../endpoint/endpoint.js';
 import {mockService} from '../service/define-service.mock.js';
 import {findDevServicePort, findLivePort, mapServiceDevPort} from './find-dev-port.js';
 

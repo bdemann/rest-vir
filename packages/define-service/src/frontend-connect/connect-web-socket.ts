@@ -1,14 +1,14 @@
 import {
     ensureErrorAndPrependMessage,
     HttpMethod,
-    RequiredKeysOf,
-    SelectFrom,
+    type RequiredKeysOf,
+    type SelectFrom,
 } from '@augment-vir/common';
-import {IsNever} from 'type-fest';
+import {type IsNever} from 'type-fest';
 import {buildUrl} from 'url-vir';
-import {PathParams} from '../endpoint/endpoint-path.js';
+import {type PathParams} from '../endpoint/endpoint-path.js';
 import {type NoParam} from '../util/no-param.js';
-import type {CommonWebSocket} from '../web-socket/common-web-socket.js';
+import {type CommonWebSocket} from '../web-socket/common-web-socket.js';
 import {
     finalizeWebSocket,
     WebSocketLocation,

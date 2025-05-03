@@ -1,25 +1,30 @@
 import {assert, check} from '@augment-vir/assert';
-import {AnyObject, getObjectTypedEntries, mapObjectValues, stringify} from '@augment-vir/common';
+import {
+    type AnyObject,
+    getObjectTypedEntries,
+    mapObjectValues,
+    stringify,
+} from '@augment-vir/common';
 import {assertValidShape, defineShape} from 'object-shape-tester';
 import {
+    type EndpointDefinition,
     assertValidEndpoint,
     attachEndpointShapeTypeGetters,
     endpointInitShape,
-    type EndpointDefinition,
 } from '../endpoint/endpoint.js';
 import {
-    WebSocketDefinition,
+    type WebSocketDefinition,
     assertValidWebSocketDefinition,
     attachWebSocketShapeTypeGetters,
     webSocketInitShape,
 } from '../web-socket/web-socket-definition.js';
-import {MinimalService} from './minimal-service.js';
+import {type MinimalService} from './minimal-service.js';
 import {ensureServiceDefinitionError} from './service-definition.error.js';
-import type {
-    BaseServiceEndpointsInit,
-    BaseServiceWebSocketsInit,
-    ServiceDefinition,
-    ServiceInit,
+import {
+    type BaseServiceEndpointsInit,
+    type BaseServiceWebSocketsInit,
+    type ServiceDefinition,
+    type ServiceInit,
 } from './service-definition.js';
 
 /**

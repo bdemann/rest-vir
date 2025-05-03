@@ -6,20 +6,20 @@ import {
     type MaybePromise,
 } from '@augment-vir/common';
 import {
-    BaseServiceEndpointsInit,
-    EndpointPathBase,
-    NoParam,
-    ServiceDefinition,
+    type BaseServiceEndpointsInit,
     type BaseServiceWebSocketsInit,
     type EndpointDefinition,
+    type EndpointPathBase,
+    type NoParam,
+    type ServiceDefinition,
     type WebSocketDefinition,
 } from '@rest-vir/define-service';
 import {type IsEqual, type OmitIndexSignature} from 'type-fest';
 import {
     createServiceLogger,
-    ServiceLoggerOption,
     silentServiceLogger,
     type ServiceLogger,
+    type ServiceLoggerOption,
 } from '../util/service-logger.js';
 import {
     type ImplementedEndpoint,
@@ -31,7 +31,7 @@ import {
 } from './implement-endpoint.js';
 import {
     assertValidWebSocketImplementations,
-    WebSocketImplementations,
+    type WebSocketImplementations,
 } from './implement-web-socket.js';
 import {type ContextInit} from './service-context-init.js';
 

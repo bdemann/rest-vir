@@ -1,12 +1,12 @@
 import {assert, assertWrap, check} from '@augment-vir/assert';
 import {
+    type AnyObject,
     ensureErrorAndPrependMessage,
     log,
     mapObjectValues,
     mergeDeep,
     mergeDefinedProperties,
     omitObjectKeys,
-    type AnyObject,
     type Overwrite,
     type PartialWithUndefined,
     type SelectFrom,
@@ -16,26 +16,26 @@ import {
     assertValidWebSocketProtocols,
     buildEndpointRequestInit,
     buildWebSocketUrl,
-    ClientWebSocket,
-    CollapsedConnectWebSocketParams,
-    CollapsedFetchEndpointParams,
-    EndpointDefinition,
+    type ClientWebSocket,
+    type CollapsedConnectWebSocketParams,
+    type CollapsedFetchEndpointParams,
+    type EndpointDefinition,
     finalizeWebSocket,
-    NoParam,
+    type NoParam,
     restVirServiceNameHeader,
-    WebSocketDefinition,
+    type WebSocketDefinition,
     WebSocketLocation,
 } from '@rest-vir/define-service';
-import {GenericServiceImplementation} from '@rest-vir/implement-service';
-import fastify, {FastifyInstance} from 'fastify';
+import {type GenericServiceImplementation} from '@rest-vir/implement-service';
+import fastify, {type FastifyInstance} from 'fastify';
 import {type InjectOptions} from 'light-my-request';
 import {type OutgoingHttpHeaders} from 'node:http';
 import {buildUrl, parseUrl} from 'url-vir';
 import type WsSocket from 'ws';
-import {HandleRouteOptions} from '../handle-request/endpoint-handler.js';
+import {type HandleRouteOptions} from '../handle-request/endpoint-handler.js';
 import {attachService} from '../start-service/attach-service.js';
 import {
-    StartServiceOptions,
+    type StartServiceOptions,
     type StartServiceUserOptions,
 } from '../start-service/start-service-options.js';
 import {applyDebugLogger} from '../util/debug.js';

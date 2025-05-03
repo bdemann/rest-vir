@@ -1,15 +1,19 @@
-import type {Overwrite} from '@augment-vir/common';
-import {IsEqual, SetRequired} from 'type-fest';
-import {EndpointPathBase} from '../endpoint/endpoint-path.js';
-import {EndpointDefinition, EndpointInit, WithFinalEndpointProps} from '../endpoint/endpoint.js';
-import {NoParam} from '../util/no-param.js';
-import {OriginRequirement} from '../util/origin.js';
+import {type Overwrite} from '@augment-vir/common';
+import {type IsEqual, type SetRequired} from 'type-fest';
+import {type EndpointPathBase} from '../endpoint/endpoint-path.js';
 import {
-    WebSocketDefinition,
-    WebSocketInit,
-    WithFinalWebSocketProps,
+    type EndpointDefinition,
+    type EndpointInit,
+    type WithFinalEndpointProps,
+} from '../endpoint/endpoint.js';
+import {type NoParam} from '../util/no-param.js';
+import {type OriginRequirement} from '../util/origin.js';
+import {
+    type WebSocketDefinition,
+    type WebSocketInit,
+    type WithFinalWebSocketProps,
 } from '../web-socket/web-socket-definition.js';
-import {MinimalService} from './minimal-service.js';
+import {type MinimalService} from './minimal-service.js';
 
 /**
  * A string used for type errors triggered when an endpoint path is defined without a leading slash.

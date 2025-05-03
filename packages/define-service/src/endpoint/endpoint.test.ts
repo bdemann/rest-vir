@@ -2,7 +2,7 @@ import {HttpMethod} from '@augment-vir/common';
 import {describe, it, itCases} from '@augment-vir/test';
 import {mockService} from '../service/define-service.mock.js';
 import {ServiceDefinitionError} from '../service/service-definition.error.js';
-import {assertValidEndpoint, EndpointDefinition, EndpointInit} from './endpoint.js';
+import {assertValidEndpoint, type EndpointDefinition, type EndpointInit} from './endpoint.js';
 
 describe('EndpointDefinition', () => {
     it('can be assigned to from any endpoint', () => {

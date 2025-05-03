@@ -1,14 +1,17 @@
 import {check} from '@augment-vir/assert';
 import {awaitedForEach, ensureErrorAndPrependMessage, type SelectFrom} from '@augment-vir/common';
-import {GenericServiceImplementation, ServiceImplementation} from '@rest-vir/implement-service';
+import {
+    type GenericServiceImplementation,
+    ServiceImplementation,
+} from '@rest-vir/implement-service';
 import {ClusterManager, runInCluster, type WorkerRunner} from 'cluster-vir';
 import fastify, {type FastifyInstance, type FastifyPluginCallback} from 'fastify';
 import {getPortPromise} from 'portfinder';
 import {attachService} from './attach-service.js';
 import {
     finalizeOptions,
-    StartServiceOptions,
-    StartServiceUserOptions,
+    type StartServiceOptions,
+    type StartServiceUserOptions,
 } from './start-service-options.js';
 
 /**

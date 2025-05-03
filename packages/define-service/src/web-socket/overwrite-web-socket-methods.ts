@@ -1,26 +1,26 @@
 import {waitUntil} from '@augment-vir/assert';
 import {
-    AnyObject,
+    type AnyFunction,
+    type AnyObject,
     callAsynchronously,
     DeferredPromise,
     ensureErrorAndPrependMessage,
     getOrSet,
-    MaybePromise,
-    Overwrite,
-    SelectFrom,
+    type MaybePromise,
+    type Overwrite,
+    type SelectFrom,
     stringify,
-    wrapInTry,
-    type AnyFunction,
     type Values,
+    wrapInTry,
 } from '@augment-vir/common';
-import {convertDuration, type AnyDuration} from 'date-vir';
+import {type AnyDuration, convertDuration} from 'date-vir';
 import {assertValidShape} from 'object-shape-tester';
-import type {HasRequiredKeys} from 'type-fest';
+import {type HasRequiredKeys} from 'type-fest';
 import {parseJsonWithUndefined} from '../augments/json.js';
-import {NoParam} from '../util/no-param.js';
+import {type NoParam} from '../util/no-param.js';
 import {
-    CommonWebSocket,
-    CommonWebSocketEventMap,
+    type CommonWebSocket,
+    type CommonWebSocketEventMap,
     CommonWebSocketState,
 } from './common-web-socket.js';
 import {type WebSocketDefinition} from './web-socket-definition.js';

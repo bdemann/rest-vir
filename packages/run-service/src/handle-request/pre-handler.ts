@@ -15,13 +15,13 @@ import {
     type WebSocketDefinition,
 } from '@rest-vir/define-service';
 import {
-    ContextInitParameters,
-    GenericServiceImplementation,
     HttpMethod,
     RestVirHandlerError,
-    RunningServerInfo,
-    ServerRequest,
-    ServerResponse,
+    type ContextInitParameters,
+    type GenericServiceImplementation,
+    type RunningServerInfo,
+    type ServerRequest,
+    type ServerResponse,
 } from '@rest-vir/implement-service';
 import {type FastifyReply} from 'fastify';
 import {type IncomingHttpHeaders} from 'node:http';

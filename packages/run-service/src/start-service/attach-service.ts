@@ -7,19 +7,19 @@ import {
     HttpMethod,
     HttpStatus,
     randomString,
-    SelectFrom,
+    type SelectFrom,
 } from '@augment-vir/common';
 import fastifyWs from '@fastify/websocket';
-import type {BaseSearchParams, MinimalService} from '@rest-vir/define-service';
+import {type BaseSearchParams, type MinimalService} from '@rest-vir/define-service';
 import {
-    GenericServiceImplementation,
     RestVirHandlerError,
     ServiceImplementation,
+    type GenericServiceImplementation,
     type RunningServerInfo,
 } from '@rest-vir/implement-service';
 import {type FastifyInstance} from 'fastify';
 import {buildUrl, parseUrl} from 'url-vir';
-import {HandleRouteOptions} from '../handle-request/endpoint-handler.js';
+import {type HandleRouteOptions} from '../handle-request/endpoint-handler.js';
 import {handleRoute} from '../handle-request/handle-route.js';
 import {preHandler} from '../handle-request/pre-handler.js';
 

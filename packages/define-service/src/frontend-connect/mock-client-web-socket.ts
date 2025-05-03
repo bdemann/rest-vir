@@ -6,16 +6,16 @@ import {
 } from '@augment-vir/common';
 import {parseJsonWithUndefined} from '../augments/json.js';
 import {
-    CommonWebSocket,
-    CommonWebSocketEventMap,
     CommonWebSocketState,
+    type CommonWebSocket,
+    type CommonWebSocketEventMap,
 } from '../web-socket/common-web-socket.js';
 import {
-    GenericConnectWebSocketParams,
     WebSocketLocation,
     type ClientWebSocket,
+    type GenericConnectWebSocketParams,
 } from '../web-socket/overwrite-web-socket-methods.js';
-import {WebSocketDefinition} from '../web-socket/web-socket-definition.js';
+import {type WebSocketDefinition} from '../web-socket/web-socket-definition.js';
 
 /**
  * Parameters for {@link MockClientWebSocketClientSendCallback}.

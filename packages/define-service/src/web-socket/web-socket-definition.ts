@@ -1,20 +1,20 @@
-import {AnyObject, Overwrite, type SelectFrom} from '@augment-vir/common';
+import {type AnyObject, type Overwrite, type SelectFrom} from '@augment-vir/common';
 import {
     defineShape,
     indexedKeys,
     optional,
     or,
-    ShapeDefinition,
-    ShapeToRuntimeType,
+    type ShapeDefinition,
+    type ShapeToRuntimeType,
     unknownShape,
 } from 'object-shape-tester';
-import type {IsEqual} from 'type-fest';
-import {assertValidEndpointPath, EndpointPathBase} from '../endpoint/endpoint-path.js';
-import {MinimalService} from '../service/minimal-service.js';
+import {type IsEqual} from 'type-fest';
+import {assertValidEndpointPath, type EndpointPathBase} from '../endpoint/endpoint-path.js';
+import {type MinimalService} from '../service/minimal-service.js';
 import {ensureServiceDefinitionError} from '../service/service-definition.error.js';
-import {NoParam} from '../util/no-param.js';
-import {OriginRequirement, originRequirementShape} from '../util/origin.js';
-import type {BaseSearchParams} from '../util/search-params.js';
+import {type NoParam} from '../util/no-param.js';
+import {type OriginRequirement, originRequirementShape} from '../util/origin.js';
+import {type BaseSearchParams} from '../util/search-params.js';
 
 /**
  * Initialization for a WebSocket within a service definition..

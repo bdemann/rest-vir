@@ -1,4 +1,4 @@
-import {AnyObject, HttpMethod, Overwrite, type SelectFrom} from '@augment-vir/common';
+import {HttpMethod, type AnyObject, type Overwrite, type SelectFrom} from '@augment-vir/common';
 import {
     defineShape,
     enumShape,
@@ -14,7 +14,7 @@ import {type MinimalService} from '../service/minimal-service.js';
 import {ensureServiceDefinitionError} from '../service/service-definition.error.js';
 import {type NoParam} from '../util/no-param.js';
 import {originRequirementShape, type OriginRequirement} from '../util/origin.js';
-import {BaseSearchParams} from '../util/search-params.js';
+import {type BaseSearchParams} from '../util/search-params.js';
 import {assertValidEndpointPath, type EndpointPathBase} from './endpoint-path.js';
 
 /**

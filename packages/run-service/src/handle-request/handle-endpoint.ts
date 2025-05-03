@@ -2,15 +2,15 @@ import {assert, assertWrap} from '@augment-vir/assert';
 import {ensureErrorAndPrependMessage, HttpStatus, isErrorHttpStatus} from '@augment-vir/common';
 import {
     createRestVirHandlerErrorPrefix,
-    EndpointImplementationOutput,
-    EndpointImplementationParams,
+    type EndpointImplementationOutput,
+    type EndpointImplementationParams,
     HttpMethod,
-    ImplementedEndpoint,
+    type ImplementedEndpoint,
     RestVirHandlerError,
     type RunningServerInfo,
 } from '@rest-vir/implement-service';
 import {assertValidShape} from 'object-shape-tester';
-import {EndpointHandlerParams, type HandledOutput} from './endpoint-handler.js';
+import {type EndpointHandlerParams, type HandledOutput} from './endpoint-handler.js';
 
 /**
  * Handles an endpoint's implementation execution.

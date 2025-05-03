@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/number-literal-case */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 // cspell:ignore Einar Stangvik Arnout Kazemier Pinca
 

@@ -1,7 +1,7 @@
 import {checkWrap} from '@augment-vir/assert';
-import {HttpMethod, HttpStatus, SelectFrom} from '@augment-vir/common';
+import {HttpMethod, HttpStatus, type SelectFrom} from '@augment-vir/common';
 import {RestVirHandlerError} from '@rest-vir/implement-service';
-import {HandledOutput, type EndpointHandlerParams} from './endpoint-handler.js';
+import {type EndpointHandlerParams, type HandledOutput} from './endpoint-handler.js';
 
 /**
  * Verifies that a request's method matches the given endpoint's expectations. If it does not, an

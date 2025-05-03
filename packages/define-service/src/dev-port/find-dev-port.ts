@@ -9,10 +9,10 @@ import {
 } from '@augment-vir/common';
 import {convertDuration, type AnyDuration} from 'date-vir';
 import {buildUrl, parseUrl} from 'url-vir';
-import type {EndpointPathBase} from '../endpoint/endpoint-path.js';
-import {GenericFetchEndpointParams} from '../frontend-connect/fetch-endpoint.js';
+import {type EndpointPathBase} from '../endpoint/endpoint-path.js';
+import {type GenericFetchEndpointParams} from '../frontend-connect/fetch-endpoint.js';
 import {defineService} from '../service/define-service.js';
-import type {ServiceDefinition} from '../service/service-definition.js';
+import {type ServiceDefinition} from '../service/service-definition.js';
 
 /**
  * This header is set on all responses handled by rest-vir so we know what service a response came

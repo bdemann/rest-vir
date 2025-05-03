@@ -1,18 +1,18 @@
 import {check} from '@augment-vir/assert';
-import {HttpMethod, SelectFrom} from '@augment-vir/common';
+import {HttpMethod, type SelectFrom} from '@augment-vir/common';
 import {
     AnyOrigin,
-    EndpointDefinition,
+    type EndpointDefinition,
     getAllowedEndpointMethods,
     isAnyOrigin,
-    OriginRequirement,
+    type OriginRequirement,
     restVirServiceNameHeader,
     type WebSocketDefinition,
 } from '@rest-vir/define-service';
 import {HttpStatus, RestVirHandlerError} from '@rest-vir/implement-service';
 import {convertDuration} from 'date-vir';
 import {type OutgoingHttpHeaders} from 'node:http';
-import {EndpointHandlerParams, HandledOutput} from './endpoint-handler.js';
+import {type EndpointHandlerParams, type HandledOutput} from './endpoint-handler.js';
 
 /**
  * Determines the required origin for the endpoint and compares it with the given request.

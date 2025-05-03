@@ -1,6 +1,6 @@
 import {assert} from '@augment-vir/assert';
 import {describe, it, itCases} from '@augment-vir/test';
-import {assertValidEndpointPath, PathParams} from './endpoint-path.js';
+import {assertValidEndpointPath, type PathParams} from './endpoint-path.js';
 
 describe('PathParams', () => {
     it('extracts path params', () => {

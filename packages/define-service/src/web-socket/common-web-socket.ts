@@ -1,4 +1,4 @@
-import type {AnyFunction} from '@augment-vir/common';
+import {type AnyFunction} from '@augment-vir/common';
 
 /**
  * A WebSocket interface that matches both [client-side

@@ -1,4 +1,4 @@
-import {CollapsedFetchEndpointParams, EndpointDefinition} from '@rest-vir/define-service';
+import {type CollapsedFetchEndpointParams, type EndpointDefinition} from '@rest-vir/define-service';
 import {type ImplementedEndpoint} from '@rest-vir/implement-service';
 import {testService} from './test-service.js';
 

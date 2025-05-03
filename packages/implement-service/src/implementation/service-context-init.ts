@@ -1,4 +1,4 @@
-import {HttpMethod, MaybePromise, Values} from '@augment-vir/common';
+import {type HttpMethod, type MaybePromise, type Values} from '@augment-vir/common';
 import {
     type BaseServiceEndpointsInit,
     type BaseServiceWebSocketsInit,
@@ -11,9 +11,12 @@ import {
     type WithFinalWebSocketProps,
 } from '@rest-vir/define-service';
 import {type IncomingHttpHeaders} from 'node:http';
-import type {RequireExactlyOne} from 'type-fest';
+import {type RequireExactlyOne} from 'type-fest';
 import {type ServerRequest, type ServerResponse} from '../util/data.js';
-import {EndpointImplementationErrorOutput, type RunningServerInfo} from './implement-endpoint.js';
+import {
+    type EndpointImplementationErrorOutput,
+    type RunningServerInfo,
+} from './implement-endpoint.js';
 
 /**
  * Output of {@link ContextInit}.

@@ -4,8 +4,8 @@ import {
     filterMap,
     getObjectTypedEntries,
     HttpMethod,
-    KeyCount,
     type ExtractKeysWithMatchingValues,
+    type KeyCount,
     type MaybePromise,
     type RequiredKeysOf,
     type SelectFrom,
@@ -16,8 +16,8 @@ import {buildUrl} from 'url-vir';
 import {parseJsonWithUndefined} from '../augments/json.js';
 import {type PathParams} from '../endpoint/endpoint-path.js';
 import {
-    EndpointExecutorData,
     type EndpointDefinition,
+    type EndpointExecutorData,
     type GenericEndpointDefinition,
 } from '../endpoint/endpoint.js';
 import {type NoParam} from '../util/no-param.js';

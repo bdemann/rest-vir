@@ -1,25 +1,25 @@
 import {
     mapObjectValues,
-    MaybePromise,
-    Overwrite,
-    PartialWithUndefined,
+    type MaybePromise,
+    type Overwrite,
+    type PartialWithUndefined,
     type Values,
 } from '@augment-vir/common';
-import type {EndpointDefinition, GenericEndpointDefinition} from '../endpoint/endpoint.js';
-import type {ServiceDefinition} from '../service/service-definition.js';
+import {type EndpointDefinition, type GenericEndpointDefinition} from '../endpoint/endpoint.js';
+import {type ServiceDefinition} from '../service/service-definition.js';
 import {createMockEndpointFetch, createMockEndpointResponse} from '../util/mock-fetch.js';
-import type {CommonWebSocket} from '../web-socket/common-web-socket.js';
+import {type CommonWebSocket} from '../web-socket/common-web-socket.js';
 import {
-    ClientWebSocket,
-    GenericConnectWebSocketParams,
+    type ClientWebSocket,
+    type GenericConnectWebSocketParams,
 } from '../web-socket/overwrite-web-socket-methods.js';
-import type {WebSocketDefinition} from '../web-socket/web-socket-definition.js';
-import {CollapsedConnectWebSocketParams, connectWebSocket} from './connect-web-socket.js';
+import {type WebSocketDefinition} from '../web-socket/web-socket-definition.js';
+import {type CollapsedConnectWebSocketParams, connectWebSocket} from './connect-web-socket.js';
 import {
-    CollapsedFetchEndpointParams,
+    type CollapsedFetchEndpointParams,
     fetchEndpoint,
-    FetchEndpointOutput,
-    GenericFetchEndpointParams,
+    type FetchEndpointOutput,
+    type GenericFetchEndpointParams,
 } from './fetch-endpoint.js';
 
 /**

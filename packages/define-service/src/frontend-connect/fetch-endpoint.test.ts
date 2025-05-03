@@ -11,7 +11,7 @@ import {
 import {type NoParam} from '../util/no-param.js';
 import {
     buildEndpointUrl,
-    CollapsedFetchEndpointParams,
+    type CollapsedFetchEndpointParams,
     fetchEndpoint,
     type FetchEndpointParams,
     type GenericFetchEndpointParams,

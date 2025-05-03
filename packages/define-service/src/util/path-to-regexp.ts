@@ -147,7 +147,7 @@ class Iter {
 
     constructor(private tokens: Generator<LexToken, LexToken>) {}
 
-    peek(): LexToken {
+    public peek(): LexToken {
         if (!this._peek) {
             const next = this.tokens.next();
             this._peek = next.value;
@@ -155,7 +155,7 @@ class Iter {
         return this._peek;
     }
 
-    tryConsume(type: TokenType): string | undefined {
+    public tryConsume(type: TokenType): string | undefined {
         const token = this.peek();
         if (token.type !== type) {
             return;
@@ -164,7 +164,7 @@ class Iter {
         return token.value;
     }
 
-    consume(type: TokenType): string {
+    public consume(type: TokenType): string {
         const value = this.tryConsume(type);
         if (value !== undefined) {
             return value;
@@ -173,7 +173,7 @@ class Iter {
         throw new TypeError(`Unexpected ${nextType} at ${index}, expected ${type}: ${DEBUG_URL}`);
     }
 
-    text(): string {
+    public text(): string {
         let result = '';
         let value: string | undefined;
         while ((value = this.tryConsume('CHAR') || this.tryConsume('ESCAPED'))) {

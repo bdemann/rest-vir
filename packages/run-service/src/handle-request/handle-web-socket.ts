@@ -6,10 +6,10 @@ import {
     WebSocketLocation,
 } from '@rest-vir/define-service';
 import {
-    ImplementedWebSocket,
+    type ImplementedWebSocket,
     RestVirHandlerError,
-    ServerRequest,
     type RunningServerInfo,
+    type ServerRequest,
     type WebSocketImplementationParams,
 } from '@rest-vir/implement-service';
 import {assertValidShape} from 'object-shape-tester';

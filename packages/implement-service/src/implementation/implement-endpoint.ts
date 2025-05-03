@@ -1,29 +1,29 @@
 import {check} from '@augment-vir/assert';
 import {
-    ErrorHttpStatusCategories,
-    ExtractKeysWithMatchingValues,
-    HttpMethod,
-    HttpStatusByCategory,
-    MaybePromise,
-    SuccessHttpStatusCategories,
+    type ErrorHttpStatusCategories,
+    type ExtractKeysWithMatchingValues,
+    type HttpMethod,
+    type HttpStatusByCategory,
+    type MaybePromise,
+    type SuccessHttpStatusCategories,
     getObjectTypedEntries,
 } from '@augment-vir/common';
 import {
-    BaseSearchParams,
-    BaseServiceEndpointsInit,
-    EndpointDefinition,
-    EndpointInit,
-    EndpointPathBase,
-    MinimalService,
-    NoParam,
-    ServiceDefinition,
-    ServiceDefinitionError,
-    WithFinalEndpointProps,
+    type BaseSearchParams,
+    type BaseServiceEndpointsInit,
+    type EndpointDefinition,
+    type EndpointInit,
+    type EndpointPathBase,
+    type MinimalService,
+    type NoParam,
     type PathParams,
+    type ServiceDefinition,
+    ServiceDefinitionError,
+    type WithFinalEndpointProps,
 } from '@rest-vir/define-service';
 import {type IncomingHttpHeaders, type OutgoingHttpHeaders} from 'node:http';
 import {type IsEqual, type IsNever} from 'type-fest';
-import {ServerRequest, type ServerResponse} from '../util/data.js';
+import {type ServerRequest, type ServerResponse} from '../util/data.js';
 import {type ServiceLogger} from '../util/service-logger.js';
 
 /**

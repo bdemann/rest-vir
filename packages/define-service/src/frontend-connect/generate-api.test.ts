@@ -1,7 +1,7 @@
 import {assert} from '@augment-vir/assert';
 import {HttpStatus, wait} from '@augment-vir/common';
 import {describe, it} from '@augment-vir/test';
-import type {GenericEndpointDefinition} from '../endpoint/endpoint.js';
+import {type GenericEndpointDefinition} from '../endpoint/endpoint.js';
 import {defineService} from '../service/define-service.js';
 import {createMockResponse} from '../util/mock-fetch.js';
 import {AnyOrigin} from '../util/origin.js';

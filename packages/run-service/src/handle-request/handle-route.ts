@@ -1,16 +1,16 @@
 import {assert, check} from '@augment-vir/assert';
 import {ensureError, HttpStatus} from '@augment-vir/common';
 import {
-    ImplementedEndpoint,
-    ImplementedWebSocket,
+    type ImplementedEndpoint,
+    type ImplementedWebSocket,
     RestVirHandlerError,
-    RunningServerInfo,
-    ServerRequest,
-    ServerResponse,
+    type RunningServerInfo,
+    type ServerRequest,
+    type ServerResponse,
 } from '@rest-vir/implement-service';
 import cluster from 'node:cluster';
 import {type WebSocket as WsWebSocket} from 'ws';
-import {handleHandlerResult, HandleRouteOptions} from './endpoint-handler.js';
+import {handleHandlerResult, type HandleRouteOptions} from './endpoint-handler.js';
 import {handleEndpointRequest} from './handle-endpoint.js';
 import {handleWebSocketRequest} from './handle-web-socket.js';
 
