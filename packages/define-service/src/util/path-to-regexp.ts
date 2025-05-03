@@ -6,7 +6,8 @@
  * This file was copied from
  * https://github.com/pillarjs/path-to-regexp/blob/39e861d02d959ba99d0632af994ab48d4a8eeb14/src/index.ts
  * because its published package on Npm is not browser friendly. It has been modified here to remove
- * all code not used in rest-vir and to meet rest-vir's coding standards.
+ * all code not used in rest-vir and to meet rest-vir's coding standards. It has also been modified
+ * to not require wildcard names.
  *
  * The original package and file source have the following license:
  *
@@ -132,8 +133,7 @@ function* lexer(str: string): Generator<LexToken, LexToken> {
             const value = name();
             yield {type: 'PARAM', index: i, value};
         } else if (value === '*') {
-            const value = name();
-            yield {type: 'WILDCARD', index: i, value};
+            yield {type: 'WILDCARD', index: i++, value: '*'};
         } else {
             yield {type: 'CHAR', index: i, value: chars[i++]!};
         }

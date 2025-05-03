@@ -32,6 +32,15 @@ describe(match.name, () => {
             expect: true,
         },
         {
+            it: 'matches an unnamed wildcard path',
+            only: true,
+            inputs: [
+                '/hi/*',
+                '/hi/bye/see',
+            ],
+            expect: true,
+        },
+        {
             it: 'rejects an invalid parameterized path',
             inputs: [
                 '/hi/:param1/:param2',
