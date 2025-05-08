@@ -24,7 +24,10 @@ import {
     type CommonWebSocketEventMap,
     CommonWebSocketState,
 } from './common-web-socket.js';
-import {type WebSocketDefinition} from './web-socket-definition.js';
+import {
+    type GenericWebSocketDefinition,
+    type WebSocketDefinition,
+} from './web-socket-definition.js';
 
 /**
  * Location of the WebSocket in question: on a client connecting to a WebSocket host or on the host
@@ -336,7 +339,7 @@ export type WebSocketListenerParams<
     WebSocketToConnect extends
         | Readonly<
               SelectFrom<
-                  WebSocketDefinition,
+                  GenericWebSocketDefinition,
                   {
                       MessageFromClientType: true;
                       MessageFromHostType: true;
@@ -351,13 +354,16 @@ export type WebSocketListenerParams<
     webSocketDefinition: WebSocketToConnect extends NoParam
         ? Readonly<
               Overwrite<
-                  WebSocketDefinition,
+                  GenericWebSocketDefinition,
                   /**
                    * This `Overwrite` is needed so that
                    * `CollapsedConnectWebSocketParams<ACTUAL_SOCKET>` can be assigned to
                    * `CollapsedConnectWebSocketParams<NoParam>`. Idk why.
                    */
-                  {path: any; customProps: any}
+                  {
+                      path: any;
+                      customProps: any;
+                  }
               >
           >
         : Readonly<WebSocketToConnect>;
@@ -401,7 +407,7 @@ export type ConnectWebSocketListeners<
     WebSocketToConnect extends
         | Readonly<
               SelectFrom<
-                  WebSocketDefinition,
+                  GenericWebSocketDefinition,
                   {
                       MessageFromClientType: true;
                       MessageFromHostType: true;
@@ -432,7 +438,7 @@ export type WebSocketListener<
     WebSocketToConnect extends
         | Readonly<
               SelectFrom<
-                  WebSocketDefinition,
+                  GenericWebSocketDefinition,
                   {
                       MessageFromClientType: true;
                       MessageFromHostType: true;

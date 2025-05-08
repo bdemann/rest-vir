@@ -14,7 +14,6 @@ import {type MinimalService} from '../service/minimal-service.js';
 import {ensureServiceDefinitionError} from '../service/service-definition.error.js';
 import {type NoParam} from '../util/no-param.js';
 import {type OriginRequirement, originRequirementShape} from '../util/origin.js';
-import {type BaseSearchParams} from '../util/search-params.js';
 
 /**
  * Initialization for a WebSocket within a service definition..
@@ -145,13 +144,13 @@ export type WithFinalWebSocketProps<
                       ? undefined
                       : ShapeDefinition<Init['searchParamsShape'], true> | undefined
                   : undefined;
-              SearchParamsType: IsEqual<Init['searchParamsShape'], undefined> extends true
-                  ? BaseSearchParams
-                  : ShapeToRuntimeType<
+              SearchParamsType: 'searchParamsShape' extends keyof Init
+                  ? ShapeToRuntimeType<
                         ShapeDefinition<Init['searchParamsShape'], true>,
                         false,
                         true
-                    >;
+                    >
+                  : undefined;
               customProps: 'customProps' extends keyof Init ? Init['customProps'] : undefined;
           }
       >

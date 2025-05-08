@@ -22,11 +22,33 @@ import {
 
 describe('CollapsedConnectWebSocketParams', () => {
     it('uses NoParam for generic params', () => {
-        assert.tsType(mockService.webSockets['/custom-props-web-socket'].searchParamsShape);
+        assert
+            .tsType(mockService.webSockets['/custom-props-web-socket'].searchParamsShape)
+            .equals<undefined>();
+        assert
+            .tsType<
+                (typeof mockService.webSockets)['/custom-props-web-socket']['SearchParamsType']
+            >()
+            .equals<undefined>();
+        assert
+            .tsType(mockService.webSockets['/with-search-params'].searchParamsShape)
+            .notEquals<undefined>();
+        assert
+            .tsType<(typeof mockService.webSockets)['/with-search-params']['SearchParamsType']>()
+            .equals<
+                Readonly<{
+                    param1: [string];
+                    param2: readonly string[];
+                }>
+            >();
 
         const genericParams: CollapsedConnectWebSocketParams =
             {} as CollapsedConnectWebSocketParams<
                 (typeof mockService.webSockets)['/custom-props-web-socket']
+            >;
+        const genericParams2: CollapsedConnectWebSocketParams =
+            {} as CollapsedConnectWebSocketParams<
+                (typeof mockService.webSockets)['/with-search-params']
             >;
     });
 });

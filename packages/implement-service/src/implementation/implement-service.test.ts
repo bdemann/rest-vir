@@ -2,6 +2,7 @@ import {assert} from '@augment-vir/assert';
 import {HttpStatus} from '@augment-vir/common';
 import {describe, it} from '@augment-vir/test';
 import {AnyOrigin, defineService} from '@rest-vir/define-service';
+import {mockService} from '@rest-vir/define-service/src/service/define-service.mock.js';
 import {or} from 'object-shape-tester';
 import {
     type EndpointImplementationOutput,
@@ -239,6 +240,26 @@ describe(implementService.name, () => {
                 },
             }),
         );
+    });
+    it('includes search params in context', () => {
+        implementService({
+            service: mockService,
+            createContext({searchParams}) {
+                assert.tsType(searchParams).equals<
+                    | Readonly<{
+                          param1: [string];
+                          param2: readonly string[];
+                      }>
+                    | undefined
+                >();
+
+                searchParams;
+
+                return {
+                    context: 'hi',
+                };
+            },
+        });
     });
     it('blocks endpoint with incorrect status code return', () => {
         implementService({

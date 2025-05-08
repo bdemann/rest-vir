@@ -144,6 +144,11 @@ export async function preHandler(
         response.send('Invalid body.');
         return undefined;
     }
+    const searchParams = handleSearchParams({request, route});
+
+    if (!('data' in searchParams)) {
+        return handleHandlerResult(searchParams, response);
+    }
 
     const contextParams: ContextInitParameters = {
         method: assertWrap.isEnumValue(request.method.toUpperCase(), HttpMethod),
@@ -155,13 +160,8 @@ export async function preHandler(
         endpointDefinition: endpointDefinition,
         webSocketDefinition: webSocketDefinition,
         server,
+        searchParams: searchParams.data,
     };
-
-    const searchParams = handleSearchParams({request, route});
-
-    if (!('data' in searchParams)) {
-        return handleHandlerResult(searchParams, response);
-    }
 
     try {
         const contextOutput = await service.createContext?.(contextParams);

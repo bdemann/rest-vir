@@ -1,5 +1,6 @@
 import {type HttpMethod, type MaybePromise, type Values} from '@augment-vir/common';
 import {
+    type BaseSearchParams,
     type BaseServiceEndpointsInit,
     type BaseServiceWebSocketsInit,
     type EndpointDefinition,
@@ -63,6 +64,13 @@ export type ContextInitParameters<
     EndpointsInit extends BaseServiceEndpointsInit | NoParam = NoParam,
     WebSocketsInit extends BaseServiceWebSocketsInit | NoParam = NoParam,
 > = {
+    searchParams:
+        | (WebSocketsInit extends NoParam
+              ? BaseSearchParams | undefined
+              : WithFinalWebSocketProps<Values<WebSocketsInit>, any>['SearchParamsType'])
+        | (EndpointsInit extends NoParam
+              ? BaseSearchParams | undefined
+              : WithFinalEndpointProps<Values<EndpointsInit>, any>['SearchParamsType']);
     service: MinimalService<ServiceName>;
     requestHeaders: IncomingHttpHeaders;
     method: HttpMethod;
