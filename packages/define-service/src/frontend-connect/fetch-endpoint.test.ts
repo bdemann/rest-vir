@@ -43,6 +43,7 @@ describe(buildEndpointUrl.name, () => {
                 },
                 requestDataShape: undefined,
                 responseDataShape: undefined,
+                searchParamsShape: undefined,
                 ...endpoint,
             },
             {

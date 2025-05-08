@@ -15,7 +15,10 @@ import {
     type ClientWebSocket,
     type GenericConnectWebSocketParams,
 } from '../web-socket/overwrite-web-socket-methods.js';
-import {type WebSocketDefinition} from '../web-socket/web-socket-definition.js';
+import {
+    type GenericWebSocketDefinition,
+    type WebSocketDefinition,
+} from '../web-socket/web-socket-definition.js';
 
 /**
  * Parameters for {@link MockClientWebSocketClientSendCallback}.
@@ -142,7 +145,7 @@ export type MockClientWebSocketListeners = Partial<{
  *
  * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
  */
-export class MockClientWebSocket<const WebSocketToConnect extends WebSocketDefinition = any>
+export class MockClientWebSocket<const WebSocketToConnect extends GenericWebSocketDefinition = any>
     implements CommonWebSocket
 {
     /**

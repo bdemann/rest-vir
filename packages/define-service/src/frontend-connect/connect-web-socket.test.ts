@@ -32,6 +32,36 @@ describe('CollapsedConnectWebSocketParams', () => {
 });
 
 describe(connectWebSocket.name, () => {
+    it('requires search params', async () => {
+        await assert.throws(() =>
+            connectWebSocket(
+                mockService.webSockets['/with-search-params'],
+                // @ts-expect-error: missing search params
+                {
+                    webSocketConstructor: MockClientWebSocket<
+                        (typeof mockService.webSockets)['/with-search-params']
+                    >,
+                },
+            ),
+        );
+
+        const socket = await connectWebSocket(mockService.webSockets['/with-search-params'], {
+            searchParams: {
+                param1: ['hi'],
+                param2: [
+                    'a',
+                    'b',
+                    'c',
+                ],
+            },
+
+            webSocketConstructor: MockClientWebSocket<
+                (typeof mockService.webSockets)['/with-search-params']
+            >,
+        });
+
+        await socket.close();
+    });
     it('is assignable to a client web socket', async () => {
         /** These will fail because there isn't a server responding. */
         await assert.throws(async () => {
@@ -425,6 +455,7 @@ describe(buildWebSocketUrl.name, () => {
                         serviceName: 'test',
                         serviceOrigin: 'http://example.com',
                     },
+                    searchParamsShape: undefined,
                 },
             ],
             expect: 'ws://example.com/test',
@@ -438,6 +469,7 @@ describe(buildWebSocketUrl.name, () => {
                         serviceName: 'test',
                         serviceOrigin: 'https://example.com',
                     },
+                    searchParamsShape: undefined,
                 },
             ],
             expect: 'wss://example.com/test',
@@ -451,6 +483,7 @@ describe(buildWebSocketUrl.name, () => {
                         serviceName: 'test',
                         serviceOrigin: 'https://example.com',
                     },
+                    searchParamsShape: undefined,
                 },
                 {
                     pathParams: {

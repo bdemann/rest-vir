@@ -1,6 +1,6 @@
 {
     "name": "@rest-vir/run-service",
-    "version": "0.16.0",
+    "version": "0.17.0",
     "description": "Run a service defined by @rest-vir/define-service and implemented by @rest-vir/implement-service.",
     "keywords": [
         "rest",
@@ -43,8 +43,8 @@
         "@augment-vir/common": "^31.16.0",
         "@augment-vir/node": "^31.16.0",
         "@fastify/websocket": "^11.0.2",
-        "@rest-vir/define-service": "^0.16.0",
-        "@rest-vir/implement-service": "^0.16.0",
+        "@rest-vir/define-service": "^0.17.0",
+        "@rest-vir/implement-service": "^0.17.0",
         "cluster-vir": "^0.1.0",
         "date-vir": "^7.3.1",
         "fastify": "^5.3.2",

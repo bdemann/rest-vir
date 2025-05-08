@@ -1,4 +1,4 @@
-import {waitUntil} from '@augment-vir/assert';
+import {check, waitUntil} from '@augment-vir/assert';
 import {
     type AnyFunction,
     type AnyObject,
@@ -18,6 +18,7 @@ import {assertValidShape} from 'object-shape-tester';
 import {type HasRequiredKeys} from 'type-fest';
 import {parseJsonWithUndefined} from '../augments/json.js';
 import {type NoParam} from '../util/no-param.js';
+import {type BaseSearchParams} from '../util/search-params.js';
 import {
     type CommonWebSocket,
     type CommonWebSocketEventMap,
@@ -481,7 +482,7 @@ export type GenericConnectWebSocketParams<WebSocketClass extends CommonWebSocket
               webSocketDefinition: WebSocketDefinition,
           ) => WebSocketClass)
         | undefined;
-    searchParams?: unknown;
+    searchParams?: BaseSearchParams | undefined;
 };
 
 /**
@@ -676,6 +677,23 @@ export function overwriteWebSocketMethods<
     return webSocket;
 }
 
+function cleanUpWebSocketError(error: unknown) {
+    if (check.isObject(error)) {
+        delete error.webSocket;
+        if (
+            check.hasKey(error, 'webSocketDefinition') &&
+            check.hasKey(error.webSocketDefinition, 'path')
+        ) {
+            error.path = error.webSocketDefinition.path;
+        }
+        delete error.webSocketDefinition;
+        return error;
+        /* node:coverage ignore next 3: edge case */
+    } else {
+        return error;
+    }
+}
+
 /**
  * Waits for a WebSocket to reach to the open state.
  *
@@ -693,7 +711,10 @@ export async function waitForOpenWebSocket(
     function errorListener(error: unknown) {
         if (!webSocketOpenedPromise.isSettled) {
             webSocketOpenedPromise.reject(
-                ensureErrorAndPrependMessage(error, 'WebSocket connection failed.'),
+                ensureErrorAndPrependMessage(
+                    cleanUpWebSocketError(error),
+                    'WebSocket connection failed.',
+                ),
             );
         }
     }
@@ -722,7 +743,7 @@ export async function waitForOpenWebSocket(
         )
         .catch((error: unknown) => {
             if (!webSocketOpenedPromise.isSettled) {
-                webSocketOpenedPromise.reject(error);
+                webSocketOpenedPromise.reject(cleanUpWebSocketError(error));
             }
         });
 

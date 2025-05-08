@@ -17,7 +17,10 @@ import {
     type GenericConnectWebSocketParams,
     type OverwriteWebSocketMethods,
 } from '../web-socket/overwrite-web-socket-methods.js';
-import {type WebSocketDefinition} from '../web-socket/web-socket-definition.js';
+import {
+    type GenericWebSocketDefinition,
+    type WebSocketDefinition,
+} from '../web-socket/web-socket-definition.js';
 import {buildEndpointUrl} from './fetch-endpoint.js';
 import {parseSecWebSocketProtocolHeader} from './web-socket-protocol-parse.js';
 
@@ -59,11 +62,12 @@ export function buildWebSocketUrl(
                     serviceName: true;
                     serviceOrigin: true;
                 };
+                searchParamsShape: true;
             }
         >
     >,
     ...[
-        {pathParams} = {},
+        {pathParams, searchParams} = {},
     ]: CollapsedConnectWebSocketParams
 ): string {
     const httpUrl = buildEndpointUrl(
@@ -75,8 +79,9 @@ export function buildWebSocketUrl(
             requestDataShape: undefined,
             responseDataShape: undefined,
             service: webSocketDefinition.service,
+            searchParamsShape: webSocketDefinition.searchParamsShape,
         },
-        {pathParams},
+        {pathParams, searchParams},
     );
 
     return buildUrl(httpUrl, {
@@ -140,7 +145,7 @@ export type ConnectWebSocketParams<
           }) &
     (WebSocketToConnect['searchParamsShape'] extends undefined
         ? {
-              searchParams?: string[];
+              searchParams?: never;
           }
         : {
               searchParams: WebSocketToConnect['SearchParamsType'];
@@ -209,10 +214,10 @@ const defaultWebSocket = function (
  * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
  */
 export async function connectWebSocket<
-    const WebSocketToConnect extends Readonly<WebSocketDefinition> | NoParam,
+    const WebSocketToConnect extends Readonly<GenericWebSocketDefinition> | NoParam,
     WebSocketClass extends CommonWebSocket,
 >(
-    webSocketDefinition: WebSocketToConnect extends WebSocketDefinition
+    webSocketDefinition: WebSocketToConnect extends GenericWebSocketDefinition
         ? WebSocketToConnect
         : Readonly<WebSocketDefinition>,
     ...params: CollapsedConnectWebSocketParams<WebSocketToConnect, true, WebSocketClass>

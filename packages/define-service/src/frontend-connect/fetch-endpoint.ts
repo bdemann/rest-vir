@@ -34,7 +34,7 @@ import {type BaseSearchParams} from '../util/search-params.js';
 export type GenericFetchEndpointParams = {
     pathParams?: Record<string, string> | undefined;
     requestData?: any;
-    searchParams?: BaseSearchParams;
+    searchParams?: BaseSearchParams | undefined;
     method?: HttpMethod | undefined;
     options?: Omit<RequestInit, 'body' | 'method'> | undefined;
     /**
@@ -447,19 +447,10 @@ export function buildEndpointRequestInit<
         }
     }
 
-    if (endpoint.searchParamsShape) {
-        assertValidShape(
-            searchParams,
-            endpoint.searchParamsShape,
-            {
-                /** Allow extra keys for forwards compatibility. */
-                allowExtraKeys: true,
-            },
-            `Invalid search params given to endpoint '${endpoint.path}'`,
-        );
-    }
-
-    const url = buildEndpointUrl(endpoint, {pathParams, searchParams});
+    const url = buildEndpointUrl(endpoint, {
+        pathParams,
+        searchParams,
+    });
 
     const requestInit: RequestInit = {
         ...options,
@@ -503,6 +494,7 @@ export function buildEndpointUrl<
                       methods: true;
                       requestDataShape: true;
                       responseDataShape: true;
+                      searchParamsShape: true;
                   }
               >
           >
@@ -519,6 +511,7 @@ export function buildEndpointUrl<
                       serviceName: true;
                   };
                   requestDataShape: true;
+                  searchParamsShape: true;
                   responseDataShape: true;
                   methods: true;
               }
@@ -534,6 +527,18 @@ export function buildEndpointUrl<
     >,
 ): string {
     let pathParamsCount = 0;
+
+    if (endpoint.searchParamsShape) {
+        assertValidShape(
+            searchParams,
+            endpoint.searchParamsShape,
+            {
+                /** Allow extra keys for forwards compatibility. */
+                allowExtraKeys: true,
+            },
+            `Invalid search params given to '${endpoint.path}' in service '${endpoint.service.serviceName}'`,
+        );
+    }
 
     const builtUrl = buildUrl(endpoint.service.serviceOrigin, {
         search: searchParams,
@@ -555,7 +560,7 @@ export function buildEndpointUrl<
 
     if (!pathParamsCount && pathParams) {
         throw new Error(
-            `Endpoint '${endpoint.path}' in service '${endpoint.service.serviceName}' does not allow any path params but some where set.`,
+            `'${endpoint.path}' in service '${endpoint.service.serviceName}' does not allow any path params but some where set.`,
         );
     }
 
