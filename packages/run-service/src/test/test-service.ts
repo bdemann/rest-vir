@@ -411,7 +411,7 @@ export async function testExistingServer<
                 const webSocket: globalThis.WebSocket =
                     webSocketOrigin == undefined
                         ? ((await server.injectWS(
-                              parseUrl(webSocketUrl).pathname,
+                              parseUrl(webSocketUrl).fullPath,
                               protocols.length
                                   ? {
                                         headers: {
