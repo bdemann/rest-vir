@@ -1,5 +1,5 @@
 import {assert} from '@augment-vir/assert';
-import {HttpStatus, wait} from '@augment-vir/common';
+import {HttpMethod, HttpStatus, wait} from '@augment-vir/common';
 import {describe, it} from '@augment-vir/test';
 import {type GenericEndpointDefinition} from '../endpoint/endpoint.js';
 import {defineService} from '../service/define-service.js';
@@ -95,6 +95,22 @@ describe(makeMockApi.name, () => {
         assert.isTrue(response.ok);
         assert.isUndefined(data);
     });
+    it('fetches with search params', async () => {
+        // @ts-expect-error: missing search params
+        await assert.throws(() => mockMockApi.endpoints['/with-search-params'].fetch({}));
+
+        await mockMockApi.endpoints['/with-search-params'].fetch({
+            method: HttpMethod.Get,
+            searchParams: {
+                param1: ['hi'],
+                param2: [
+                    'a',
+                    'b',
+                    'c',
+                ],
+            },
+        });
+    });
     it('connects to a mock WebSocket', async () => {
         const webSocket = await mockMockApi.webSockets['/no-client-data'].connect();
 
@@ -105,5 +121,20 @@ describe(makeMockApi.name, () => {
         webSocket.sendFromHost('ok');
 
         assert.strictEquals(await replyPromise, 'ok');
+    });
+    it('can connect to a web socket that requires search params', async () => {
+        // @ts-expect-error: missing search params
+        await assert.throws(() => mockMockApi.webSockets['/with-search-params'].connect({}));
+
+        await mockMockApi.webSockets['/with-search-params'].connect({
+            searchParams: {
+                param1: ['hi'],
+                param2: [
+                    'a',
+                    'b',
+                    'c',
+                ],
+            },
+        });
     });
 });

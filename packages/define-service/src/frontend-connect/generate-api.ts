@@ -13,7 +13,10 @@ import {
     type ClientWebSocket,
     type GenericConnectWebSocketParams,
 } from '../web-socket/overwrite-web-socket-methods.js';
-import {type WebSocketDefinition} from '../web-socket/web-socket-definition.js';
+import {
+    type GenericWebSocketDefinition,
+    type WebSocketDefinition,
+} from '../web-socket/web-socket-definition.js';
 import {type CollapsedConnectWebSocketParams, connectWebSocket} from './connect-web-socket.js';
 import {
     type CollapsedFetchEndpointParams,
@@ -52,7 +55,7 @@ export class RestVirApi<SpecificService extends ServiceDefinition> {
      * up connections to it.
      */
     public readonly webSockets: {
-        [WebSocketPath in keyof SpecificService['webSockets']]: SpecificService['webSockets'][WebSocketPath] extends WebSocketDefinition
+        [WebSocketPath in keyof SpecificService['webSockets']]: SpecificService['webSockets'][WebSocketPath] extends GenericWebSocketDefinition
             ? SpecificService['webSockets'][WebSocketPath] & {
                   /** Connect to this WebSocket. */
                   connect(
@@ -224,7 +227,7 @@ export type MockExistingApi<
     Api,
     {
         webSockets: {
-            [WebSocketPath in keyof Api['webSockets']]: Api['webSockets'][WebSocketPath] extends WebSocketDefinition
+            [WebSocketPath in keyof Api['webSockets']]: Api['webSockets'][WebSocketPath] extends GenericWebSocketDefinition
                 ? Overwrite<
                       Api['webSockets'][WebSocketPath],
                       {

@@ -163,7 +163,7 @@ export type CollapsedConnectWebSocketParams<
     WebSocketToConnect extends
         | Readonly<
               SelectFrom<
-                  WebSocketDefinition,
+                  GenericWebSocketDefinition,
                   {
                       path: true;
                       MessageFromClientType: true;
