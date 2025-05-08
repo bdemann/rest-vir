@@ -21,6 +21,8 @@ import {
     type CollapsedFetchEndpointParams,
     type EndpointDefinition,
     finalizeWebSocket,
+    type GenericEndpointDefinition,
+    type GenericWebSocketDefinition,
     type NoParam,
     restVirServiceNameHeader,
     type WebSocketDefinition,
@@ -132,7 +134,7 @@ export type FetchTestService<
         }
     >,
 > = {
-    [EndpointPath in keyof Service['endpoints']]: Service['endpoints'][EndpointPath] extends EndpointDefinition
+    [EndpointPath in keyof Service['endpoints']]: Service['endpoints'][EndpointPath] extends GenericEndpointDefinition
         ? FetchTestEndpoint<Service['endpoints'][EndpointPath]>
         : never;
 };
@@ -153,7 +155,7 @@ export type ConnectTestServiceWebSocket<
         }
     >,
 > = {
-    [WebSocketPath in keyof Service['webSockets']]: Service['webSockets'][WebSocketPath] extends WebSocketDefinition
+    [WebSocketPath in keyof Service['webSockets']]: Service['webSockets'][WebSocketPath] extends GenericWebSocketDefinition
         ? ConnectTestWebSocket<Service['webSockets'][WebSocketPath]>
         : never;
 };

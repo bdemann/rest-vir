@@ -153,6 +153,52 @@ describe(testService.name, () => {
             await kill();
         }
     });
+    it('can connect with search params', async () => {
+        const {fetchEndpoint, connectWebSocket, kill} = await testService(
+            mockServiceImplementation,
+            {
+                port: 4500 + randomInteger({min: 0, max: 4000}),
+            },
+        );
+
+        try {
+            assert.deepEquals(
+                await condenseResponse(
+                    await fetchEndpoint['/with-search-params']({
+                        method: HttpMethod.Get,
+                        searchParams: {
+                            param1: ['hi'],
+                            param2: [
+                                'a',
+                                'b',
+                                'c',
+                            ],
+                        },
+                    }),
+                ),
+                {
+                    headers: {
+                        'access-control-allow-origin': '*',
+                        'access-control-expose-headers': restVirServiceNameHeader,
+                    },
+                    status: HttpStatus.Ok,
+                },
+            );
+
+            await connectWebSocket['/with-search-params']({
+                searchParams: {
+                    param1: ['hi'],
+                    param2: [
+                        'a',
+                        'b',
+                        'c',
+                    ],
+                },
+            });
+        } finally {
+            await kill();
+        }
+    });
     it('works without a port', async () => {
         const {fetchEndpoint, connectWebSocket, kill} = await testService(plainService);
 
