@@ -14,7 +14,6 @@ import {type MinimalService} from '../service/minimal-service.js';
 import {ensureServiceDefinitionError} from '../service/service-definition.error.js';
 import {type NoParam} from '../util/no-param.js';
 import {originRequirementShape, type OriginRequirement} from '../util/origin.js';
-import {type BaseSearchParams} from '../util/search-params.js';
 import {assertValidEndpointPath, type EndpointPathBase} from './endpoint-path.js';
 
 /**
@@ -181,7 +180,7 @@ export type WithFinalEndpointProps<
                         false,
                         true
                     >
-                  : BaseSearchParams;
+                  : undefined;
               customProps: 'customProps' extends keyof Init ? Init['customProps'] : undefined;
           }
       >

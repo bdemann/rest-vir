@@ -1,6 +1,7 @@
 import {assert} from '@augment-vir/assert';
 import {DeferredPromise, HttpMethod, HttpStatus} from '@augment-vir/common';
 import {describe, it, itCases} from '@augment-vir/test';
+import {parseUrl} from 'url-vir';
 import {type EndpointDefinition} from '../endpoint/endpoint.js';
 import {mockService} from '../service/define-service.mock.js';
 import {
@@ -106,6 +107,7 @@ describe('FetchEndpointParams', () => {
     it('includes request data', () => {
         assert.tsType<FetchEndpointParams<(typeof mockService.endpoints)['/test']>>().equals<
             Readonly<{
+                searchParams?: never;
                 pathParams?: never;
                 requestData: Readonly<{
                     somethingHere: string;
@@ -122,6 +124,7 @@ describe('FetchEndpointParams', () => {
             .tsType<FetchEndpointParams<(typeof mockService.endpoints)['/with/:param1/:param2']>>()
             .equals<
                 Readonly<{
+                    searchParams?: never;
                     pathParams: Readonly<Record<'param1' | 'param2', string>>;
                     requestData?: never;
                     method: HttpMethod.Get | HttpMethod.Head | 'GET' | 'HEAD';
@@ -133,6 +136,40 @@ describe('FetchEndpointParams', () => {
 });
 
 describe(fetchEndpoint.name, () => {
+    it('requires search params', async () => {
+        await assert.throws(() =>
+            // @ts-expect-error: missing search params
+            fetchEndpoint(mockService.endpoints['/with-search-params'], {
+                method: HttpMethod.Get,
+                fetch(url) {
+                    return createMockResponse({
+                        status: parseUrl(url).search
+                            ? HttpStatus.Ok
+                            : HttpStatus.InternalServerError,
+                    });
+                },
+            }),
+        );
+
+        const goodOutput = await fetchEndpoint(mockService.endpoints['/with-search-params'], {
+            searchParams: {
+                param1: ['hi'],
+                param2: [
+                    'a',
+                    'b',
+                    'c',
+                ],
+            },
+            method: HttpMethod.Get,
+            fetch(url) {
+                return createMockResponse({
+                    status: parseUrl(url).search ? HttpStatus.Ok : HttpStatus.InternalServerError,
+                });
+            },
+        });
+
+        assert.isTrue(goodOutput.ok);
+    });
     it('returns response type', async () => {
         assert
             .tsType(

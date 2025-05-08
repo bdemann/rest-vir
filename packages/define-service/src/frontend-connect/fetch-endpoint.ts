@@ -21,6 +21,7 @@ import {
     type GenericEndpointDefinition,
 } from '../endpoint/endpoint.js';
 import {type NoParam} from '../util/no-param.js';
+import {type BaseSearchParams} from '../util/search-params.js';
 
 /**
  * A general version of {@link FetchEndpointParams} to be used when accepting _any_ endpoint (like in
@@ -33,6 +34,7 @@ import {type NoParam} from '../util/no-param.js';
 export type GenericFetchEndpointParams = {
     pathParams?: Record<string, string> | undefined;
     requestData?: any;
+    searchParams?: BaseSearchParams;
     method?: HttpMethod | undefined;
     options?: Omit<RequestInit, 'body' | 'method'> | undefined;
     /**
@@ -107,6 +109,13 @@ export type FetchEndpointParams<
                       /** This endpoint has no path parameters to configure. */
                       pathParams?: undefined;
                   }) &
+              (EndpointToFetch['SearchParamsType'] extends undefined
+                  ? {
+                        searchParams?: never;
+                    }
+                  : {
+                        searchParams: EndpointToFetch['SearchParamsType'];
+                    }) &
               (EndpointExecutorData<EndpointToFetch>['request'] extends undefined
                   ? {
                         /**
@@ -314,6 +323,7 @@ export async function fetchEndpoint<
                   requestDataShape: true;
                   path: true;
                   responseDataShape: true;
+                  searchParamsShape: true;
                   methods: true;
                   service: {
                       serviceOrigin: true;
@@ -402,6 +412,7 @@ export function buildEndpointRequestInit<
                   requestDataShape: true;
                   path: true;
                   responseDataShape: true;
+                  searchParamsShape: true;
                   methods: true;
                   service: {
                       serviceOrigin: true;
@@ -410,7 +421,7 @@ export function buildEndpointRequestInit<
               }
           >,
     ...[
-        {method, options = {}, pathParams, requestData} = {},
+        {method, options = {}, pathParams, requestData, searchParams} = {},
     ]: CollapsedFetchEndpointParams<EndpointToFetch, false>
 ) {
     const headers: Record<string, string> =
@@ -436,7 +447,19 @@ export function buildEndpointRequestInit<
         }
     }
 
-    const url = buildEndpointUrl(endpoint, {pathParams});
+    if (endpoint.searchParamsShape) {
+        assertValidShape(
+            searchParams,
+            endpoint.searchParamsShape,
+            {
+                /** Allow extra keys for forwards compatibility. */
+                allowExtraKeys: true,
+            },
+            `Invalid search params given to endpoint '${endpoint.path}'`,
+        );
+    }
+
+    const url = buildEndpointUrl(endpoint, {pathParams, searchParams});
 
     const requestInit: RequestInit = {
         ...options,
@@ -502,16 +525,18 @@ export function buildEndpointUrl<
           >,
     {
         pathParams,
+        searchParams,
     }: Pick<
         EndpointToFetch extends NoParam
             ? Readonly<GenericFetchEndpointParams>
             : Readonly<FetchEndpointParams<Exclude<EndpointToFetch, NoParam>>>,
-        'pathParams'
+        'pathParams' | 'searchParams'
     >,
 ): string {
     let pathParamsCount = 0;
 
     const builtUrl = buildUrl(endpoint.service.serviceOrigin, {
+        search: searchParams,
         pathname: endpoint.path.replaceAll(
             /\/:([^/]+)/g,
             (wholeMatch, paramName: string): string => {
