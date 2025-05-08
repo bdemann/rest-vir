@@ -71,3 +71,62 @@ export const originRequirementShape = defineShape(
         or('', exact(AnyOrigin), classShape(RegExp), () => {}),
     ]),
 );
+
+/**
+ * - `boolean`: the origin was explicitly checked and passed (`true`) or failed (`false`)
+ * - `undefined`: no origin checking occurred
+ * - `AnyOrigin`: requirements explicitly allow any origin.
+ */
+export type OriginRequirementResult = boolean | undefined | AnyOrigin;
+
+/**
+ * Checks the given origin against the given origin requirement and determine if the origin matches.
+ * See {@link OriginRequirementResult} for details on what each possible return value means.
+ *
+ * @category Internal
+ * @category Package : @rest-vir/define-service
+ * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
+ */
+export async function checkOriginRequirement(
+    origin: string | undefined,
+    originRequirement: OriginRequirement,
+): Promise<OriginRequirementResult> {
+    if (isAnyOrigin(originRequirement)) {
+        /** Any origin has been explicitly allowed. */
+        return AnyOrigin;
+    } else if (originRequirement === undefined) {
+        /** No checking occurred. */
+        return undefined;
+    } else if (!origin) {
+        /** If there is an origin requirement but no origin then the origin automatically fails. */
+        return false;
+    } else if (check.isString(originRequirement)) {
+        return origin === originRequirement;
+    } else if (check.instanceOf(originRequirement, RegExp)) {
+        return !!originRequirement.exec(origin);
+    } else if (check.isArray(originRequirement)) {
+        for (const requirement of originRequirement) {
+            if (await checkOriginRequirement(origin, requirement)) {
+                return true;
+            }
+        }
+        return false;
+    } else {
+        return await originRequirement(origin);
+    }
+}
+
+/**
+ * Narrower version of {@link checkOriginRequirement} that simply returns `true` if the origin
+ * matched or `false` otherwise.
+ *
+ * @category Internal
+ * @category Package : @rest-vir/define-service
+ * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
+ */
+export async function matchesOriginRequirement(
+    origin: string | undefined,
+    originRequirement: NonNullable<OriginRequirement>,
+): Promise<boolean> {
+    return !!(await checkOriginRequirement(origin, originRequirement));
+}

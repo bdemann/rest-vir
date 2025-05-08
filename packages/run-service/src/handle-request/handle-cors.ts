@@ -1,11 +1,10 @@
-import {check} from '@augment-vir/assert';
 import {HttpMethod, type SelectFrom} from '@augment-vir/common';
 import {
     AnyOrigin,
+    checkOriginRequirement,
     type EndpointDefinition,
     getAllowedEndpointMethods,
     isAnyOrigin,
-    type OriginRequirement,
     restVirServiceNameHeader,
     type WebSocketDefinition,
 } from '@rest-vir/define-service';
@@ -180,7 +179,7 @@ async function matchOrigin(
     >,
     origin: string | undefined,
 ): Promise<MatchedOrigin> {
-    const endpointRequirement = await checkOriginRequirement(endpoint.requiredClientOrigin, origin);
+    const endpointRequirement = await checkOriginRequirement(origin, endpoint.requiredClientOrigin);
 
     if (isAnyOrigin(endpointRequirement)) {
         return AnyOrigin;
@@ -193,8 +192,8 @@ async function matchOrigin(
     /** If the endpoint requirement is `undefined`, then we check the service requirement. */
 
     const serviceRequirement = await checkOriginRequirement(
-        endpoint.service.requiredClientOrigin,
         origin,
+        endpoint.service.requiredClientOrigin,
     );
 
     if (isAnyOrigin(serviceRequirement)) {
@@ -213,40 +212,4 @@ async function matchOrigin(
         endpoint,
         `Request origin '${origin}' failed to get checked for endpoint '${endpoint.path}' or service '${endpoint.service.serviceName}'`,
     );
-}
-
-/**
- * - `boolean`: the origin was explicitly checked and passed (`true`) or failed (`false`)
- * - `undefined`: no origin checking occurred
- * - `AnyOrigin`: requirements explicitly allow any origin.
- */
-type OriginRequirementResult = boolean | undefined | AnyOrigin;
-
-async function checkOriginRequirement(
-    originRequirement: OriginRequirement,
-    origin: string | undefined,
-): Promise<OriginRequirementResult> {
-    if (isAnyOrigin(originRequirement)) {
-        /** Any origin has been explicitly allowed. */
-        return AnyOrigin;
-    } else if (originRequirement === undefined) {
-        /** No checking occurred. */
-        return undefined;
-    } else if (!origin) {
-        /** If there is an origin requirement but no origin then the origin automatically fails. */
-        return false;
-    } else if (check.isString(originRequirement)) {
-        return origin === originRequirement;
-    } else if (check.instanceOf(originRequirement, RegExp)) {
-        return !!originRequirement.exec(origin);
-    } else if (check.isArray(originRequirement)) {
-        for (const requirement of originRequirement) {
-            if (await checkOriginRequirement(requirement, origin)) {
-                return true;
-            }
-        }
-        return false;
-    } else {
-        return await originRequirement(origin);
-    }
 }
