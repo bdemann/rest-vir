@@ -1,4 +1,4 @@
-import {check} from '@augment-vir/assert';
+import {assertWrap, check} from '@augment-vir/assert';
 import {
     ensureError,
     extractErrorMessage,
@@ -6,15 +6,21 @@ import {
     getObjectTypedKeys,
     HttpMethod,
     HttpStatus,
+    isErrorHttpStatus,
     randomString,
     type SelectFrom,
 } from '@augment-vir/common';
 import fastifyWs from '@fastify/websocket';
-import {type BaseSearchParams, type MinimalService} from '@rest-vir/define-service';
+import {
+    matchUrlToService,
+    type BaseSearchParams,
+    type MinimalService,
+} from '@rest-vir/define-service';
 import {
     RestVirHandlerError,
     ServiceImplementation,
     type GenericServiceImplementation,
+    type PostHookParams,
     type RunningServerInfo,
 } from '@rest-vir/implement-service';
 import {type FastifyInstance} from 'fastify';
@@ -22,6 +28,7 @@ import {buildUrl, parseUrl} from 'url-vir';
 import {type HandleRouteOptions} from '../handle-request/endpoint-handler.js';
 import {handleRoute} from '../handle-request/handle-route.js';
 import {preHandler} from '../handle-request/pre-handler.js';
+import {setResponseHeaders} from '../util/headers.js';
 
 declare module 'fastify' {
     interface FastifyRequest {
@@ -84,6 +91,7 @@ export async function attachService(
                 serviceOrigin: true;
                 requiredClientOrigin: true;
                 logger: true;
+                postHook: true;
             }
         >
     >,
@@ -134,6 +142,88 @@ export async function attachService(
                 }
             }
         });
+        const postHook = service.postHook;
+        if (postHook) {
+            server.addHook('onSend', async (request, response, body) => {
+                /* node:coverage ignore next 4 */
+                const restVirContext = request.restVirContext?.[attachId];
+                if (!restVirContext) {
+                    return undefined;
+                }
+
+                const context = restVirContext.context;
+                const requestData = restVirContext.requestData;
+                const searchParams = restVirContext.searchParams;
+
+                const pathMatch = matchUrlToService(service, request.originalUrl);
+
+                /* node:coverage ignore next 10 */
+                if (!pathMatch) {
+                    return undefined;
+                }
+                const endpointDefinition = pathMatch.endpointPath
+                    ? service.endpoints[pathMatch.endpointPath]
+                    : undefined;
+                const webSocketDefinition =
+                    request.ws && pathMatch.webSocketPath
+                        ? service.webSockets[pathMatch.webSocketPath]
+                        : undefined;
+
+                const postHookParams: PostHookParams = {
+                    context,
+                    method: assertWrap.isEnumValue(request.method.toUpperCase(), HttpMethod),
+                    request,
+                    requestData,
+                    requestHeaders: request.headers,
+                    response,
+                    service,
+                    endpointDefinition: endpointDefinition,
+                    webSocketDefinition: webSocketDefinition,
+                    server: extractRunningServerInfo(service, server),
+                    searchParams,
+                    originalResponseData: body,
+                    originalStatus: response.statusCode,
+                };
+
+                const result = await postHook(postHookParams);
+
+                if (result) {
+                    if (result.headers) {
+                        setResponseHeaders(response, result.headers);
+                    }
+                    if (result.dataType) {
+                        setResponseHeaders(response, {
+                            'content-type': result.dataType,
+                        });
+                    }
+
+                    if (result.statusCode) {
+                        response.status(result.statusCode);
+                    }
+
+                    if (
+                        isErrorHttpStatus(result.statusCode ?? response.statusCode) &&
+                        'responseErrorMessage' in result
+                    ) {
+                        if (result.responseErrorMessage == undefined) {
+                            /** Clear the body. */
+                            return null;
+                        } else {
+                            return result.responseErrorMessage;
+                        }
+                    } else if ('responseData' in result) {
+                        if (result.responseData == undefined) {
+                            /** Clear the body. */
+                            return null;
+                        } else {
+                            return result.responseData;
+                        }
+                    }
+                }
+
+                return undefined;
+            });
+        }
 
         const allPaths = new Set([
             ...getObjectTypedKeys(service.webSockets),

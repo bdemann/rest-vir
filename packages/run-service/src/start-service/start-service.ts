@@ -86,6 +86,7 @@ export async function startService(
                 serviceOrigin: true;
                 requiredClientOrigin: true;
                 logger: true;
+                postHook: true;
             }
         >
     >,
@@ -180,6 +181,7 @@ async function startServer(
                 serviceOrigin: true;
                 requiredClientOrigin: true;
                 logger: true;
+                postHook: true;
             }
         >
     >,

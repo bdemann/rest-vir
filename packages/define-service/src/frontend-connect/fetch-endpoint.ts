@@ -442,7 +442,7 @@ export function buildEndpointRequestInit<
              * set it automatically _and_ include a boundary in the content type, which is needed
              * for reading the form data properly.
              */
-        } else if (check.isObject(requestData)) {
+        } else if (requestData) {
             headers['content-type'] = 'application/json';
         }
     }

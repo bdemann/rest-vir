@@ -212,6 +212,7 @@ export async function testService<
                 serviceOrigin: true;
                 requiredClientOrigin: true;
                 logger: true;
+                postHook: true;
             }
         >
     >,
@@ -298,6 +299,7 @@ export async function testExistingServer<
                 serviceOrigin: true;
                 requiredClientOrigin: true;
                 logger: true;
+                postHook: true;
             }
         >
     >,
@@ -492,6 +494,7 @@ export function describeService<
                 serviceOrigin: true;
                 requiredClientOrigin: true;
                 logger: true;
+                postHook: true;
             }
         >
     >,

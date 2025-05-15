@@ -33,6 +33,7 @@ import {
     assertValidWebSocketImplementations,
     type WebSocketImplementations,
 } from './implement-web-socket.js';
+import {type PostHook} from './post-hook.js';
 import {type ContextInit} from './service-context-init.js';
 
 /**
@@ -119,7 +120,13 @@ export type ServiceImplementationsParams<
                   NoInfer<ServiceName>,
                   NoInfer<WebSocketsInit>
               >;
-          });
+          }) & {
+        /**
+         * Fired after every request resolves, before it is sent. This hooks into Fastify with the
+         * `onSend` hook.
+         */
+        postHook?: PostHook<Context, ServiceName, EndpointsInit, WebSocketsInit> | undefined;
+    };
 
 /**
  * Creates an implemented service that is fully ready to be run as a server by attaching endpoint
@@ -133,8 +140,8 @@ export type ServiceImplementationsParams<
  */
 export function implementService<
     const ServiceName extends string,
-    const EndpointsInit extends BaseServiceEndpointsInit,
-    const WebSocketsInit extends BaseServiceWebSocketsInit,
+    EndpointsInit extends BaseServiceEndpointsInit,
+    WebSocketsInit extends BaseServiceWebSocketsInit,
     Context = undefined,
 >(
     /** Init must be first so that TypeScript can infer the type for `Context`. */
@@ -152,7 +159,11 @@ export function implementService<
         NoInfer<WebSocketsInit>
     >,
 ) => ServiceImplementation<NoInfer<Context>, ServiceName, EndpointsInit, WebSocketsInit> {
-    return ({endpoints: endpointImplementations, webSockets: webSocketImplementations}) => {
+    return ({
+        endpoints: endpointImplementations,
+        webSockets: webSocketImplementations,
+        postHook,
+    }) => {
         assertValidEndpointImplementations(service, endpointImplementations || {});
         assertValidWebSocketImplementations(service, webSocketImplementations || {});
 
@@ -212,6 +223,13 @@ export function implementService<
             webSockets,
             createContext,
             logger: createServiceLogger(logger),
+            postHook:
+                (postHook as ServiceImplementation<
+                    Context,
+                    ServiceName,
+                    EndpointsInit,
+                    WebSocketsInit
+                >['postHook']) || undefined,
         } satisfies Omit<
             ServiceImplementation<Context, ServiceName, EndpointsInit, WebSocketsInit>,
             'ContextType'
@@ -290,6 +308,7 @@ export type ServiceImplementation<
     createContext: ContextInit<Context, ServiceName, EndpointsInit, WebSocketsInit> | undefined;
     logger: ServiceLogger;
     customHeaders: string[];
+    postHook: PostHook | undefined;
 };
 
 /**

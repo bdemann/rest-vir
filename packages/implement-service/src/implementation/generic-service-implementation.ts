@@ -11,6 +11,7 @@ import {
 import {type ServiceLogger} from '../util/service-logger.js';
 import {type EndpointImplementation} from './implement-endpoint.js';
 import {type WebSocketImplementation} from './implement-web-socket.js';
+import {type PostHook} from './post-hook.js';
 import {type ContextInit} from './service-context-init.js';
 
 /**
@@ -47,6 +48,7 @@ export type GenericServiceImplementation = Omit<ServiceDefinition, 'endpoints' |
     createContext: ContextInit<any, any, any, any> | undefined;
     logger: ServiceLogger;
     customHeaders: string[];
+    postHook: PostHook | undefined;
 };
 
 /**

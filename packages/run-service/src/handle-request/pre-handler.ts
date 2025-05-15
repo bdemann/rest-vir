@@ -17,7 +17,7 @@ import {
 import {
     HttpMethod,
     RestVirHandlerError,
-    type ContextInitParameters,
+    type ContextInitParams,
     type GenericServiceImplementation,
     type RunningServerInfo,
     type ServerRequest,
@@ -150,7 +150,7 @@ export async function preHandler(
         return handleHandlerResult(searchParams, response);
     }
 
-    const contextParams: ContextInitParameters = {
+    const contextParams: ContextInitParams = {
         method: assertWrap.isEnumValue(request.method.toUpperCase(), HttpMethod),
         request,
         requestData,

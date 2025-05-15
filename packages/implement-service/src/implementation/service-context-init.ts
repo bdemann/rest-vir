@@ -14,6 +14,7 @@ import {
 import {type IncomingHttpHeaders} from 'node:http';
 import {type RequireExactlyOne} from 'type-fest';
 import {type ServerRequest, type ServerResponse} from '../util/data.js';
+import {type ReplaceUndefinedWithEmptyObject} from '../util/types.js';
 import {
     type EndpointImplementationErrorOutput,
     type RunningServerInfo,
@@ -49,7 +50,7 @@ export type ContextInit<
     EndpointsInit extends BaseServiceEndpointsInit | NoParam,
     WebSocketsInit extends BaseServiceWebSocketsInit | NoParam,
 > = (
-    params: Readonly<ContextInitParameters<ServiceName, EndpointsInit, WebSocketsInit>>,
+    params: Readonly<ContextInitParams<ServiceName, EndpointsInit, WebSocketsInit>>,
 ) => MaybePromise<ContextInitOutput<Context>>;
 
 /**
@@ -59,18 +60,19 @@ export type ContextInit<
  * @category Package : @rest-vir/implement-service
  * @package [`@rest-vir/implement-service`](https://www.npmjs.com/package/@rest-vir/implement-service)
  */
-export type ContextInitParameters<
+export type ContextInitParams<
     ServiceName extends string = any,
     EndpointsInit extends BaseServiceEndpointsInit | NoParam = NoParam,
     WebSocketsInit extends BaseServiceWebSocketsInit | NoParam = NoParam,
 > = {
-    searchParams:
+    searchParams: ReplaceUndefinedWithEmptyObject<
         | (WebSocketsInit extends NoParam
               ? BaseSearchParams | undefined
               : WithFinalWebSocketProps<Values<WebSocketsInit>, any>['SearchParamsType'])
         | (EndpointsInit extends NoParam
               ? BaseSearchParams | undefined
-              : WithFinalEndpointProps<Values<EndpointsInit>, any>['SearchParamsType']);
+              : WithFinalEndpointProps<Values<EndpointsInit>, any>['SearchParamsType'])
+    >;
     service: MinimalService<ServiceName>;
     requestHeaders: IncomingHttpHeaders;
     method: HttpMethod;
