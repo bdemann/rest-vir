@@ -271,7 +271,7 @@ const serviceWithPostHook = implementService({
             .tsType(originalResponseData)
             .equals<'health response' | 'health2 response' | 'data' | undefined>();
         assert.tsType(requestData).equals<'health request' | 'health2 request' | undefined>();
-        if ('data' in searchParams) {
+        if (searchParams && 'data' in searchParams) {
             assert.tsType(searchParams.data[0]).equals<string | undefined>();
         }
         assert.tsType(service).equals<MinimalService<'with postHook'>>();

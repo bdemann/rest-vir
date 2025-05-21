@@ -2,6 +2,7 @@ import {assertWrap} from '@augment-vir/assert';
 import {
     ensureErrorAndPrependMessage,
     extractErrorMessage,
+    getOrSet,
     HttpStatus,
     stringify,
     wrapInTry,
@@ -63,6 +64,13 @@ export async function preHandler({
     server: Readonly<RunningServerInfo>;
     attachId: string;
 }): Promise<Readonly<HandledOutput>> {
+    if (!request.restVirContext) {
+        request.restVirContext = {};
+    }
+    const attachedRestVirContext = getOrSet(request.restVirContext, attachId, () => {
+        return {};
+    });
+
     response.header(restVirServiceNameHeader, service.serviceName);
 
     const pathMatch = matchUrlToService(service, request.originalUrl);
@@ -116,6 +124,7 @@ export async function preHandler({
             body: 'Invalid protocol.',
         };
     }
+    attachedRestVirContext.protocols = protocols;
 
     const subHandlerResponse =
         handleHandlerOutputWithoutSending(
@@ -151,11 +160,14 @@ export async function preHandler({
             body: 'Invalid body.',
         };
     }
+
+    attachedRestVirContext.requestData = requestData;
     const searchParams = handleSearchParams({request, route});
 
     if (!('data' in searchParams)) {
         return handleHandlerOutputWithoutSending(searchParams, response);
     }
+    attachedRestVirContext.searchParams = searchParams.data;
 
     const contextParams: ContextInitParams = {
         pathParams: request.params as Record<string, string>,
@@ -174,17 +186,6 @@ export async function preHandler({
     try {
         const contextOutput = await service.createContext?.(contextParams);
 
-        if (!request.restVirContext) {
-            request.restVirContext = {};
-        }
-
-        request.restVirContext[attachId] = {
-            context: contextOutput?.reject ? undefined : contextOutput?.context,
-            requestData,
-            protocols,
-            searchParams: searchParams.data,
-        };
-
         if (contextOutput?.reject) {
             service.logger.error(
                 new RestVirHandlerError(
@@ -201,6 +202,7 @@ export async function preHandler({
                 response,
             );
         }
+        attachedRestVirContext.context = contextOutput?.context;
 
         return undefined;
     } catch (error) {

@@ -14,6 +14,7 @@ import {
 } from '@rest-vir/implement-service';
 import {assertValidShape} from 'object-shape-tester';
 import {type WebSocket as WsWebSocket} from 'ws';
+import {type RestVirRequestContext} from '../start-service/attach-service.js';
 
 /**
  * Handles a WebSocket request.
@@ -38,8 +39,8 @@ export async function handleWebSocketRequest(
         server: Readonly<RunningServerInfo>;
     }>,
 ): Promise<void> {
-    const restVirContext = request.restVirContext?.[attachId];
-
+    // by this point in the request lifecycle, we know that these properties have been set.
+    const restVirContext = request.restVirContext?.[attachId] as undefined | RestVirRequestContext;
     assert.isDefined(restVirContext, 'restVirContext is not defined');
 
     const webSocket = overwriteWebSocketMethods(

@@ -1,4 +1,9 @@
-import {type HttpStatus, type MaybePromise, type Values} from '@augment-vir/common';
+import {
+    type HttpStatus,
+    type MaybePromise,
+    type SetOptionalWithUndefined,
+    type Values,
+} from '@augment-vir/common';
 import {
     type BaseServiceEndpointsInit,
     type BaseServiceWebSocketsInit,
@@ -21,17 +26,20 @@ export type PostHookParams<
     ServiceName extends string = any,
     EndpointsInit extends BaseServiceEndpointsInit | NoParam = NoParam,
     WebSocketsInit extends BaseServiceWebSocketsInit | NoParam = NoParam,
-> = ContextInitParams<ServiceName, EndpointsInit, WebSocketsInit> & {
-    originalResponseData: EndpointsInit extends NoParam
-        ? unknown
-        : WithFinalEndpointProps<
-              Values<EndpointsInit>,
-              Extract<keyof EndpointsInit, EndpointPathBase>
-          >['ResponseType'];
-    originalStatus: HttpStatus;
-    /** This will be `undefined` if your `createContext` method rejects the request. */
-    context: Context | undefined;
-};
+> = SetOptionalWithUndefined<
+    ContextInitParams<ServiceName, EndpointsInit, WebSocketsInit> & {
+        originalResponseData: EndpointsInit extends NoParam
+            ? unknown
+            : WithFinalEndpointProps<
+                  Values<EndpointsInit>,
+                  Extract<keyof EndpointsInit, EndpointPathBase>
+              >['ResponseType'];
+        originalStatus: HttpStatus;
+        /** This will be `undefined` if your `createContext` method rejects the request. */
+        context: Context;
+    },
+    'context' | 'searchParams'
+>;
 
 /**
  * Type for `ServiceImplementationsParams.postHook`.

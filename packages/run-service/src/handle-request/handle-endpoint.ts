@@ -10,6 +10,7 @@ import {
     type RunningServerInfo,
 } from '@rest-vir/implement-service';
 import {assertValidShape} from 'object-shape-tester';
+import {type RestVirRequestContext} from '../start-service/attach-service.js';
 import {type EndpointHandlerParams, type HandledOutput} from './endpoint-handler.js';
 
 /**
@@ -36,11 +37,15 @@ export async function handleEndpointRequest(
     >,
 ): Promise<HandledOutput> {
     try {
-        const restVirContext = request.restVirContext?.[attachId];
+        // by this point in the request lifecycle, we know that these properties have been set.
+        const restVirContext = request.restVirContext?.[attachId] as
+            | undefined
+            | RestVirRequestContext;
         assert.isDefined(restVirContext, 'restVirContext is not defined');
 
         const context = restVirContext.context;
         const requestData = restVirContext.requestData;
+
         const searchParams = restVirContext.searchParams;
 
         const endpointParams: EndpointImplementationParams = {
