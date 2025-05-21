@@ -1,4 +1,4 @@
-import {assertWrap, check} from '@augment-vir/assert';
+import {assert, check} from '@augment-vir/assert';
 import {
     ensureError,
     extractErrorMessage,
@@ -6,29 +6,23 @@ import {
     getObjectTypedKeys,
     HttpMethod,
     HttpStatus,
-    isErrorHttpStatus,
     randomString,
     type SelectFrom,
 } from '@augment-vir/common';
 import fastifyWs from '@fastify/websocket';
-import {
-    matchUrlToService,
-    type BaseSearchParams,
-    type MinimalService,
-} from '@rest-vir/define-service';
+import {type BaseSearchParams, type MinimalService} from '@rest-vir/define-service';
 import {
     RestVirHandlerError,
     ServiceImplementation,
     type GenericServiceImplementation,
-    type PostHookParams,
     type RunningServerInfo,
 } from '@rest-vir/implement-service';
 import {type FastifyInstance} from 'fastify';
 import {buildUrl, parseUrl} from 'url-vir';
-import {type HandleRouteOptions} from '../handle-request/endpoint-handler.js';
+import {handleHandlerOutput, type HandleRouteOptions} from '../handle-request/endpoint-handler.js';
 import {handleRoute} from '../handle-request/handle-route.js';
 import {preHandler} from '../handle-request/pre-handler.js';
-import {setResponseHeaders} from '../util/headers.js';
+import {runPostHook} from '../handle-request/run-post-hook.js';
 
 declare module 'fastify' {
     interface FastifyRequest {
@@ -123,107 +117,51 @@ export async function attachService(
             });
         }
 
+        const postHook = service.postHook;
+
         server.addHook('preValidation', async (request, response) => {
             try {
-                return await preHandler(
+                const preHandlerResult = await preHandler({
                     request,
                     response,
                     service,
-                    extractRunningServerInfo(service, server),
+                    server: extractRunningServerInfo(service, server),
                     attachId,
-                );
+                });
+
+                if (preHandlerResult?.statusCode && postHook) {
+                    const postHookResult = await runPostHook({
+                        attachId,
+                        originalBody: preHandlerResult.body,
+                        originalStatus: preHandlerResult.statusCode,
+                        postHook,
+                        request,
+                        response,
+                        server: extractRunningServerInfo(service, server),
+                        service,
+                    });
+
+                    if (postHookResult) {
+                        return handleHandlerOutput(postHookResult, response);
+                    }
+                }
+
+                return handleHandlerOutput(preHandlerResult, response);
             } catch (error) {
                 service.logger.error(ensureError(error));
                 if (options.throwErrorsForExternalHandling) {
                     throw error;
-                } else if (!response.sent) {
+                    /* node:coverage ignore next 5 */
+                } else if (response.sent) {
+                    assert.never(
+                        "Error encountered but response was already sent so there's nothing we can do about it.",
+                    );
+                } else {
                     response.statusCode = HttpStatus.InternalServerError;
-                    response.send();
+                    return response.send();
                 }
             }
         });
-        const postHook = service.postHook;
-        if (postHook) {
-            server.addHook('onSend', async (request, response, body) => {
-                /* node:coverage ignore next 4 */
-                const restVirContext = request.restVirContext?.[attachId];
-                if (!restVirContext) {
-                    return undefined;
-                }
-
-                const context = restVirContext.context;
-                const requestData = restVirContext.requestData;
-                const searchParams = restVirContext.searchParams;
-
-                const pathMatch = matchUrlToService(service, request.originalUrl);
-
-                /* node:coverage ignore next 10 */
-                if (!pathMatch) {
-                    return undefined;
-                }
-                const endpointDefinition = pathMatch.endpointPath
-                    ? service.endpoints[pathMatch.endpointPath]
-                    : undefined;
-                const webSocketDefinition =
-                    request.ws && pathMatch.webSocketPath
-                        ? service.webSockets[pathMatch.webSocketPath]
-                        : undefined;
-
-                const postHookParams: PostHookParams = {
-                    context,
-                    method: assertWrap.isEnumValue(request.method.toUpperCase(), HttpMethod),
-                    request,
-                    requestData,
-                    requestHeaders: request.headers,
-                    response,
-                    service,
-                    endpointDefinition: endpointDefinition,
-                    webSocketDefinition: webSocketDefinition,
-                    server: extractRunningServerInfo(service, server),
-                    searchParams,
-                    originalResponseData: body,
-                    originalStatus: response.statusCode,
-                };
-
-                const result = await postHook(postHookParams);
-
-                if (result) {
-                    if (result.headers) {
-                        setResponseHeaders(response, result.headers);
-                    }
-                    if (result.dataType) {
-                        setResponseHeaders(response, {
-                            'content-type': result.dataType,
-                        });
-                    }
-
-                    if (result.statusCode) {
-                        response.status(result.statusCode);
-                    }
-
-                    if (
-                        isErrorHttpStatus(result.statusCode ?? response.statusCode) &&
-                        'responseErrorMessage' in result
-                    ) {
-                        if (result.responseErrorMessage == undefined) {
-                            /** Clear the body. */
-                            return null;
-                        } else {
-                            return result.responseErrorMessage;
-                        }
-                    } else if ('responseData' in result) {
-                        if (result.responseData == undefined) {
-                            /** Clear the body. */
-                            return null;
-                        } else {
-                            return result.responseData;
-                        }
-                    }
-                }
-
-                return undefined;
-            });
-        }
 
         const allPaths = new Set([
             ...getObjectTypedKeys(service.webSockets),
@@ -239,41 +177,47 @@ export async function attachService(
                     method: endpointFastifyMethods,
                     url: path,
                     handler(request, response) {
-                        return handleRoute(
-                            undefined,
+                        return handleRoute({
+                            webSocket: undefined,
                             request,
                             response,
-                            endpoint,
+                            route: endpoint,
                             attachId,
-                            extractRunningServerInfo(service, server),
+                            server: extractRunningServerInfo(service, server),
                             options,
-                        );
+                            postHook,
+                            service,
+                        });
                     },
                 });
                 server.route({
                     method: HttpMethod.Get,
                     url: path,
                     handler(request, response) {
-                        return handleRoute(
-                            undefined,
+                        return handleRoute({
+                            webSocket: undefined,
                             request,
                             response,
-                            endpoint,
+                            route: endpoint,
                             attachId,
-                            extractRunningServerInfo(service, server),
+                            server: extractRunningServerInfo(service, server),
                             options,
-                        );
+                            postHook,
+                            service,
+                        });
                     },
                     wsHandler(webSocket, request) {
-                        return handleRoute(
+                        return handleRoute({
                             webSocket,
                             request,
-                            undefined,
-                            webSocketDefinition,
+                            response: undefined,
+                            route: webSocketDefinition,
                             attachId,
-                            extractRunningServerInfo(service, server),
+                            server: extractRunningServerInfo(service, server),
                             options,
-                        );
+                            postHook,
+                            service,
+                        });
                     },
                 });
             } else if (endpoint) {
@@ -284,15 +228,17 @@ export async function attachService(
                     ],
                     url: path,
                     handler(request, response) {
-                        return handleRoute(
-                            undefined,
+                        return handleRoute({
+                            webSocket: undefined,
                             request,
                             response,
-                            endpoint,
+                            route: endpoint,
                             attachId,
-                            extractRunningServerInfo(service, server),
+                            server: extractRunningServerInfo(service, server),
                             options,
-                        );
+                            postHook,
+                            service,
+                        });
                     },
                 });
             } else if (webSocketDefinition) {
@@ -303,15 +249,17 @@ export async function attachService(
                         return response.status(HttpStatus.NotFound).send();
                     },
                     wsHandler(webSocket, request) {
-                        return handleRoute(
+                        return handleRoute({
                             webSocket,
                             request,
-                            undefined,
-                            webSocketDefinition,
+                            response: undefined,
+                            route: webSocketDefinition,
                             attachId,
-                            extractRunningServerInfo(service, server),
+                            server: extractRunningServerInfo(service, server),
                             options,
-                        );
+                            postHook,
+                            service,
+                        });
                     },
                 });
             }

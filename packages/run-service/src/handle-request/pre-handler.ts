@@ -23,10 +23,9 @@ import {
     type ServerRequest,
     type ServerResponse,
 } from '@rest-vir/implement-service';
-import {type FastifyReply} from 'fastify';
 import {type IncomingHttpHeaders} from 'node:http';
 import {assertValidShape, isValidShape} from 'object-shape-tester';
-import {handleHandlerResult} from './endpoint-handler.js';
+import {handleHandlerOutputWithoutSending, type HandledOutput} from './endpoint-handler.js';
 import {handleCors} from './handle-cors.js';
 import {handleRequestMethod} from './handle-request-method.js';
 import {handleSearchParams} from './handle-search-params.js';
@@ -38,9 +37,15 @@ import {handleSearchParams} from './handle-search-params.js';
  * @category Package : @rest-vir/run-service
  * @package [`@rest-vir/run-service`](https://www.npmjs.com/package/@rest-vir/run-service)
  */
-export async function preHandler(
-    request: ServerRequest,
-    response: ServerResponse,
+export async function preHandler({
+    request,
+    response,
+    service,
+    server,
+    attachId,
+}: {
+    request: ServerRequest;
+    response: ServerResponse;
     service: Readonly<
         SelectFrom<
             GenericServiceImplementation,
@@ -54,10 +59,10 @@ export async function preHandler(
                 logger: true;
             }
         >
-    >,
-    server: Readonly<RunningServerInfo>,
-    attachId: string,
-): Promise<FastifyReply | undefined> {
+    >;
+    server: Readonly<RunningServerInfo>;
+    attachId: string;
+}): Promise<Readonly<HandledOutput>> {
     response.header(restVirServiceNameHeader, service.serviceName);
 
     const pathMatch = matchUrlToService(service, request.originalUrl);
@@ -106,20 +111,21 @@ export async function preHandler(
             ),
         );
 
-        response.statusCode = HttpStatus.BadRequest;
-        response.send('Invalid protocols.');
-        return undefined;
+        return {
+            statusCode: HttpStatus.BadRequest,
+            body: 'Invalid protocol.',
+        };
     }
 
     const subHandlerResponse =
-        handleHandlerResult(
+        handleHandlerOutputWithoutSending(
             await handleCors({
                 request,
                 route,
             }),
             response,
         ) ||
-        handleHandlerResult(
+        handleHandlerOutputWithoutSending(
             handleRequestMethod({
                 request,
                 route,
@@ -140,17 +146,19 @@ export async function preHandler(
                 `Rejected request body from '${request.originalUrl}': ${stringify(requestData)}`,
             ),
         );
-        response.statusCode = HttpStatus.BadRequest;
-        response.send('Invalid body.');
-        return undefined;
+        return {
+            statusCode: HttpStatus.BadRequest,
+            body: 'Invalid body.',
+        };
     }
     const searchParams = handleSearchParams({request, route});
 
     if (!('data' in searchParams)) {
-        return handleHandlerResult(searchParams, response);
+        return handleHandlerOutputWithoutSending(searchParams, response);
     }
 
     const contextParams: ContextInitParams = {
+        pathParams: request.params as Record<string, string>,
         method: assertWrap.isEnumValue(request.method.toUpperCase(), HttpMethod),
         request,
         requestData,
@@ -166,6 +174,17 @@ export async function preHandler(
     try {
         const contextOutput = await service.createContext?.(contextParams);
 
+        if (!request.restVirContext) {
+            request.restVirContext = {};
+        }
+
+        request.restVirContext[attachId] = {
+            context: contextOutput?.reject ? undefined : contextOutput?.context,
+            requestData,
+            protocols,
+            searchParams: searchParams.data,
+        };
+
         if (contextOutput?.reject) {
             service.logger.error(
                 new RestVirHandlerError(
@@ -173,7 +192,7 @@ export async function preHandler(
                     `Context creation rejected: '${request.originalUrl}'`,
                 ),
             );
-            return handleHandlerResult(
+            return handleHandlerOutputWithoutSending(
                 {
                     body: contextOutput.reject.responseErrorMessage,
                     statusCode: contextOutput.reject.statusCode,
@@ -182,17 +201,6 @@ export async function preHandler(
                 response,
             );
         }
-
-        if (!request.restVirContext) {
-            request.restVirContext = {};
-        }
-
-        request.restVirContext[attachId] = {
-            context: contextOutput?.context,
-            requestData,
-            protocols,
-            searchParams: searchParams.data,
-        };
 
         return undefined;
     } catch (error) {

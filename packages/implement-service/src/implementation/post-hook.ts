@@ -29,7 +29,8 @@ export type PostHookParams<
               Extract<keyof EndpointsInit, EndpointPathBase>
           >['ResponseType'];
     originalStatus: HttpStatus;
-    context: Context;
+    /** This will be `undefined` if your `createContext` method rejects the request. */
+    context: Context | undefined;
 };
 
 /**

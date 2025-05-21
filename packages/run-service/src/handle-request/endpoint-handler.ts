@@ -83,13 +83,41 @@ export type EndpointHandler = (
 ) => MaybePromise<HandledOutput>;
 
 /**
+ * Handle the output of a handler without sending the response. Similar to
+ * {@link handleHandlerOutput} but this one does not send the response.
+ *
+ * @category Internal
+ * @category Package : @rest-vir/run-service
+ * @package [`@rest-vir/run-service`](https://www.npmjs.com/package/@rest-vir/run-service)
+ */
+export function handleHandlerOutputWithoutSending(
+    result: Readonly<HandledOutput>,
+    response: ServerResponse,
+): undefined | HandledOutput {
+    if (result?.headers) {
+        setResponseHeaders(response, result.headers);
+    }
+
+    if (result?.statusCode) {
+        response.statusCode = result.statusCode;
+
+        return {
+            body: result.body,
+            statusCode: result.statusCode,
+        };
+    }
+
+    return undefined;
+}
+
+/**
  * Handle the output of a handler. Setting headers, sending the response, etc.
  *
  * @category Internal
  * @category Package : @rest-vir/run-service
  * @package [`@rest-vir/run-service`](https://www.npmjs.com/package/@rest-vir/run-service)
  */
-export function handleHandlerResult(
+export function handleHandlerOutput(
     result: Readonly<HandledOutput>,
     response: ServerResponse,
 ): undefined | FastifyReply {

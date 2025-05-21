@@ -162,14 +162,35 @@ const serviceWithPostHook = implementService({
                 requestDataShape: undefined,
                 responseDataShape: undefined,
             },
+            '/health6': {
+                methods: {
+                    [HttpMethod.Get]: true,
+                },
+                requestDataShape: undefined,
+                responseDataShape: undefined,
+            },
+            '/health7': {
+                methods: {
+                    [HttpMethod.Get]: true,
+                },
+                requestDataShape: undefined,
+                responseDataShape: undefined,
+            },
         },
         requiredClientOrigin: AnyOrigin,
         serviceName: 'with postHook',
         serviceOrigin: 'https://example.com',
     }),
-    createContext({requestHeaders, searchParams}) {
+    createContext({endpointDefinition, requestHeaders, searchParams}) {
         if (requestHeaders.authorization === 'reject') {
             throw new Error('context failed');
+        } else if (endpointDefinition?.path === '/health7') {
+            return {
+                reject: {
+                    statusCode: HttpStatus.BadRequest,
+                    responseErrorMessage: 'failed in context',
+                },
+            };
         }
 
         assert.tsType(searchParams).equals<Readonly<{data: ReadonlyArray<string>}> | EmptyObject>();
@@ -215,6 +236,18 @@ const serviceWithPostHook = implementService({
                 responseErrorMessage: 'this is an error',
             };
         },
+        '/health6'() {
+            return {
+                statusCode: HttpStatus.Forbidden,
+                responseErrorMessage: 'this is an error',
+            };
+        },
+        '/health7'() {
+            return {
+                statusCode: HttpStatus.Forbidden,
+                responseErrorMessage: 'this is an error',
+            };
+        },
     },
     webSockets: {
         '/socket': {
@@ -233,7 +266,7 @@ const serviceWithPostHook = implementService({
         endpointDefinition,
         webSocketDefinition,
     }) {
-        assert.tsType(context).equals<string>();
+        assert.tsType(context).equals<string | undefined>();
         assert
             .tsType(originalResponseData)
             .equals<'health response' | 'health2 response' | 'data' | undefined>();
@@ -272,6 +305,10 @@ const serviceWithPostHook = implementService({
             return {
                 responseErrorMessage: 'new error',
             };
+        } else if (endpointDefinition?.path === '/health6') {
+            return {};
+        } else if (endpointDefinition?.path === '/health7') {
+            return {};
         }
 
         return undefined;
@@ -300,14 +337,13 @@ describeService({service: serviceWithPostHook, options: {}}, ({fetchEndpoint}) =
     });
     it('can wipe output with postHook', async () => {
         const response = await condenseResponse(await fetchEndpoint['/health3']());
+        assert.strictEquals(response.body, undefined);
+        assert.strictEquals(response.status, HttpStatus.Unauthorized);
         assert.deepEquals(response.headers, {
             'access-control-allow-origin': '*',
             'access-control-expose-headers': 'rest-vir-service',
-            'content-type': 'application/json; charset=utf-8',
             extra: 'value',
         });
-        assert.strictEquals(response.status, HttpStatus.Unauthorized);
-        assert.strictEquals(response.body, undefined);
     });
     it('can wipe error messages with postHook', async () => {
         const response = await fetchEndpoint['/health4']();
@@ -320,6 +356,18 @@ describeService({service: serviceWithPostHook, options: {}}, ({fetchEndpoint}) =
         assert.isFalse(response.ok);
         assert.strictEquals(response.status, HttpStatus.Forbidden);
         assert.strictEquals(await response.text(), 'new error');
+    });
+    it('falls back to the original message', async () => {
+        const response = await fetchEndpoint['/health6']();
+        assert.isFalse(response.ok);
+        assert.strictEquals(response.status, HttpStatus.Forbidden);
+        assert.strictEquals(await response.text(), 'this is an error');
+    });
+    it('fires postHook if context rejects', async () => {
+        const response = await fetchEndpoint['/health7']();
+        assert.isFalse(response.ok);
+        assert.strictEquals(response.status, HttpStatus.BadRequest);
+        assert.strictEquals(await response.text(), 'failed in context');
     });
 });
 
