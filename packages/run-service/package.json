@@ -39,9 +39,9 @@
         "test:update": "npm test update"
     },
     "dependencies": {
-        "@augment-vir/assert": "^31.19.1",
-        "@augment-vir/common": "^31.19.1",
-        "@augment-vir/node": "^31.19.1",
+        "@augment-vir/assert": "^31.20.0",
+        "@augment-vir/common": "^31.20.0",
+        "@augment-vir/node": "^31.20.0",
         "@fastify/websocket": "^11.0.2",
         "@rest-vir/define-service": "^0.19.1",
         "@rest-vir/implement-service": "^0.19.1",
@@ -54,10 +54,10 @@
         "url-vir": "^2.1.3"
     },
     "devDependencies": {
-        "@augment-vir/test": "^31.19.1",
+        "@augment-vir/test": "^31.20.0",
         "@fastify/multipart": "^9.0.3",
         "@types/connect": "^3.4.38",
-        "@types/node": "^22.15.18",
+        "@types/node": "^22.15.21",
         "@types/ws": "^8.18.1",
         "c8": "^10.1.3",
         "istanbul-smart-text-reporter": "^1.1.5",
