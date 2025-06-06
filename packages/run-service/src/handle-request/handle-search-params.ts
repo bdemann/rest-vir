@@ -71,6 +71,7 @@ export function handleSearchParams({
             new RestVirHandlerError(
                 route,
                 `Search params failed for ${stringify(searchParams)}: ${validationError.message}`,
+                HttpStatus.BadRequest,
             ),
         );
         return {

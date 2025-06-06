@@ -79,7 +79,11 @@ export async function handleCors(
         };
     } else {
         route.service.logger.error(
-            new RestVirHandlerError(route, `CORS rejected for origin '${origin}'.`),
+            new RestVirHandlerError(
+                route,
+                `CORS rejected for origin '${origin}'.`,
+                HttpStatus.Forbidden,
+            ),
         );
         /** The CORS requirements for this request have not been met. */
         return {

@@ -77,6 +77,7 @@ export async function handleEndpointRequest(
                 new RestVirHandlerError(
                     endpoint,
                     `Endpoint implementation returned error status: ${endpointResult.statusCode}`,
+                    endpointResult.statusCode,
                 ),
             );
             return {

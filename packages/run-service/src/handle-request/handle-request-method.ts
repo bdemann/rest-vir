@@ -58,6 +58,7 @@ export function handleRequestMethod(
             new RestVirHandlerError(
                 route,
                 `Method '${requestMethod}' rejected: '${request.originalUrl}'`,
+                HttpStatus.MethodNotAllowed,
             ),
         );
         return {

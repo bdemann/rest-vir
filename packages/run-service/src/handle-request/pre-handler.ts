@@ -116,6 +116,7 @@ export async function preHandler({
                         `WebSocket protocols rejected (${stringify(protocols)}):`,
                     ),
                 ),
+                HttpStatus.BadRequest,
             ),
         );
 
@@ -153,6 +154,7 @@ export async function preHandler({
             new RestVirHandlerError(
                 route,
                 `Rejected request body from '${request.originalUrl}': ${stringify(requestData)}`,
+                HttpStatus.BadRequest,
             ),
         );
         return {
@@ -191,6 +193,7 @@ export async function preHandler({
                 new RestVirHandlerError(
                     route,
                     `Context creation rejected: '${request.originalUrl}'`,
+                    contextOutput.reject.statusCode,
                 ),
             );
             return handleHandlerOutputWithoutSending(

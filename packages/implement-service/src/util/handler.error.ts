@@ -1,4 +1,4 @@
-import {combineErrorMessages} from '@augment-vir/common';
+import {combineErrorMessages, HttpStatus} from '@augment-vir/common';
 
 /**
  * An error thrown internally from rest-vir while handling an request. This will not include errors
@@ -14,7 +14,11 @@ import {combineErrorMessages} from '@augment-vir/common';
 export class RestVirHandlerError extends Error {
     public override readonly name = 'RestVirHandlerError';
 
-    constructor(route: Parameters<typeof createRestVirHandlerErrorPrefix>[0], message: string) {
+    constructor(
+        route: Parameters<typeof createRestVirHandlerErrorPrefix>[0],
+        message: string,
+        public readonly status: HttpStatus = HttpStatus.InternalServerError,
+    ) {
         super(combineErrorMessages(createRestVirHandlerErrorPrefix(route), message));
     }
 }
