@@ -174,6 +174,28 @@ export type TestServiceOptions = Overwrite<
     }
 >;
 
+export type ServiceTestSuite<
+    Service extends Readonly<
+        SelectFrom<
+            GenericServiceImplementation,
+            {
+                webSockets: true;
+                endpoints: true;
+                serviceName: true;
+                createContext: true;
+                serviceOrigin: true;
+                requiredClientOrigin: true;
+                logger: true;
+                postHook: true;
+            }
+        >
+    >,
+> = {
+    fetchEndpoint: FetchTestService<Service>;
+    connectWebSocket: ConnectTestServiceWebSocket<Service>;
+    server: Readonly<FastifyInstance>;
+};
+
 /**
  * Test your service with actual Request and Response objects! The returned object includes
  * utilities for sending fetch requests and WebSocket connections to the service.
@@ -310,7 +332,7 @@ export async function testExistingServer<
         HandleRouteOptions &
             Omit<PartialWithUndefined<StartServiceOptions>, 'workerCount' | 'preventWorkerRespawn'>
     > = {},
-) {
+): Promise<ServiceTestSuite<Service>> {
     applyDebugLogger(options.debug, service);
     await attachService(server, service, options);
 
@@ -329,7 +351,6 @@ export async function testExistingServer<
             return async (
                 ...args: CollapsedFetchEndpointParams<NoParam, false>
             ): Promise<Response> => {
-                await server.ready();
                 const overwrittenOriginEndpoint = mergeDeep(
                     endpoint as EndpointDefinition,
                     fetchOrigin
@@ -392,7 +413,6 @@ export async function testExistingServer<
             return async (
                 ...args: CollapsedConnectWebSocketParams<NoParam, false>
             ): Promise<ClientWebSocket<WebSocketDefinition>> => {
-                await server.ready();
                 const [{protocols = [], listeners} = {}] = args;
 
                 const overwrittenOriginWebSocket = mergeDeep(
@@ -448,11 +468,14 @@ export async function testExistingServer<
         },
     ) as AnyObject as ConnectTestServiceWebSocket<Service>;
 
+    await server.ready();
+
     return {
         /** Send a request to the service. */
         fetchEndpoint,
         /** Connect to a service WebSocket. */
         connectWebSocket,
+        server,
     };
 }
 
@@ -511,6 +534,8 @@ export function describeService<
     describeCallback: (params: {
         /** Send a request to the service. */
         fetchEndpoint: FetchTestService<Service>;
+        getServer: () => Promise<Readonly<FastifyInstance>>;
+        service: Readonly<Service>;
     }) => void | undefined,
 ) {
     const servicePromise = testService(service, options);
@@ -525,6 +550,10 @@ export function describeService<
     describe(service.serviceName, () => {
         describeCallback({
             fetchEndpoint: fetchServiceObject,
+            async getServer() {
+                return (await servicePromise).server;
+            },
+            service,
         });
 
         /**

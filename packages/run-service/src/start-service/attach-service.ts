@@ -1,6 +1,7 @@
 import {assert, check} from '@augment-vir/assert';
 import {
     ensureError,
+    ensureErrorClass,
     extractErrorMessage,
     getEnumValues,
     getObjectTypedKeys,
@@ -157,7 +158,19 @@ export async function attachService(
 
                 return handleHandlerOutput(preHandlerResult, response);
             } catch (error) {
-                service.logger.error(ensureError(error));
+                service.logger.error(
+                    ensureErrorClass(
+                        error,
+                        RestVirHandlerError,
+                        {
+                            isEndpoint: undefined,
+                            isWebSocket: undefined,
+                            path: request.originalUrl,
+                            service,
+                        },
+                        'Unexpected error',
+                    ),
+                );
                 if (options.throwErrorsForExternalHandling) {
                     throw error;
                     /* node:coverage ignore next 5 */

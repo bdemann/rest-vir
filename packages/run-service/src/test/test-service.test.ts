@@ -3,6 +3,7 @@ import {DeferredPromise, randomInteger} from '@augment-vir/common';
 import {describe, it} from '@augment-vir/test';
 import {
     AnyOrigin,
+    buildEndpointUrl,
     defineService,
     HttpMethod,
     HttpStatus,
@@ -14,6 +15,7 @@ import {mockServiceImplementation} from '@rest-vir/implement-service/src/impleme
 import fastify from 'fastify';
 import {exact} from 'object-shape-tester';
 import {type EmptyObject} from 'type-fest';
+import {buildUrl, parseUrl} from 'url-vir';
 import {
     condenseResponse,
     describeService,
@@ -315,7 +317,7 @@ const serviceWithPostHook = implementService({
     },
 });
 
-describeService({service: serviceWithPostHook, options: {}}, ({fetchEndpoint}) => {
+describeService({service: serviceWithPostHook}, ({fetchEndpoint, getServer, service}) => {
     it('ignores postHook output', async () => {
         const response = await fetchEndpoint['/health']({
             requestData: 'health request',
@@ -334,6 +336,56 @@ describeService({service: serviceWithPostHook, options: {}}, ({fetchEndpoint}) =
         assert.isTrue(response.ok);
         assert.strictEquals(response.status, HttpStatus.Accepted);
         assert.strictEquals(await response.text(), 'wrong data');
+    });
+    it('handles invalid method to actual path', async () => {
+        const {fullPath, href} = parseUrl(buildEndpointUrl(service.endpoints['/health2'], {}));
+
+        const innerResponse = await (
+            await getServer()
+        ).inject({
+            remoteAddress: href,
+            // cspell:ignore PROPFIND
+            method: 'PROPFIND' as any,
+            url: fullPath,
+        });
+
+        const response = new Response(innerResponse.rawPayload, {
+            status: innerResponse.statusCode,
+            headers: innerResponse.headers as Record<string, string>,
+            statusText: innerResponse.statusMessage,
+        });
+
+        assert.isFalse(response.ok);
+        assert.strictEquals(response.status, HttpStatus.MethodNotAllowed);
+        assert.strictEquals(await response.text(), '');
+    });
+    it('handles invalid method to invalid path', async () => {
+        const {fullPath, href} = buildUrl(buildEndpointUrl(service.endpoints['/health2'], {}), {
+            paths: ['invalid-path'],
+        });
+
+        const innerResponse = await (
+            await getServer()
+        ).inject({
+            remoteAddress: href,
+            // cspell:ignore PROPFIND
+            method: 'PROPFIND' as any,
+            url: fullPath,
+        });
+
+        const response = new Response(innerResponse.rawPayload, {
+            status: innerResponse.statusCode,
+            headers: innerResponse.headers as Record<string, string>,
+            statusText: innerResponse.statusMessage,
+        });
+
+        assert.isFalse(response.ok);
+        assert.strictEquals(response.status, HttpStatus.NotFound);
+        assert.deepEquals(await response.json(), {
+            message: 'Route PROPFIND:/invalid-path not found',
+            error: 'Not Found',
+            statusCode: HttpStatus.NotFound,
+        });
     });
     it('can wipe output with postHook', async () => {
         const response = await condenseResponse(await fetchEndpoint['/health3']());

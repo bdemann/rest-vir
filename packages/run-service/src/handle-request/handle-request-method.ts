@@ -57,7 +57,7 @@ export function handleRequestMethod(
         route.service.logger.error(
             new RestVirHandlerError(
                 route,
-                `Method '${requestMethod}' rejected: '${request.originalUrl}'`,
+                `Method '${request.method.toUpperCase()}' rejected: '${request.originalUrl}'`,
                 HttpStatus.MethodNotAllowed,
             ),
         );

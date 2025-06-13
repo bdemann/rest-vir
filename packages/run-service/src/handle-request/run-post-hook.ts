@@ -1,4 +1,4 @@
-import {assert, assertWrap} from '@augment-vir/assert';
+import {assert, checkWrap} from '@augment-vir/assert';
 import {type HttpStatus, type SelectFrom} from '@augment-vir/common';
 import {matchUrlToService} from '@rest-vir/define-service';
 import {
@@ -43,6 +43,10 @@ export async function runPostHook(
         }
     >,
 ): Promise<HandledOutput> {
+    const method = checkWrap.isEnumValue(request.method.toUpperCase(), HttpMethod);
+    if (!method) {
+        return undefined;
+    }
     const restVirContext = request.restVirContext?.[attachId];
     assert.isDefined(restVirContext, 'restVirContext is not defined');
 
@@ -66,7 +70,7 @@ export async function runPostHook(
 
     const postHookParams: PostHookParams = {
         pathParams: request.params as Record<string, string>,
-        method: assertWrap.isEnumValue(request.method.toUpperCase(), HttpMethod),
+        method,
         request,
         requestData,
         requestHeaders: request.headers,
