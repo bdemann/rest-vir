@@ -90,12 +90,14 @@ export async function handleEndpointRequest(
                 throw new RestVirHandlerError(endpoint, 'Got response data but none was expected.');
             }
 
-            assertValidShape(
-                endpointResult.responseData,
-                endpoint.responseDataShape,
-                {allowExtraKeys: true},
-                'invalid response data',
-            );
+            if (!endpoint.bypassResponseValidation) {
+                assertValidShape(
+                    endpointResult.responseData,
+                    endpoint.responseDataShape,
+                    {allowExtraKeys: true},
+                    'invalid response data',
+                );
+            }
 
             return {
                 headers: {

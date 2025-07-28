@@ -59,6 +59,11 @@ export type EndpointInit<
      */
     requiredClientOrigin?: OriginRequirement;
     /**
+     * Set this to `true` to bypass shape validation. You might want to use this, for example, for
+     * large data sets that are being slow.
+     */
+    bypassResponseValidation?: boolean | undefined;
+    /**
      * A shape used to verify search params. This should match the entire search params object.
      *
      * Note the following:
@@ -117,6 +122,7 @@ export const endpointInitShape = defineShape({
         values: false,
         required: false,
     }),
+    bypassResponseValidation: optional(or(undefined, null, false)),
     customProps: optional(
         or(
             undefined,

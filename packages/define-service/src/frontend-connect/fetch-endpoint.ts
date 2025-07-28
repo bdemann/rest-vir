@@ -35,6 +35,7 @@ export type GenericFetchEndpointParams = {
     pathParams?: Record<string, string> | undefined;
     requestData?: any;
     searchParams?: BaseSearchParams | undefined;
+    bypassResponseValidation?: undefined | boolean;
     method?: HttpMethod | undefined;
     options?: Omit<RequestInit, 'body' | 'method'> | undefined;
     /**
@@ -333,7 +334,7 @@ export async function fetchEndpoint<
           >,
     ...params: CollapsedFetchEndpointParams<EndpointToFetch>
 ): Promise<FetchEndpointOutput<EndpointToFetch>> {
-    const {requestData, fetch} = params[0] || {};
+    const {requestData, fetch, bypassResponseValidation} = params[0] || {};
 
     if (requestData) {
         if (endpoint.requestDataShape) {
@@ -359,7 +360,7 @@ export async function fetchEndpoint<
             ? parseJsonWithUndefined(await response.text())
             : undefined;
 
-        if (endpoint.responseDataShape) {
+        if (endpoint.responseDataShape && !bypassResponseValidation) {
             assertValidShape(responseData, endpoint.responseDataShape, {allowExtraKeys: true});
         }
 
