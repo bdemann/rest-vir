@@ -5,6 +5,7 @@ import {
     type ImplementedEndpoint,
     type ImplementedWebSocket,
     type PostHook,
+    RejectRequestError,
     RestVirHandlerError,
     type RunningServerInfo,
     type ServerRequest,
@@ -73,7 +74,7 @@ export async function handleRoute({
         route.service.logger.info(logParts.join('\t'));
 
         if (route.isEndpoint) {
-            assert.isDefined(response);
+            assert.isDefined(response, 'no response object');
 
             const result = await handleEndpointRequest({
                 request,
@@ -125,6 +126,17 @@ export async function handleRoute({
         /* node:coverage ignore next: this can't actually be triggered but it should be covered as a potential future edge case. */
         throw new RestVirHandlerError(route, 'Request was not handled.');
     } catch (error) {
+        if (error instanceof RejectRequestError) {
+            assert.isDefined(response, 'no response object');
+
+            await handleHandlerOutput(
+                {statusCode: error.httpStatus, body: error.responseErrorMessage},
+                response,
+            );
+
+            return;
+        }
+
         route.service.logger.error(ensureError(error));
         if (options.throwErrorsForExternalHandling) {
             throw error;

@@ -8,5 +8,6 @@ export * from './implementation/post-hook.js';
 export * from './implementation/service-context-init.js';
 export * from './util/data.js';
 export * from './util/handler.error.js';
+export * from './util/reject-request.error.js';
 export * from './util/service-logger.js';
 export * from './util/types.js';

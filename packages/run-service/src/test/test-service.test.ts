@@ -10,7 +10,7 @@ import {
     type MinimalService,
     restVirServiceNameHeader,
 } from '@rest-vir/define-service';
-import {implementService} from '@rest-vir/implement-service';
+import {implementService, RejectRequestError} from '@rest-vir/implement-service';
 import {mockServiceImplementation} from '@rest-vir/implement-service/src/implementation/implement-service.mock.js';
 import fastify from 'fastify';
 import {exact} from 'object-shape-tester';
@@ -178,6 +178,13 @@ const serviceWithPostHook = implementService({
                 requestDataShape: undefined,
                 responseDataShape: undefined,
             },
+            '/rejects-with-error': {
+                methods: {
+                    [HttpMethod.Get]: true,
+                },
+                requestDataShape: undefined,
+                responseDataShape: undefined,
+            },
         },
         requiredClientOrigin: AnyOrigin,
         serviceName: 'with postHook',
@@ -249,6 +256,9 @@ const serviceWithPostHook = implementService({
                 statusCode: HttpStatus.Forbidden,
                 responseErrorMessage: 'this is an error',
             };
+        },
+        '/rejects-with-error'() {
+            throw new RejectRequestError(HttpStatus.BadGateway);
         },
     },
     webSockets: {
@@ -420,6 +430,12 @@ describeService({service: serviceWithPostHook}, ({fetchEndpoint, getServer, serv
         assert.isFalse(response.ok);
         assert.strictEquals(response.status, HttpStatus.BadRequest);
         assert.strictEquals(await response.text(), 'failed in context');
+    });
+    it('handles a RejectRequestError', async () => {
+        const response = await fetchEndpoint['/rejects-with-error']();
+        assert.isFalse(response.ok);
+        assert.strictEquals(response.status, HttpStatus.BadGateway);
+        assert.isEmpty(await response.text());
     });
 });
 
