@@ -10,6 +10,7 @@ import {
     randomString,
     type SelectFrom,
 } from '@augment-vir/common';
+import compressPlugin from '@fastify/compress';
 import fastifyWs from '@fastify/websocket';
 import {type BaseSearchParams, type MinimalService} from '@rest-vir/define-service';
 import {
@@ -107,6 +108,15 @@ export async function attachService(
         if (!server.hasRequestDecorator('restVirContext')) {
             server.decorateRequest('restVirContext');
         }
+
+        await server.register(compressPlugin, {
+            encodings: [
+                'br',
+                'gzip',
+                'deflate',
+            ],
+        });
+
         if (!server.hasRequestDecorator('ws')) {
             await server.register(fastifyWs, {
                 /* node:coverage ignore next 14: edge case handling */

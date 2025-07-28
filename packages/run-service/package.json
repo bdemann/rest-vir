@@ -42,6 +42,7 @@
         "@augment-vir/assert": "^31.28.0",
         "@augment-vir/common": "^31.28.0",
         "@augment-vir/node": "^31.28.0",
+        "@fastify/compress": "^8.1.0",
         "@fastify/websocket": "^11.2.0",
         "@rest-vir/define-service": "^0.21.0",
         "@rest-vir/implement-service": "^0.21.0",
