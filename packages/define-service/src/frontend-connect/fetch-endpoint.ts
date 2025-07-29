@@ -140,8 +140,11 @@ export type FetchEndpointParams<
                         method: FetchMethod<EndpointToFetch>;
                     }) &
               (AllowFetchMock extends true
-                  ? Pick<GenericFetchEndpointParams, 'options' | 'fetch'>
-                  : Pick<GenericFetchEndpointParams, 'options'>)
+                  ? Pick<
+                        GenericFetchEndpointParams,
+                        'options' | 'fetch' | 'bypassResponseValidation'
+                    >
+                  : Pick<GenericFetchEndpointParams, 'options' | 'bypassResponseValidation'>)
       >
     : GenericFetchEndpointParams;
 

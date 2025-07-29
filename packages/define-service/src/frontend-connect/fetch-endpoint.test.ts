@@ -114,6 +114,7 @@ describe('FetchEndpointParams', () => {
                     somethingHere: string;
                     testValue: number;
                 }>;
+                bypassResponseValidation?: boolean | undefined;
                 method?: never;
                 options?: FetchOptions;
                 fetch?: GenericFetchEndpointParams['fetch'];
@@ -128,6 +129,7 @@ describe('FetchEndpointParams', () => {
                     searchParams?: never;
                     pathParams: Readonly<Record<'param1' | 'param2', string>>;
                     requestData?: never;
+                    bypassResponseValidation?: boolean | undefined;
                     method: HttpMethod.Get | HttpMethod.Head | 'GET' | 'HEAD';
                     options?: FetchOptions;
                     fetch?: GenericFetchEndpointParams['fetch'];
