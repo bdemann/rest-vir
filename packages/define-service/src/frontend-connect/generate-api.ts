@@ -19,6 +19,7 @@ import {
 } from '../web-socket/web-socket-definition.js';
 import {type CollapsedConnectWebSocketParams, connectWebSocket} from './connect-web-socket.js';
 import {
+    buildEndpointUrl,
     type CollapsedFetchEndpointParams,
     fetchEndpoint,
     type FetchEndpointOutput,
@@ -47,6 +48,11 @@ export class RestVirApi<SpecificService extends ServiceDefinition> {
                           SpecificService['endpoints'][EndpointPath]
                       >
                   ): Promise<FetchEndpointOutput<SpecificService['endpoints'][EndpointPath]>>;
+                  buildUrl(
+                      params: Parameters<
+                          typeof buildEndpointUrl<SpecificService['endpoints'][EndpointPath]>
+                      >[1],
+                  ): string;
               }
             : never;
     };
@@ -101,6 +107,9 @@ export class RestVirApi<SpecificService extends ServiceDefinition> {
                             ...params[0],
                         },
                     );
+                },
+                buildUrl(params: Parameters<typeof buildEndpointUrl<EndpointDefinition>>[1]) {
+                    return buildEndpointUrl(endpointDefinition, params);
                 },
             };
         }) as any;

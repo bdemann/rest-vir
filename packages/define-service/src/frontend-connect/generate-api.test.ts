@@ -111,6 +111,17 @@ describe(makeMockApi.name, () => {
             },
         });
     });
+    it('builds an endpoint URL', () => {
+        assert.strictEquals(
+            mockMockApi.endpoints['/with/:param1/:param2'].buildUrl({
+                pathParams: {
+                    param1: 'hi',
+                    param2: 'bye',
+                },
+            }),
+            'https://example.com/with/hi/bye',
+        );
+    });
     it('connects to a mock WebSocket', async () => {
         const webSocket = await mockMockApi.webSockets['/no-client-data'].connect();
 
