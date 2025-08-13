@@ -359,7 +359,7 @@ describeService({service: serviceWithPostHook}, ({fetchEndpoint, getServer, serv
             url: fullPath,
         });
 
-        const response = new Response(innerResponse.rawPayload, {
+        const response = new Response(innerResponse.rawPayload as BodyInit, {
             status: innerResponse.statusCode,
             headers: innerResponse.headers as Record<string, string>,
             statusText: innerResponse.statusMessage,
@@ -383,7 +383,7 @@ describeService({service: serviceWithPostHook}, ({fetchEndpoint, getServer, serv
             url: fullPath,
         });
 
-        const response = new Response(innerResponse.rawPayload, {
+        const response = new Response(innerResponse.rawPayload as BodyInit, {
             status: innerResponse.statusCode,
             headers: innerResponse.headers as Record<string, string>,
             statusText: innerResponse.statusMessage,

@@ -67,7 +67,7 @@ export type MockResponseParams = Overwrite<
  * @category Package : @rest-vir/define-service
  * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
  */
-export class MockResponseBodyStream extends ReadableStream<Uint8Array> {
+export class MockResponseBodyStream extends ReadableStream<Uint8Array<ArrayBuffer>> {
     constructor(
         body: unknown,
         private getReaderCalled: () => void,
@@ -75,7 +75,7 @@ export class MockResponseBodyStream extends ReadableStream<Uint8Array> {
         super({
             start(controller) {
                 if (body instanceof Uint8Array) {
-                    controller.enqueue(body);
+                    controller.enqueue(body as Uint8Array<ArrayBuffer>);
                 } else if (check.isString(body)) {
                     controller.enqueue(new TextEncoder().encode(body));
                 } else if (body) {

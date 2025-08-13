@@ -384,7 +384,7 @@ export async function testExistingServer<
                         ...withPayload,
                     });
 
-                    const response = new Response(innerResponse.rawPayload, {
+                    const response = new Response(innerResponse.rawPayload as BodyInit, {
                         status: innerResponse.statusCode,
                         headers: innerResponse.headers as Record<string, string>,
                         statusText: innerResponse.statusMessage,

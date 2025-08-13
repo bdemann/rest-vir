@@ -671,6 +671,7 @@ export function overwriteWebSocketMethods<
             originalSend.call(
                 webSocket,
                 /** The extra `String()` wrapper is to convert `undefined` into `'undefined'`. */
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-conversion
                 String(
                     JSON.stringify(
                         verifyWebSocketMessage(webSocketDefinition, message, webSocketLocation),

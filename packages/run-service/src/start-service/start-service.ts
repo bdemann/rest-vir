@@ -150,7 +150,7 @@ export async function startService(
 
             return {
                 host: options.host,
-                port: port,
+                port,
                 cluster: manager,
                 kill() {
                     manager.destroy();
@@ -159,7 +159,7 @@ export async function startService(
         } else {
             return {
                 host: options.host,
-                port: port,
+                port,
                 worker: manager,
                 kill() {
                     manager.destroy();

@@ -179,8 +179,8 @@ export async function preHandler({
         requestHeaders: request.headers,
         response,
         service,
-        endpointDefinition: endpointDefinition,
-        webSocketDefinition: webSocketDefinition,
+        endpointDefinition,
+        webSocketDefinition,
         server,
         searchParams: searchParams.data,
     };
