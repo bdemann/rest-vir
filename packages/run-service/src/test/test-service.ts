@@ -174,6 +174,13 @@ export type TestServiceOptions = Overwrite<
     }
 >;
 
+/**
+ * Suite for testing a service as a live, running server.
+ *
+ * @category Internal
+ * @category Package : @rest-vir/run-service
+ * @package [`@rest-vir/run-service`](https://www.npmjs.com/package/@rest-vir/run-service)
+ */
 export type ServiceTestSuite<
     Service extends Readonly<
         SelectFrom<

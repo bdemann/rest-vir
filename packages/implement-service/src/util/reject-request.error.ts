@@ -1,6 +1,14 @@
 import {assert} from '@augment-vir/assert';
 import {isErrorHttpStatus, type ErrorHttpStatus} from '@augment-vir/common';
 
+/**
+ * An error that, when thrown, indicates that the endpoint that threw this error should return a
+ * failed status (rather than an internal server error).
+ *
+ * @category Internal
+ * @category Package : @rest-vir/define-service
+ * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
+ */
 export class RejectRequestError extends Error {
     public override readonly name = 'RejectRequestError';
 

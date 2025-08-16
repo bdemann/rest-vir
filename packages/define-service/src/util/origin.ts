@@ -76,6 +76,10 @@ export const originRequirementShape = defineShape(
  * - `boolean`: the origin was explicitly checked and passed (`true`) or failed (`false`)
  * - `undefined`: no origin checking occurred
  * - `AnyOrigin`: requirements explicitly allow any origin.
+ *
+ * @category Internal
+ * @category Package : @rest-vir/define-service
+ * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
  */
 export type OriginRequirementResult = boolean | undefined | AnyOrigin;
 
