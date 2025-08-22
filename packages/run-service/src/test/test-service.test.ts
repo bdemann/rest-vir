@@ -178,6 +178,23 @@ const serviceWithPostHook = implementService({
                 requestDataShape: undefined,
                 responseDataShape: undefined,
             },
+            '/always-accept-cors': {
+                methods: {
+                    [HttpMethod.Get]: true,
+                },
+                requestDataShape: undefined,
+                responseDataShape: undefined,
+                requiredClientOrigin() {
+                    return true;
+                },
+            },
+            '/always-accept-cors-fallback': {
+                methods: {
+                    [HttpMethod.Get]: true,
+                },
+                requestDataShape: undefined,
+                responseDataShape: undefined,
+            },
             '/rejects-with-error': {
                 methods: {
                     [HttpMethod.Get]: true,
@@ -186,7 +203,9 @@ const serviceWithPostHook = implementService({
                 responseDataShape: undefined,
             },
         },
-        requiredClientOrigin: AnyOrigin,
+        requiredClientOrigin() {
+            return true;
+        },
         serviceName: 'with postHook',
         serviceOrigin: 'https://example.com',
     }),
@@ -255,6 +274,16 @@ const serviceWithPostHook = implementService({
             return {
                 statusCode: HttpStatus.Forbidden,
                 responseErrorMessage: 'this is an error',
+            };
+        },
+        '/always-accept-cors'() {
+            return {
+                statusCode: HttpStatus.Ok,
+            };
+        },
+        '/always-accept-cors-fallback'() {
+            return {
+                statusCode: HttpStatus.Ok,
             };
         },
         '/rejects-with-error'() {
@@ -436,6 +465,34 @@ describeService({service: serviceWithPostHook}, ({fetchEndpoint, getServer, serv
         assert.isFalse(response.ok);
         assert.strictEquals(response.status, HttpStatus.BadGateway);
         assert.isEmpty(await response.text());
+    });
+    it('handles no origin', async () => {
+        assert.isTrue((await fetchEndpoint['/always-accept-cors']()).ok);
+        assert.isTrue((await fetchEndpoint['/always-accept-cors-fallback']()).ok);
+    });
+    it('handles any origin', async () => {
+        assert.isTrue(
+            (
+                await fetchEndpoint['/always-accept-cors']({
+                    options: {
+                        headers: {
+                            origin: 'something',
+                        },
+                    },
+                })
+            ).ok,
+        );
+        assert.isTrue(
+            (
+                await fetchEndpoint['/always-accept-cors-fallback']({
+                    options: {
+                        headers: {
+                            origin: 'something',
+                        },
+                    },
+                })
+            ).ok,
+        );
     });
 });
 

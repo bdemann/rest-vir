@@ -190,7 +190,7 @@ async function matchOrigin(
     } else if (endpointRequirement === false) {
         return undefined;
     } else if (endpointRequirement === true) {
-        return origin;
+        return origin || AnyOrigin;
     }
 
     /** If the endpoint requirement is `undefined`, then we check the service requirement. */
@@ -205,7 +205,7 @@ async function matchOrigin(
     } else if (serviceRequirement === false) {
         return undefined;
     } else if (serviceRequirement === true) {
-        return origin;
+        return origin || AnyOrigin;
     }
 
     /**
