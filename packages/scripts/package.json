@@ -24,7 +24,7 @@
         "test:docs": "exit 0"
     },
     "dependencies": {
-        "@virmator/docs": "^13.16.2",
+        "@virmator/docs": "^14.0.1",
         "type-fest": "^4.41.0",
         "typedoc": "^0.28.10"
     },
