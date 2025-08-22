@@ -139,6 +139,14 @@ describe(checkOriginRequirement.name, () => {
             ],
             expect: false,
         },
+        {
+            it: 'allows a function to return true even on undefined origin',
+            inputs: [
+                undefined,
+                () => true,
+            ],
+            expect: true,
+        },
     ]);
 });
 

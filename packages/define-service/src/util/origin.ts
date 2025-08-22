@@ -98,16 +98,13 @@ export async function checkOriginRequirement(
     if (isAnyOrigin(originRequirement)) {
         /** Any origin has been explicitly allowed. */
         return AnyOrigin;
-    } else if (originRequirement === undefined) {
+    } else if (originRequirement == undefined) {
         /** No checking occurred. */
         return undefined;
-    } else if (!origin) {
-        /** If there is an origin requirement but no origin then the origin automatically fails. */
-        return false;
     } else if (check.isString(originRequirement)) {
         return origin === originRequirement;
     } else if (check.instanceOf(originRequirement, RegExp)) {
-        return !!originRequirement.exec(origin);
+        return !!origin && !!originRequirement.exec(origin);
     } else if (check.isArray(originRequirement)) {
         for (const requirement of originRequirement) {
             if (await checkOriginRequirement(origin, requirement)) {
