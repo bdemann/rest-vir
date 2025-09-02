@@ -86,7 +86,7 @@ describe(makeMockApi.name, () => {
         assert.tsType(mockServiceApi.endpoints['/empty']).notEquals<never>();
         assert
             .tsType<(typeof mockServiceApi.endpoints)['/long-running']['ResponseType']>()
-            .equals<Readonly<{result: number}>>();
+            .equals<{result: number}>();
     });
 
     it('fetches a mock endpoint', async () => {

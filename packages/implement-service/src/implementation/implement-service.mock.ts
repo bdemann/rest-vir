@@ -34,12 +34,10 @@ export const mockServiceImplementation = implementService({
     webSockets: {
         '/with-search-params': {
             open({searchParams}) {
-                assert.tsType(searchParams).equals<
-                    Readonly<{
-                        param1: [string];
-                        param2: ReadonlyArray<string>;
-                    }>
-                >();
+                assert.tsType(searchParams).equals<{
+                    param1: [string];
+                    param2: string[];
+                }>();
             },
             message({searchParams, webSocket}) {
                 webSocket.send(searchParams);
@@ -99,12 +97,10 @@ export const mockServiceImplementation = implementService({
         '/no-origin': {
             message(params) {
                 assert.tsType(params.context).equals<MockServiceContext>();
-                assert.tsType(params.message).equals<
-                    Readonly<{
-                        a: string;
-                        b: number;
-                    }>
-                >();
+                assert.tsType(params.message).equals<{
+                    a: string;
+                    b: number;
+                }>();
                 assert.tsType<'message'>().matches<keyof typeof params>();
                 params.webSocket.send('ok');
             },
@@ -120,12 +116,10 @@ export const mockServiceImplementation = implementService({
         '/origin-locked': {
             message(params) {
                 assert.tsType(params.context).equals<MockServiceContext>();
-                assert.tsType(params.message).equals<
-                    Readonly<{
-                        a: string;
-                        b: number;
-                    }>
-                >();
+                assert.tsType(params.message).equals<{
+                    a: string;
+                    b: number;
+                }>();
                 assert.tsType<'message'>().matches<keyof typeof params>();
                 params.webSocket.send('ok');
             },
@@ -153,12 +147,10 @@ export const mockServiceImplementation = implementService({
             };
         },
         '/with-search-params'({searchParams}) {
-            assert.tsType(searchParams).equals<
-                Readonly<{
-                    param1: [string];
-                    param2: ReadonlyArray<string>;
-                }>
-            >();
+            assert.tsType(searchParams).equals<{
+                param1: [string];
+                param2: string[];
+            }>();
 
             return {
                 statusCode: HttpStatus.Ok,

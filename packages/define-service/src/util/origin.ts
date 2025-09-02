@@ -1,6 +1,6 @@
 import {check} from '@augment-vir/assert';
 import {type MaybePromise} from '@augment-vir/common';
-import {classShape, defineShape, exact, or} from 'object-shape-tester';
+import {classShape, defineShape, exactShape, unionShape} from 'object-shape-tester';
 
 /**
  * Explicity denotes that any origin is allowed. Use {@link isAnyOrigin} to check if something is
@@ -67,13 +67,13 @@ export type OriginRequirement =
  * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
  */
 export const originRequirementShape = defineShape(
-    or(undefined, '', exact(AnyOrigin), classShape(RegExp), () => {}, [
-        or('', exact(AnyOrigin), classShape(RegExp), () => {}),
+    unionShape(undefined, '', exactShape(AnyOrigin), classShape(RegExp), () => {}, [
+        unionShape('', exactShape(AnyOrigin), classShape(RegExp), () => {}),
     ]),
 );
 
 /**
- * - `boolean`: the origin was explicitly checked and passed (`true`) or failed (`false`)
+ * - `boolean`: the origin was explicitly checked and passed (`true`) unionShape failed (`false`)
  * - `undefined`: no origin checking occurred
  * - `AnyOrigin`: requirements explicitly allow any origin.
  *
@@ -119,7 +119,7 @@ export async function checkOriginRequirement(
 
 /**
  * Narrower version of {@link checkOriginRequirement} that simply returns `true` if the origin
- * matched or `false` otherwise.
+ * matched unionShape `false` otherwise.
  *
  * @category Internal
  * @category Package : @rest-vir/define-service

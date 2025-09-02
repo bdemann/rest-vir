@@ -13,7 +13,7 @@ import {
 import {implementService, RejectRequestError} from '@rest-vir/implement-service';
 import {mockServiceImplementation} from '@rest-vir/implement-service/src/implementation/implement-service.mock.js';
 import fastify from 'fastify';
-import {exact} from 'object-shape-tester';
+import {exactShape} from 'object-shape-tester';
 import {type EmptyObject} from 'type-fest';
 import {buildUrl, parseUrl} from 'url-vir';
 import {
@@ -43,8 +43,8 @@ const plainService = implementService({
     service: defineService({
         webSockets: {
             '/socket': {
-                messageFromClientShape: exact('from client'),
-                messageFromHostShape: exact('from server'),
+                messageFromClientShape: exactShape('from client'),
+                messageFromHostShape: exactShape('from server'),
             },
         },
         endpoints: {
@@ -121,8 +121,8 @@ const serviceWithPostHook = implementService({
     service: defineService({
         webSockets: {
             '/socket': {
-                messageFromClientShape: exact('from client'),
-                messageFromHostShape: exact('from server'),
+                messageFromClientShape: exactShape('from client'),
+                messageFromHostShape: exactShape('from server'),
             },
         },
         endpoints: {
@@ -130,8 +130,8 @@ const serviceWithPostHook = implementService({
                 methods: {
                     [HttpMethod.Post]: true,
                 },
-                requestDataShape: exact('health request'),
-                responseDataShape: exact('health response'),
+                requestDataShape: exactShape('health request'),
+                responseDataShape: exactShape('health response'),
                 searchParamsShape: {
                     data: [''],
                 },
@@ -140,15 +140,15 @@ const serviceWithPostHook = implementService({
                 methods: {
                     [HttpMethod.Post]: true,
                 },
-                requestDataShape: exact('health2 request'),
-                responseDataShape: exact('health2 response'),
+                requestDataShape: exactShape('health2 request'),
+                responseDataShape: exactShape('health2 response'),
             },
             '/health3': {
                 methods: {
                     [HttpMethod.Get]: true,
                 },
                 requestDataShape: undefined,
-                responseDataShape: exact('data'),
+                responseDataShape: exactShape('data'),
             },
             '/health4': {
                 methods: {
@@ -221,7 +221,7 @@ const serviceWithPostHook = implementService({
             };
         }
 
-        assert.tsType(searchParams).equals<Readonly<{data: ReadonlyArray<string>}> | EmptyObject>();
+        assert.tsType(searchParams).equals<{data: string[]} | EmptyObject>();
 
         return {
             context: 'hello there',

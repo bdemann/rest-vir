@@ -3,7 +3,7 @@ import {HttpStatus} from '@augment-vir/common';
 import {describe, it} from '@augment-vir/test';
 import {AnyOrigin, defineService} from '@rest-vir/define-service';
 import {mockService} from '@rest-vir/define-service/src/service/define-service.mock.js';
-import {or} from 'object-shape-tester';
+import {unionShape} from 'object-shape-tester';
 import {type EmptyObject} from 'type-fest';
 import {
     type EndpointImplementationOutput,
@@ -26,7 +26,7 @@ describe(implementService.name, () => {
                     },
                     requestDataShape: {
                         a: -1,
-                        b: or(undefined, ''),
+                        b: unionShape(undefined, ''),
                     },
                     responseDataShape: undefined,
                 },
@@ -36,7 +36,7 @@ describe(implementService.name, () => {
                     },
                     requestDataShape: {
                         a: -1,
-                        b: or(undefined, ''),
+                        b: unionShape(undefined, ''),
                     },
                     responseDataShape: undefined,
                 },
@@ -56,12 +56,10 @@ describe(implementService.name, () => {
             Service['endpoints']['/test']
         >): EndpointImplementationOutput<Service['endpoints']['/test']['ResponseType']> {
             assert.tsType(context).equals<Context>();
-            assert.tsType<typeof requestData>().equals<
-                Readonly<{
-                    a: number;
-                    b: string | undefined;
-                }>
-            >();
+            assert.tsType<typeof requestData>().equals<{
+                a: number;
+                b: string | undefined;
+            }>();
 
             return {
                 statusCode: HttpStatus.Ok,
@@ -90,12 +88,10 @@ describe(implementService.name, () => {
                 '/test': testEndpoint,
                 '/test2'({requestData, context}) {
                     assert.tsType(context).equals<Context>();
-                    assert.tsType<typeof requestData>().equals<
-                        Readonly<{
-                            a: number;
-                            b: string | undefined;
-                        }>
-                    >();
+                    assert.tsType<typeof requestData>().equals<{
+                        a: number;
+                        b: string | undefined;
+                    }>();
 
                     return {
                         statusCode: HttpStatus.Ok,
@@ -122,7 +118,7 @@ describe(implementService.name, () => {
                         },
                         requestDataShape: {
                             a: -1,
-                            b: or(undefined, ''),
+                            b: unionShape(undefined, ''),
                         },
                         responseDataShape: undefined,
                     },
@@ -134,12 +130,10 @@ describe(implementService.name, () => {
         })({
             endpoints: {
                 '/test'({requestData}) {
-                    assert.tsType<typeof requestData>().equals<
-                        Readonly<{
-                            a: number;
-                            b: string | undefined;
-                        }>
-                    >();
+                    assert.tsType<typeof requestData>().equals<{
+                        a: number;
+                        b: string | undefined;
+                    }>();
 
                     return {
                         statusCode: HttpStatus.Ok,
@@ -247,10 +241,10 @@ describe(implementService.name, () => {
             service: mockService,
             createContext({searchParams}) {
                 assert.tsType(searchParams).equals<
-                    | Readonly<{
+                    | {
                           param1: [string];
-                          param2: readonly string[];
-                      }>
+                          param2: string[];
+                      }
                     | EmptyObject
                 >();
 

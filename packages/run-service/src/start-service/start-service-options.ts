@@ -97,7 +97,7 @@ export function finalizeOptions(
     const {hostname, port} = parseUrl(serviceOrigin);
 
     const options = mergeDefinedProperties<StartServiceOptions>(
-        startServiceOptionsShape.defaultValue,
+        startServiceOptionsShape.default,
         Number(port)
             ? {
                   host: hostname || undefined,

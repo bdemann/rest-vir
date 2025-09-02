@@ -25,7 +25,7 @@ import {
     type ServerResponse,
 } from '@rest-vir/implement-service';
 import {type IncomingHttpHeaders} from 'node:http';
-import {assertValidShape, isValidShape} from 'object-shape-tester';
+import {assertValidShape, checkValidShape} from 'object-shape-tester';
 import {handleHandlerOutputWithoutSending, type HandledOutput} from './endpoint-handler.js';
 import {handleCors} from './handle-cors.js';
 import {handleRequestMethod} from './handle-request-method.js';
@@ -241,13 +241,10 @@ function extractRequestData(
         }
     }
 
-    if (
-        isFormDataShape(dataShape.shape) &&
-        headers['content-type']?.includes('multipart/form-data')
-    ) {
+    if (isFormDataShape(dataShape) && headers['content-type']?.includes('multipart/form-data')) {
         return body;
     } else if (
-        !isValidShape(body, dataShape, {
+        !checkValidShape(body, dataShape, {
             /** Allow extra keys for forwards / backwards compatibility. */
             allowExtraKeys: true,
         })

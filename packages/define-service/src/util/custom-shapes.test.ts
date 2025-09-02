@@ -6,12 +6,12 @@ describe(isFormDataShape.name, () => {
     itCases(isFormDataShape, [
         {
             it: 'passes on a shape definition',
-            input: defineShape(formDataShape),
+            input: defineShape(formDataShape()),
             expect: true,
         },
         {
             it: 'passes on form data shape',
-            input: formDataShape,
+            input: formDataShape(),
             expect: true,
         },
         {

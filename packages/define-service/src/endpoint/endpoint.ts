@@ -2,12 +2,12 @@ import {HttpMethod, type AnyObject, type Overwrite, type SelectFrom} from '@augm
 import {
     defineShape,
     enumShape,
-    indexedKeys,
-    optional,
-    or,
+    optionalShape,
+    recordShape,
+    unionShape,
     unknownShape,
-    type ShapeDefinition,
-    type ShapeToRuntimeType,
+    type Shape,
+    type ShapeInitType,
 } from 'object-shape-tester';
 import {type RequireAtLeastOne} from 'type-fest';
 import {type MinimalService} from '../service/minimal-service.js';
@@ -116,20 +116,19 @@ export const endpointInitShape = defineShape({
      *   service's origin requirement).
      * - Any other set value overrides the service's origin requirement (if it has any).
      */
-    requiredClientOrigin: optional(originRequirementShape),
-    methods: indexedKeys({
+    requiredClientOrigin: optionalShape(originRequirementShape),
+    methods: recordShape({
         keys: enumShape(HttpMethod),
         values: false,
-        required: false,
+        partial: true,
     }),
-    bypassResponseValidation: optional(or(undefined, null, false)),
-    customProps: optional(
-        or(
+    bypassResponseValidation: optionalShape(unionShape(undefined, null, false)),
+    customProps: optionalShape(
+        unionShape(
             undefined,
-            indexedKeys({
+            recordShape({
                 keys: unknownShape(),
                 values: unknownShape(),
-                required: false,
             }),
         ),
     ),
@@ -150,42 +149,30 @@ export type WithFinalEndpointProps<
           Init,
           {
               requestDataShape: Init['requestDataShape'] extends NoParam
-                  ? ShapeDefinition<any, true> | undefined
+                  ? Shape | undefined
                   : undefined extends Init['requestDataShape']
                     ? undefined
-                    : ShapeDefinition<Init['requestDataShape'], true>;
+                    : Shape<Init['requestDataShape']>;
               responseDataShape: Init['responseDataShape'] extends NoParam
-                  ? ShapeDefinition<any, true> | undefined
+                  ? Shape | undefined
                   : undefined extends Init['responseDataShape']
                     ? undefined
-                    : ShapeDefinition<Init['responseDataShape'], true>;
+                    : Shape<Init['responseDataShape']>;
               RequestType: Init['requestDataShape'] extends NoParam
                   ? any
                   : undefined extends Init['requestDataShape']
                     ? undefined
-                    : ShapeToRuntimeType<
-                          ShapeDefinition<Init['requestDataShape'], true>,
-                          false,
-                          true
-                      >;
+                    : ShapeInitType<Init['requestDataShape']>;
               ResponseType: Init['responseDataShape'] extends NoParam
                   ? any
                   : undefined extends Init['responseDataShape']
                     ? undefined
-                    : ShapeToRuntimeType<
-                          ShapeDefinition<Init['responseDataShape'], true>,
-                          false,
-                          true
-                      >;
+                    : ShapeInitType<Init['responseDataShape']>;
               searchParamsShape: 'searchParamsShape' extends keyof Init
-                  ? ShapeDefinition<Init['searchParamsShape'], true> | undefined
+                  ? Shape<Init['searchParamsShape']> | undefined
                   : undefined;
               SearchParamsType: 'searchParamsShape' extends keyof Init
-                  ? ShapeToRuntimeType<
-                        ShapeDefinition<Init['searchParamsShape'], true>,
-                        false,
-                        true
-                    >
+                  ? ShapeInitType<Init['searchParamsShape']>
                   : undefined;
               customProps: 'customProps' extends keyof Init ? Init['customProps'] : undefined;
           }
@@ -251,8 +238,12 @@ export type BaseEndpointForExecutorData = Pick<
  * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
  */
 export type EndpointExecutorData<SpecificEndpoint extends BaseEndpointForExecutorData> = {
-    request: ShapeToRuntimeType<SpecificEndpoint['requestDataShape'], false, true>;
-    response: ShapeToRuntimeType<SpecificEndpoint['responseDataShape'], false, true>;
+    request: SpecificEndpoint['requestDataShape'] extends Shape
+        ? SpecificEndpoint['requestDataShape']['runtimeType']
+        : SpecificEndpoint['requestDataShape'];
+    response: SpecificEndpoint['responseDataShape'] extends Shape
+        ? SpecificEndpoint['responseDataShape']['runtimeType']
+        : undefined;
 };
 
 /**

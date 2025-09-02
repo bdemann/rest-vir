@@ -1,4 +1,7 @@
-import {customShape, isCustomSpecifier, isShapeDefinition} from 'object-shape-tester';
+import {Kind} from '@sinclair/typebox';
+import {createCustomShape, isSchema, isShape} from 'object-shape-tester';
+
+const formDataShapeKind = 'FormData' as string;
 
 /**
  * A custom shape definition for requests that require `FormData` as the body.
@@ -28,12 +31,12 @@ import {customShape, isCustomSpecifier, isShapeDefinition} from 'object-shape-te
  *
  * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
  */
-export const formDataShape = customShape<FormData>({
-    customName: 'FormData',
-    checker(value) {
+export const formDataShape = createCustomShape<FormData>({
+    name: formDataShapeKind,
+    checkValue(value) {
         return value instanceof FormData;
     },
-    defaultValue: new FormData(),
+    default: new FormData(),
 });
 
 /**
@@ -44,10 +47,10 @@ export const formDataShape = customShape<FormData>({
  * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
  */
 export function isFormDataShape(shape: unknown): boolean {
-    if (isShapeDefinition(shape)) {
-        return isFormDataShape(shape.shape);
-    } else if (isCustomSpecifier(shape)) {
-        return shape.customName === formDataShape.customName;
+    if (isShape(shape)) {
+        return isFormDataShape(shape.$_schema);
+    } else if (isSchema(shape)) {
+        return shape[Kind] === formDataShapeKind;
     } else {
         return false;
     }

@@ -13,7 +13,7 @@ import {
     type ImplementedWebSocket,
     type ServerRequest,
 } from '@rest-vir/implement-service';
-import {assertValidShape, type ShapeDefinition} from 'object-shape-tester';
+import {assertValidShape, type Shape} from 'object-shape-tester';
 import {parseUrl} from 'url-vir';
 
 /**
@@ -57,7 +57,7 @@ export function handleSearchParams({
           data: BaseSearchParams;
       } {
     const searchParams = parseUrl(request.originalUrl).searchParams;
-    const shape = route.searchParamsShape as undefined | ShapeDefinition<any, boolean>;
+    const shape = route.searchParamsShape as undefined | Shape;
 
     const validationError: undefined | Error = shape
         ? wrapInTry(() => {

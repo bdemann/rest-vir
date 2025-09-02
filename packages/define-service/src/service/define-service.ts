@@ -74,11 +74,11 @@ function finalizeServiceDefinition<
                 requestDataShape:
                     endpointInit.requestDataShape == undefined
                         ? undefined
-                        : defineShape<any, true>(endpointInit.requestDataShape, true),
+                        : defineShape(endpointInit.requestDataShape),
                 responseDataShape:
                     endpointInit.responseDataShape == undefined
                         ? undefined
-                        : defineShape<any, true>(endpointInit.responseDataShape, true),
+                        : defineShape(endpointInit.responseDataShape),
 
                 path: endpointPath,
                 service: minimalService,
@@ -86,7 +86,7 @@ function finalizeServiceDefinition<
                 isEndpoint: true,
                 isWebSocket: false,
                 searchParamsShape: (endpointInit.searchParamsShape
-                    ? defineShape<any, any>(endpointInit.searchParamsShape)
+                    ? defineShape(endpointInit.searchParamsShape)
                     : undefined) as EndpointDefinition['searchParamsShape'],
             } satisfies Omit<
                 EndpointDefinition,

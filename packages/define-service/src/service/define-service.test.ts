@@ -1,7 +1,7 @@
 import {assert} from '@augment-vir/assert';
 import {getObjectTypedKeys, HttpMethod, type MaybePromise} from '@augment-vir/common';
 import {describe, it, itCases} from '@augment-vir/test';
-import {assertValidShape, exact, or} from 'object-shape-tester';
+import {assertValidShape, exactShape, unionShape} from 'object-shape-tester';
 import {type RequireAtLeastOne} from 'type-fest';
 import {type EndpointPathBase} from '../endpoint/endpoint-path.js';
 import {AnyOrigin} from '../util/origin.js';
@@ -24,7 +24,7 @@ describe(defineService.name, () => {
     it('allows possibly undefined endpoint message types', () => {
         assert
             .tsType<(typeof mockService.endpoints)['/long-running']['RequestType']>()
-            .equals<undefined | Readonly<{count: number}>>();
+            .equals<undefined | {count: number}>();
     });
     it('preserves WebSocket protocols', () => {
         assert
@@ -242,28 +242,28 @@ describe(defineService.name, () => {
     });
 
     it('preserves endpoint output type', () => {
-        assert
-            .tsType<{
-                request: (typeof mockService.endpoints)['/test']['RequestType'];
-                response: (typeof mockService.endpoints)['/test']['ResponseType'];
-            }>()
-            .equals<{
-                request: Readonly<{
+        type Outputs = {
+            request: (typeof mockService.endpoints)['/test']['RequestType'];
+            response: (typeof mockService.endpoints)['/test']['ResponseType'];
+        };
+
+        assert.tsType<Outputs>().equals<{
+            request: {
+                somethingHere: string;
+                testValue: number;
+            };
+            response: {
+                result:
+                    | number
+                    | {
+                          hello: string;
+                      };
+                requestData: {
                     somethingHere: string;
                     testValue: number;
-                }>;
-                response: Readonly<{
-                    result:
-                        | number
-                        | Readonly<{
-                              hello: string;
-                          }>;
-                    requestData: Readonly<{
-                        somethingHere: string;
-                        testValue: number;
-                    }>;
-                }>;
-            }>();
+                };
+            };
+        }>();
 
         assert
             .tsType<(typeof mockService.endpoints)['/empty']['ResponseType']>()
@@ -394,12 +394,12 @@ describe(defineService.name, () => {
             webSockets: {
                 '/my-web-socket': {
                     messageFromHostShape: undefined,
-                    messageFromClientShape: or(
+                    messageFromClientShape: unionShape(
                         {
-                            code: exact(1),
+                            code: exactShape(1),
                         },
                         {
-                            code: exact(2),
+                            code: exactShape(2),
                         },
                     ),
                     requiredClientOrigin: 'http://example.com',
@@ -447,14 +447,12 @@ describe(defineService.name, () => {
         assert
             .tsType<(typeof service.webSockets)['/my-web-socket']['MessageFromClientType']>()
             .equals<
-                Readonly<
-                    | {
-                          code: 1;
-                      }
-                    | {
-                          code: 2;
-                      }
-                >
+                | {
+                      code: 1;
+                  }
+                | {
+                      code: 2;
+                  }
             >();
     });
     it('can define no webSockets or endpoints', () => {

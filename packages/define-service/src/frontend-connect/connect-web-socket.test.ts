@@ -35,12 +35,10 @@ describe('CollapsedConnectWebSocketParams', () => {
             .notEquals<undefined>();
         assert
             .tsType<(typeof mockService.webSockets)['/with-search-params']['SearchParamsType']>()
-            .equals<
-                Readonly<{
-                    param1: [string];
-                    param2: readonly string[];
-                }>
-            >();
+            .equals<{
+                param1: [string];
+                param2: string[];
+            }>();
 
         const genericParams: CollapsedConnectWebSocketParams =
             {} as CollapsedConnectWebSocketParams<

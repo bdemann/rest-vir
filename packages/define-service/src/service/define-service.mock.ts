@@ -2,7 +2,7 @@
 /** This is just a mock file. */
 
 import {HttpMethod, wait} from '@augment-vir/common';
-import {exact, indexedKeys, or, tupleShape, unknownShape} from 'object-shape-tester';
+import {exactShape, recordShape, tupleShape, unionShape, unknownShape} from 'object-shape-tester';
 import {formDataShape} from '../util/custom-shapes.js';
 import {AnyOrigin} from '../util/origin.js';
 import {defineService} from './define-service.js';
@@ -16,12 +16,12 @@ export const mockService = defineService({
     webSockets: {
         /** This WebSocket requires protocols. */
         '/required-protocols': {
-            messageFromClientShape: exact('hello'),
-            messageFromHostShape: exact('ok'),
-            protocolsShape: tupleShape('', '', exact('hi')),
+            messageFromClientShape: exactShape('hello'),
+            messageFromHostShape: exactShape('ok'),
+            protocolsShape: tupleShape('', '', exactShape('hi')),
         },
         '/origin-locked': {
-            messageFromHostShape: exact('ok'),
+            messageFromHostShape: exactShape('ok'),
             messageFromClientShape: {
                 a: '',
                 b: -1,
@@ -29,14 +29,14 @@ export const mockService = defineService({
             requiredClientOrigin: mockWebsiteOrigin,
         },
         '/no-origin': {
-            messageFromHostShape: exact('ok'),
+            messageFromHostShape: exactShape('ok'),
             messageFromClientShape: {
                 a: '',
                 b: -1,
             },
         },
         '/no-client-data': {
-            messageFromHostShape: exact('ok'),
+            messageFromHostShape: exactShape('ok'),
             messageFromClientShape: undefined,
         },
         '/no-server-data': {
@@ -48,14 +48,14 @@ export const mockService = defineService({
             messageFromHostShape: [''],
         },
         '/custom-props-web-socket': {
-            messageFromHostShape: exact('ok'),
+            messageFromHostShape: exactShape('ok'),
             messageFromClientShape: undefined,
             customProps: {
                 hello: '',
             },
         },
         '/with-all-listeners': {
-            messageFromHostShape: exact('ok'),
+            messageFromHostShape: exactShape('ok'),
             messageFromClientShape: undefined,
         },
         '/with-search-params': {
@@ -75,8 +75,8 @@ export const mockService = defineService({
             methods: {
                 [HttpMethod.Post]: true,
             },
-            requestDataShape: formDataShape,
-            responseDataShape: exact('ok'),
+            requestDataShape: formDataShape(),
+            responseDataShape: exactShape('ok'),
         },
         '/custom-props': {
             methods: {
@@ -141,7 +141,7 @@ export const mockService = defineService({
                 [HttpMethod.Post]: true,
             },
             responseDataShape: {
-                result: or({hello: 'there'}, 5),
+                result: unionShape({hello: 'there'}, 5),
                 requestData: {
                     somethingHere: '',
                     testValue: 5,
@@ -167,7 +167,7 @@ export const mockService = defineService({
             requiredClientOrigin: mockWebsiteOrigin,
         },
         '/long-running': {
-            requestDataShape: or(undefined, {count: -1}),
+            requestDataShape: unionShape(undefined, {count: -1}),
             methods: {
                 [HttpMethod.Get]: true,
             },
@@ -181,10 +181,9 @@ export const mockService = defineService({
                 [HttpMethod.Get]: true,
             },
             requestDataShape: undefined,
-            responseDataShape: indexedKeys({
+            responseDataShape: recordShape({
                 keys: '',
                 values: '',
-                required: true,
             }),
         },
         '/empty': {

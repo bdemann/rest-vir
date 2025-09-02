@@ -1,11 +1,11 @@
 import {type AnyObject, type Overwrite, type SelectFrom} from '@augment-vir/common';
 import {
     defineShape,
-    indexedKeys,
-    optional,
-    or,
-    type ShapeDefinition,
-    type ShapeToRuntimeType,
+    optionalShape,
+    recordShape,
+    type Shape,
+    type ShapeInitType,
+    unionShape,
     unknownShape,
 } from 'object-shape-tester';
 import {type IsEqual} from 'type-fest';
@@ -102,54 +102,42 @@ export type WithFinalWebSocketProps<
               messageFromClientShape: IsEqual<Init['messageFromClientShape'], NoParam> extends true
                   ? any
                   : Init['messageFromClientShape'] extends NoParam
-                    ? ShapeDefinition<any, true> | undefined
+                    ? Shape | undefined
                     : undefined extends Init['messageFromClientShape']
                       ? undefined
-                      : ShapeDefinition<Init['messageFromClientShape'], true>;
+                      : Shape<Init['messageFromClientShape']>;
               messageFromHostShape: IsEqual<Init['messageFromHostShape'], NoParam> extends true
                   ? any
                   : Init['messageFromHostShape'] extends NoParam
-                    ? ShapeDefinition<any, true> | undefined
+                    ? Shape | undefined
                     : undefined extends Init['messageFromHostShape']
                       ? undefined
-                      : ShapeDefinition<Init['messageFromHostShape'], true>;
+                      : Shape<Init['messageFromHostShape']>;
               MessageFromClientType: Init['messageFromClientShape'] extends NoParam
                   ? any
                   : undefined extends Init['messageFromClientShape']
                     ? undefined
-                    : ShapeToRuntimeType<
-                          ShapeDefinition<Init['messageFromClientShape'], true>,
-                          false,
-                          true
-                      >;
+                    : ShapeInitType<Init['messageFromClientShape']>;
               MessageFromHostType: Init['messageFromHostShape'] extends NoParam
                   ? any
                   : undefined extends Init['messageFromHostShape']
                     ? undefined
-                    : ShapeToRuntimeType<
-                          ShapeDefinition<Init['messageFromHostShape'], true>,
-                          false,
-                          true
-                      >;
+                    : ShapeInitType<Init['messageFromHostShape']>;
               protocolsShape: 'protocolsShape' extends keyof Init
                   ? undefined extends Init['protocolsShape']
                       ? undefined
-                      : ShapeDefinition<Init['protocolsShape'], true> | undefined
+                      : Shape<Init['protocolsShape']> | undefined
                   : undefined;
               ProtocolsType: undefined extends Init['protocolsShape']
                   ? string[]
-                  : ShapeToRuntimeType<ShapeDefinition<Init['protocolsShape'], true>, false, true>;
+                  : ShapeInitType<Init['protocolsShape']>;
               searchParamsShape: 'searchParamsShape' extends keyof Init
                   ? undefined extends Init['searchParamsShape']
                       ? undefined
-                      : ShapeDefinition<Init['searchParamsShape'], true> | undefined
+                      : Shape<Init['searchParamsShape']> | undefined
                   : undefined;
               SearchParamsType: 'searchParamsShape' extends keyof Init
-                  ? ShapeToRuntimeType<
-                        ShapeDefinition<Init['searchParamsShape'], true>,
-                        false,
-                        true
-                    >
+                  ? ShapeInitType<Init['searchParamsShape']>
                   : undefined;
               customProps: 'customProps' extends keyof Init ? Init['customProps'] : undefined;
           }
@@ -213,14 +201,13 @@ export const webSocketInitShape = defineShape({
      *   service's origin requirement).
      * - Any other set value overrides the service's origin requirement (if it has any).
      */
-    requiredClientOrigin: optional(originRequirementShape),
-    customProps: optional(
-        or(
+    requiredClientOrigin: optionalShape(originRequirementShape),
+    customProps: optionalShape(
+        unionShape(
             undefined,
-            indexedKeys({
+            recordShape({
                 keys: unknownShape(),
                 values: unknownShape(),
-                required: false,
             }),
         ),
     ),

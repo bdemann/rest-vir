@@ -106,14 +106,16 @@ describe(buildEndpointUrl.name, () => {
 
 describe('FetchEndpointParams', () => {
     it('includes request data', () => {
-        assert.tsType<FetchEndpointParams<(typeof mockService.endpoints)['/test']>>().equals<
+        type Params = FetchEndpointParams<(typeof mockService.endpoints)['/test']>;
+
+        assert.tsType<Params>().equals<
             Readonly<{
                 searchParams?: never;
                 pathParams?: never;
-                requestData: Readonly<{
+                requestData: {
                     somethingHere: string;
                     testValue: number;
-                }>;
+                };
                 bypassResponseValidation?: boolean | undefined;
                 method?: never;
                 options?: FetchOptions;
@@ -174,46 +176,43 @@ describe(fetchEndpoint.name, () => {
         assert.isTrue(goodOutput.ok);
     });
     it('returns response type', async () => {
-        assert
-            .tsType(
-                await fetchEndpoint(mockService.endpoints['/test'], {
+        const response = await fetchEndpoint(mockService.endpoints['/test'], {
+            requestData: {
+                somethingHere: 'hi',
+                testValue: -1,
+            },
+            fetch: createMockEndpointFetch(mockService.endpoints['/test'], {
+                body: {
+                    result: 1,
                     requestData: {
                         somethingHere: 'hi',
                         testValue: -1,
                     },
-                    fetch: createMockEndpointFetch(mockService.endpoints['/test'], {
-                        body: {
-                            result: 1,
-                            requestData: {
-                                somethingHere: 'hi',
-                                testValue: -1,
-                            },
-                        },
-                    }),
-                }),
-            )
-            .equals<
-                | Readonly<{
-                      ok: true;
-                      data: Readonly<{
-                          result:
-                              | number
-                              | Readonly<{
-                                    hello: string;
-                                }>;
-                          requestData: Readonly<{
-                              somethingHere: string;
-                              testValue: number;
-                          }>;
-                      }>;
-                      response: Readonly<Response>;
-                  }>
-                | Readonly<{
-                      ok: false;
-                      data: string | undefined;
-                      response: Readonly<Response>;
-                  }>
-            >();
+                },
+            }),
+        });
+        assert.tsType(response).equals<
+            | Readonly<{
+                  ok: true;
+                  data: {
+                      result:
+                          | number
+                          | {
+                                hello: string;
+                            };
+                      requestData: {
+                          somethingHere: string;
+                          testValue: number;
+                      };
+                  };
+                  response: Readonly<Response>;
+              }>
+            | Readonly<{
+                  ok: false;
+                  data: string | undefined;
+                  response: Readonly<Response>;
+              }>
+        >();
     });
     it('uses the default fetch', async () => {
         await assert.throws(() =>
@@ -307,7 +306,7 @@ describe(fetchEndpoint.name, () => {
                 requestInit = givenRequestInit;
                 return Promise.resolve(
                     createMockEndpointResponse(endpoint, {
-                        body: endpoint.responseDataShape?.defaultValue,
+                        body: endpoint.responseDataShape?.default,
                     }),
                 );
             },
