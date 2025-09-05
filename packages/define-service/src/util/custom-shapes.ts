@@ -1,5 +1,4 @@
-import {Kind} from '@sinclair/typebox';
-import {createCustomShape, isSchema, isShape} from 'object-shape-tester';
+import {createCustomShape, isSchema, isShape, Kind} from 'object-shape-tester';
 
 const formDataShapeKind = 'FormData' as string;
 
