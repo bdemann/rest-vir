@@ -33,7 +33,6 @@ describe(match.name, () => {
         },
         {
             it: 'matches an unnamed wildcard path',
-            only: true,
             inputs: [
                 '/hi/*',
                 '/hi/bye/see',

@@ -1,5 +1,6 @@
 import {assert, check} from '@augment-vir/assert';
 import {
+    combineErrorMessages,
     ensureError,
     ensureErrorClass,
     extractErrorMessage,
@@ -178,7 +179,7 @@ export async function attachService(
                             path: request.originalUrl,
                             service,
                         },
-                        'Unexpected error',
+                        combineErrorMessages('Unexpected error', extractErrorMessage(error)),
                     ),
                 );
                 if (options.throwErrorsForExternalHandling) {
