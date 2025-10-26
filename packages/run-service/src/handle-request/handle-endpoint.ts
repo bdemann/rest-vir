@@ -12,6 +12,7 @@ import {
 import {assertValidShape} from 'object-shape-tester';
 import {type RestVirRequestContext} from '../start-service/attach-service.js';
 import {type EndpointHandlerParams, type HandledOutput} from './endpoint-handler.js';
+import {buildHandlerParams} from './handler-params.js';
 
 /**
  * Handles an endpoint's implementation execution.
@@ -49,18 +50,19 @@ export async function handleEndpointRequest(
         const searchParams = restVirContext.searchParams;
 
         const endpointParams: EndpointImplementationParams = {
-            pathParams: request.params as Record<string, string>,
+            ...buildHandlerParams({
+                request,
+                requestData,
+                response,
+                server,
+            }),
+
             method: assertWrap.isEnumValue(request.method.toUpperCase(), HttpMethod),
-            request,
-            requestData,
-            requestHeaders: request.headers,
-            response,
             service: endpoint.service,
             endpoint,
             log: endpoint.service.logger,
             context,
             searchParams,
-            server,
         };
 
         const endpointResult = (await endpoint.implementation(

@@ -3,11 +3,11 @@ import {
     type BaseSearchParams,
     type BaseServiceEndpointsInit,
     type BaseServiceWebSocketsInit,
+    type ConstructPathParams,
     type EndpointDefinition,
     type EndpointPathBase,
     type MinimalService,
     type NoParam,
-    type PathParams,
     type WebSocketDefinition,
     type WithFinalEndpointProps,
     type WithFinalWebSocketProps,
@@ -65,17 +65,11 @@ export type ContextInitParams<
     ServiceName extends string = any,
     EndpointsInit extends BaseServiceEndpointsInit | NoParam = NoParam,
     WebSocketsInit extends BaseServiceWebSocketsInit | NoParam = NoParam,
-> = {
-    pathParams: EndpointsInit extends NoParam
-        ? Readonly<Record<string, string>>
-        : PathParams<WithFinalWebSocketProps<Values<WebSocketsInit>, any>['path']> extends string
-          ? Readonly<
-                Record<
-                    PathParams<WithFinalWebSocketProps<Values<WebSocketsInit>, any>['path']>,
-                    string
-                >
-            >
-          : Readonly<Record<string, string>>;
+> = ConstructPathParams<
+    EndpointsInit extends NoParam
+        ? NoParam
+        : WithFinalWebSocketProps<Values<WebSocketsInit>, any>['path']
+> & {
     searchParams: ReplaceUndefinedWithEmptyObject<
         | (WebSocketsInit extends NoParam
               ? BaseSearchParams | undefined

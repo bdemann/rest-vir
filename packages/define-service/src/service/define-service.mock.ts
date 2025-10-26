@@ -186,6 +186,22 @@ export const mockService = defineService({
                 values: '',
             }),
         },
+        '/with/:param1/:param2/*': {
+            methods: {
+                [HttpMethod.Get]: true,
+            },
+            requestDataShape: undefined,
+            responseDataShape: recordShape({
+                keys: '',
+                values: unionShape(
+                    '',
+                    recordShape({
+                        keys: '',
+                        values: '',
+                    }),
+                ),
+            }),
+        },
         '/empty': {
             requestDataShape: undefined,
             responseDataShape: undefined,

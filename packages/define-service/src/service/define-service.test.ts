@@ -188,6 +188,7 @@ describe(defineService.name, () => {
                     | '/unknown-response'
                     | '/with-search-params'
                     | '/with/:param1/:param2'
+                    | '/with/:param1/:param2/*'
                 )[]
             >();
     });

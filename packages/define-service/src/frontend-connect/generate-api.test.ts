@@ -73,6 +73,7 @@ describe(makeMockApi.name, () => {
                     | '/unknown-response'
                     | '/with-search-params'
                     | '/with/:param1/:param2'
+                    | '/with/:param1/:param2/*'
                 >();
             return createMockResponse({
                 status: HttpStatus.Ok,

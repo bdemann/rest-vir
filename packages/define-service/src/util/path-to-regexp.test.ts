@@ -40,6 +40,20 @@ describe(match.name, () => {
             expect: true,
         },
         {
+            /**
+             * While this works, the server will fail to start with such an endpoint definition
+             * with:
+             *
+             * > Wildcard must be the last character in the route
+             */
+            it: 'matches an unnamed wildcard in the middle',
+            inputs: [
+                '/hi/*/again',
+                '/hi/bye/again',
+            ],
+            expect: true,
+        },
+        {
             it: 'rejects an invalid parameterized path',
             inputs: [
                 '/hi/:param1/:param2',

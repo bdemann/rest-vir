@@ -1,6 +1,6 @@
 {
     "name": "@rest-vir/define-service",
-    "version": "1.2.5",
+    "version": "1.2.6",
     "description": "Define an connect to a declarative and type safe REST and WebSocket service.",
     "keywords": [
         "rest",
@@ -40,14 +40,14 @@
         "test:update": "npm test update"
     },
     "dependencies": {
-        "@augment-vir/assert": "^31.40.0",
-        "@augment-vir/common": "^31.40.0",
+        "@augment-vir/assert": "^31.46.1",
+        "@augment-vir/common": "^31.46.1",
         "date-vir": "^8.0.0",
         "type-fest": "^5.1.0",
         "url-vir": "^2.1.6"
     },
     "devDependencies": {
-        "@augment-vir/test": "^31.40.0",
+        "@augment-vir/test": "^31.46.1",
         "@web/dev-server-esbuild": "^1.0.4",
         "@web/test-runner": "^0.20.2",
         "@web/test-runner-commands": "^0.9.0",
@@ -55,7 +55,7 @@
         "@web/test-runner-visual-regression": "^0.10.0",
         "istanbul-smart-text-reporter": "^1.1.5",
         "markdown-code-example-inserter": "^3.0.3",
-        "object-shape-tester": "^6.9.2",
+        "object-shape-tester": "^6.9.3",
         "typedoc": "^0.28.14",
         "ws": "^8.18.3"
     },

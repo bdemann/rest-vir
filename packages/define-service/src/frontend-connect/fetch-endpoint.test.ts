@@ -101,6 +101,20 @@ describe(buildEndpointUrl.name, () => {
                 matchMessage: "Missing value for path param 'param2'",
             },
         },
+        {
+            it: 'rejects a missing wildcard',
+            inputs: [
+                {
+                    path: '/hi/:param1/:param2/*',
+                },
+                {
+                    param1: 'bye',
+                },
+            ],
+            throws: {
+                matchMessage: 'Missing value for wildcard param.',
+            },
+        },
     ]);
 });
 
@@ -112,6 +126,7 @@ describe('FetchEndpointParams', () => {
             Readonly<{
                 searchParams?: never;
                 pathParams?: never;
+                wildcard?: never;
                 requestData: {
                     somethingHere: string;
                     testValue: number;
@@ -130,9 +145,28 @@ describe('FetchEndpointParams', () => {
                 Readonly<{
                     searchParams?: never;
                     pathParams: Readonly<Record<'param1' | 'param2', string>>;
+                    wildcard?: never;
                     requestData?: never;
                     bypassResponseValidation?: boolean | undefined;
                     method: HttpMethod.Get | HttpMethod.Head | 'GET' | 'HEAD';
+                    options?: FetchOptions;
+                    fetch?: GenericFetchEndpointParams['fetch'];
+                }>
+            >();
+    });
+    it('includes wildcard param', () => {
+        assert
+            .tsType<
+                FetchEndpointParams<(typeof mockService.endpoints)['/with/:param1/:param2/*']>
+            >()
+            .equals<
+                Readonly<{
+                    searchParams?: never;
+                    pathParams: Readonly<Record<'param1' | 'param2', string>>;
+                    wildcard: string;
+                    requestData?: never;
+                    bypassResponseValidation?: boolean | undefined;
+                    method?: never;
                     options?: FetchOptions;
                     fetch?: GenericFetchEndpointParams['fetch'];
                 }>

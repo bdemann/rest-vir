@@ -11,12 +11,13 @@ import {
 import {
     type BaseSearchParams,
     type BaseServiceEndpointsInit,
+    type ConstructPathParams,
     type EndpointDefinition,
     type EndpointInit,
     type EndpointPathBase,
+    type GenericPathParams,
     type MinimalService,
     type NoParam,
-    type PathParams,
     type ServiceDefinition,
     ServiceDefinitionError,
     type WithFinalEndpointProps,
@@ -86,12 +87,9 @@ export type EndpointImplementationParams<
     Context = any,
     SpecificEndpoint extends EndpointDefinition | NoParam = NoParam,
     ServiceName extends string = any,
-> = {
-    pathParams: SpecificEndpoint extends NoParam
-        ? Readonly<Record<string, string>>
-        : PathParams<Exclude<SpecificEndpoint, NoParam>['path']> extends string
-          ? Readonly<Record<PathParams<Exclude<SpecificEndpoint, NoParam>['path']>, string>>
-          : Readonly<Record<string, string>>;
+> = (SpecificEndpoint extends NoParam
+    ? GenericPathParams
+    : ConstructPathParams<Exclude<SpecificEndpoint, NoParam>['path']>) & {
     context: NoInfer<Context>;
     method: IsEqual<Extract<SpecificEndpoint, NoParam>, NoParam> extends true
         ? HttpMethod
@@ -150,7 +148,6 @@ export type GenericEndpointImplementationParams = {
     service: MinimalService<any>;
     requestHeaders: IncomingHttpHeaders;
     searchParams: BaseSearchParams;
-    pathParams: Readonly<Record<string, string>>;
 
     requestData: any;
     request: ServerRequest;
@@ -158,7 +155,7 @@ export type GenericEndpointImplementationParams = {
     log: Readonly<ServiceLogger>;
     /** The actual running server info. */
     server: RunningServerInfo;
-};
+} & GenericPathParams;
 
 /**
  * A full, type-safe endpoint implementation type.

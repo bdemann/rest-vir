@@ -4,9 +4,8 @@ import {
     type RequiredKeysOf,
     type SelectFrom,
 } from '@augment-vir/common';
-import {type IsNever} from 'type-fest';
 import {buildUrl} from 'url-vir';
-import {type PathParams} from '../endpoint/endpoint-path.js';
+import {type ConstructPathParams} from '../endpoint/endpoint-path.js';
 import {type NoParam} from '../util/no-param.js';
 import {type CommonWebSocket} from '../web-socket/common-web-socket.js';
 import {
@@ -119,20 +118,7 @@ export type ConnectWebSocketParams<
      * requiring externally adding them.
      */
     listeners?: ConnectWebSocketListeners<WebSocketToConnect, WebSocketClass>;
-} & (IsNever<PathParams<WebSocketToConnect['path']>> extends true
-    ? {
-          /** This WebSocket has no path parameters to configure. */
-          pathParams?: undefined;
-      }
-    : PathParams<WebSocketToConnect['path']> extends string
-      ? {
-            /** Required path params for this WebSocket's path. */
-            pathParams: Readonly<Record<PathParams<WebSocketToConnect['path']>, string>>;
-        }
-      : {
-            /** This WebSocket has no path parameters to configure. */
-            pathParams?: undefined;
-        }) &
+} & ConstructPathParams<WebSocketToConnect['path']> &
     (AllowWebSocketMock extends true
         ? Pick<GenericConnectWebSocketParams<WebSocketClass>, 'webSocketConstructor'>
         : unknown) &

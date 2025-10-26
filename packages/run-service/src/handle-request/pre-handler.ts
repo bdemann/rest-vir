@@ -30,6 +30,7 @@ import {handleHandlerOutputWithoutSending, type HandledOutput} from './endpoint-
 import {handleCors} from './handle-cors.js';
 import {handleRequestMethod} from './handle-request-method.js';
 import {handleSearchParams} from './handle-search-params.js';
+import {buildHandlerParams} from './handler-params.js';
 
 /**
  * Handles a request before it gets to the actual route handlers.
@@ -172,16 +173,17 @@ export async function preHandler({
     attachedRestVirContext.searchParams = searchParams.data;
 
     const contextParams: ContextInitParams = {
-        pathParams: request.params as Record<string, string>,
+        ...buildHandlerParams({
+            request,
+            requestData,
+            response,
+            server,
+        }),
+
         method: assertWrap.isEnumValue(request.method.toUpperCase(), HttpMethod),
-        request,
-        requestData,
-        requestHeaders: request.headers,
-        response,
         service,
         endpointDefinition,
         webSocketDefinition,
-        server,
         searchParams: searchParams.data,
     };
 

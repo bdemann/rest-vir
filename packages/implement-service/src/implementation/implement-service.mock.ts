@@ -249,7 +249,9 @@ export const mockServiceImplementation = implementService({
                 responseData: undefined,
             };
         },
-        '/test'({requestData}) {
+        '/test'({requestData, pathParams, wildcard}) {
+            assert.tsType(pathParams).equals<undefined>();
+            assert.tsType(wildcard).equals<undefined>();
             return {
                 statusCode: HttpStatus.Accepted,
                 responseData: {
@@ -261,16 +263,34 @@ export const mockServiceImplementation = implementService({
         '/throws-error'() {
             throw new Error('fake error');
         },
-        '/with/:param1/:param2'({pathParams}) {
+        '/with/:param1/:param2'({pathParams, wildcard}) {
             assert.tsType(pathParams).equals<
                 Readonly<{
                     param1: string;
                     param2: string;
                 }>
             >();
+            assert.tsType(wildcard).equals<undefined>();
             return {
                 statusCode: HttpStatus.Accepted,
                 responseData: pathParams,
+            };
+        },
+        '/with/:param1/:param2/*'({pathParams, wildcard}) {
+            assert.tsType(pathParams).equals<
+                Readonly<{
+                    param1: string;
+                    param2: string;
+                }>
+            >();
+            assert.tsType(wildcard).equals<string>();
+
+            return {
+                statusCode: HttpStatus.Ok,
+                responseData: {
+                    pathParams,
+                    wildcard,
+                },
             };
         },
         '/async-rejection'() {

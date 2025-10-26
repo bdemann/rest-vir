@@ -87,10 +87,64 @@ describe(testEndpoint.name, () => {
         await assert.throws(
             () =>
                 // @ts-expect-error: this endpoint is missing its path params
-                testEndpoint(mockServiceImplementation.endpoints['/with/:param1/:param2']),
+                testEndpoint(mockServiceImplementation.endpoints['/with/:param1/:param2'], {
+                    method: HttpMethod.Get,
+                }),
             {
                 matchMessage: 'Missing value for path param',
             },
         );
+    });
+    it('requires wildcard', async () => {
+        await assert.throws(
+            () =>
+                // @ts-expect-error: this endpoint is missing its wildcard
+                testEndpoint(mockServiceImplementation.endpoints['/with/:param1/:param2/*'], {
+                    pathParams: {
+                        param1: 'hi',
+                        param2: 'bye',
+                    },
+                }),
+            {
+                matchMessage: 'Missing value for wildcard param',
+            },
+        );
+
+        /** Accepts empty string wildcard. */
+        await testEndpoint(mockServiceImplementation.endpoints['/with/:param1/:param2/*'], {
+            pathParams: {
+                param1: 'hi',
+                param2: 'bye',
+            },
+            wildcard: '',
+        });
+    });
+    it('handles wildcard', async () => {
+        const response = await testEndpoint(
+            mockServiceImplementation.endpoints['/with/:param1/:param2/*'],
+            {
+                pathParams: {
+                    param1: 'hi',
+                    param2: 'bye',
+                },
+                wildcard: 'yo',
+            },
+        );
+
+        assert.deepEquals(await condenseResponse(response), {
+            headers: {
+                'access-control-allow-origin': '*',
+                'content-type': 'application/json; charset=utf-8',
+                'access-control-expose-headers': restVirServiceNameHeader,
+            },
+            status: HttpStatus.Ok,
+            body: JSON.stringify({
+                pathParams: {
+                    param1: 'hi',
+                    param2: 'bye',
+                },
+                wildcard: 'yo',
+            }),
+        });
     });
 });

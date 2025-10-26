@@ -9,6 +9,7 @@ import {
     type RunningServerInfo,
 } from '@rest-vir/implement-service';
 import {type EndpointHandlerParams, type HandledOutput} from './endpoint-handler.js';
+import {buildHandlerParams} from './handler-params.js';
 
 export async function runPostHook(
     this: void,
@@ -69,18 +70,19 @@ export async function runPostHook(
             : undefined;
 
     const postHookParams: PostHookParams = {
-        pathParams: request.params as Record<string, string>,
+        ...buildHandlerParams({
+            request,
+            requestData,
+            response,
+            server,
+        }),
+
         method,
-        request,
-        requestData,
-        requestHeaders: request.headers,
-        response,
         service,
         endpointDefinition,
         webSocketDefinition,
         context,
         searchParams,
-        server,
         originalResponseData: originalBody,
         originalStatus,
     };

@@ -3,11 +3,29 @@ import {describe, it, itCases} from '@augment-vir/test';
 import {assertValidEndpointPath, type PathParams} from './endpoint-path.js';
 
 describe('PathParams', () => {
-    it('extracts path params', () => {
-        assert.tsType<PathParams<'/my-path/:hello/something/:derp'>>().equals<'hello' | 'derp'>();
+    it('extracts named params', () => {
+        assert.tsType<PathParams<'/my-path/:hello/something/:derp'>>().equals<{
+            namedParams: 'hello' | 'derp';
+            hasWildcard: false;
+        }>();
     });
-    it('extracts nothing', () => {
-        assert.tsType<PathParams<'/my-path'>>().equals<never>();
+    it('extracts wildcard and named params', () => {
+        assert.tsType<PathParams<'/my-path/:hello/something/:derp/*'>>().equals<{
+            namedParams: 'hello' | 'derp';
+            hasWildcard: true;
+        }>();
+    });
+    it('extracts wildcard and no named params', () => {
+        assert.tsType<PathParams<'/my-path/*'>>().equals<{
+            namedParams: never;
+            hasWildcard: true;
+        }>();
+    });
+    it('extracts no named params', () => {
+        assert.tsType<PathParams<'/my-path'>>().equals<{
+            namedParams: never;
+            hasWildcard: false;
+        }>();
     });
 });
 

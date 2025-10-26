@@ -7,6 +7,7 @@ import {
     type ExtractKeysWithMatchingValues,
     type KeyCount,
     type MaybePromise,
+    type PartialWithUndefined,
     type RequiredKeysOf,
     type SelectFrom,
 } from '@augment-vir/common';
@@ -14,7 +15,7 @@ import {assertValidShape} from 'object-shape-tester';
 import {type IsEqual, type IsNever} from 'type-fest';
 import {buildUrl} from 'url-vir';
 import {parseJsonWithUndefined} from '../augments/json.js';
-import {type PathParams} from '../endpoint/endpoint-path.js';
+import {type ConstructPathParams, type GenericPathParams} from '../endpoint/endpoint-path.js';
 import {
     type EndpointDefinition,
     type EndpointExecutorData,
@@ -31,8 +32,7 @@ import {type BaseSearchParams} from '../util/search-params.js';
  * @category Package : @rest-vir/define-service
  * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
  */
-export type GenericFetchEndpointParams = {
-    pathParams?: Record<string, string> | undefined;
+export type GenericFetchEndpointParams = PartialWithUndefined<GenericPathParams> & {
     requestData?: any;
     searchParams?: BaseSearchParams | undefined;
     bypassResponseValidation?: undefined | boolean;
@@ -97,19 +97,7 @@ export type FetchEndpointParams<
     AllowFetchMock extends boolean = true,
 > = EndpointToFetch extends EndpointDefinition
     ? Readonly<
-          (IsNever<PathParams<EndpointToFetch['path']>> extends true
-              ? {
-                    /** This endpoint has no path parameters to configure. */
-                    pathParams?: undefined;
-                }
-              : PathParams<EndpointToFetch['path']> extends string
-                ? {
-                      pathParams: Readonly<Record<PathParams<EndpointToFetch['path']>, string>>;
-                  }
-                : {
-                      /** This endpoint has no path parameters to configure. */
-                      pathParams?: undefined;
-                  }) &
+          ConstructPathParams<EndpointToFetch['path']> &
               (EndpointToFetch['SearchParamsType'] extends undefined
                   ? {
                         searchParams?: never;
@@ -425,7 +413,7 @@ export function buildEndpointRequestInit<
               }
           >,
     ...[
-        {method, options = {}, pathParams, requestData, searchParams} = {},
+        {method, options = {}, pathParams, requestData, searchParams, wildcard} = {},
     ]: CollapsedFetchEndpointParams<EndpointToFetch, false>
 ) {
     const headers: Record<string, string> =
@@ -454,6 +442,7 @@ export function buildEndpointRequestInit<
     const url = buildEndpointUrl(endpoint, {
         pathParams,
         searchParams,
+        wildcard,
     });
 
     const requestInit: RequestInit = {
@@ -523,11 +512,12 @@ export function buildEndpointUrl<
     {
         pathParams,
         searchParams,
+        wildcard,
     }: Pick<
         EndpointToFetch extends NoParam
             ? Readonly<GenericFetchEndpointParams>
             : Readonly<FetchEndpointParams<Exclude<EndpointToFetch, NoParam>>>,
-        'pathParams' | 'searchParams'
+        'pathParams' | 'searchParams' | 'wildcard'
     >,
 ): string {
     let pathParamsCount = 0;
@@ -544,22 +534,27 @@ export function buildEndpointUrl<
         );
     }
 
+    if (endpoint.path.endsWith('/*') && wildcard == undefined) {
+        throw new Error('Missing value for wildcard param.');
+    }
+
+    const pathname = endpoint.path
+        .replaceAll(/\/:([^/]+)/g, (wholeMatch, paramName: string): string => {
+            pathParamsCount++;
+            if (pathParams && check.hasKey(pathParams, paramName) && pathParams[paramName]) {
+                return addPrefix({
+                    value: pathParams[paramName],
+                    prefix: '/',
+                });
+            } else {
+                throw new Error(`Missing value for path param '${paramName}'.`);
+            }
+        })
+        .replace(/\/\*$/, addPrefix({value: wildcard || '', prefix: '/'}));
+
     const builtUrl = buildUrl(endpoint.service.serviceOrigin, {
         search: searchParams,
-        pathname: endpoint.path.replaceAll(
-            /\/:([^/]+)/g,
-            (wholeMatch, paramName: string): string => {
-                pathParamsCount++;
-                if (pathParams && check.hasKey(pathParams, paramName) && pathParams[paramName]) {
-                    return addPrefix({
-                        value: pathParams[paramName],
-                        prefix: '/',
-                    });
-                } else {
-                    throw new Error(`Missing value for path param '${paramName}'.`);
-                }
-            },
-        ),
+        pathname,
     }).href;
 
     if (!pathParamsCount && pathParams) {
