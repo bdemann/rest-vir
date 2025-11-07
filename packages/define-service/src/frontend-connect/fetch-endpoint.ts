@@ -4,6 +4,7 @@ import {
     filterMap,
     getObjectTypedEntries,
     HttpMethod,
+    mapObject,
     type ExtractKeysWithMatchingValues,
     type KeyCount,
     type MaybePromise,
@@ -11,6 +12,7 @@ import {
     type RequiredKeysOf,
     type SelectFrom,
 } from '@augment-vir/common';
+import {type OutgoingHttpHeaders} from 'node:http';
 import {assertValidShape} from 'object-shape-tester';
 import {type IsEqual, type IsNever} from 'type-fest';
 import {buildUrl} from 'url-vir';
@@ -416,18 +418,21 @@ export function buildEndpointRequestInit<
         {method, options = {}, pathParams, requestData, searchParams, wildcard} = {},
     ]: CollapsedFetchEndpointParams<EndpointToFetch, false>
 ) {
-    const headers: Record<string, string> =
+    const headers: OutgoingHttpHeaders & Record<string, string> = mapObject(
         options.headers instanceof Headers
             ? Object.fromEntries(options.headers.entries())
             : check.isArray(options.headers)
               ? Object.fromEntries(options.headers)
-              : options.headers || {};
-
-    const hasContentTypeHeader = Object.keys(headers).some(
-        (headerKey) => headerKey.toLowerCase() === 'content-type',
+              : options.headers || {},
+        (key, value) => {
+            return {
+                key: key.toLowerCase(),
+                value,
+            };
+        },
     );
 
-    if (!hasContentTypeHeader) {
+    if (!headers['content-type']) {
         if (requestData instanceof FormData) {
             /**
              * Do not set `content-type` manually when submitting form data because the browser will
@@ -439,6 +444,8 @@ export function buildEndpointRequestInit<
         }
     }
 
+    const shouldStringify: boolean = !!headers['content-type']?.match(/\bjson\b/i);
+
     const url = buildEndpointUrl(endpoint, {
         pathParams,
         searchParams,
@@ -449,15 +456,15 @@ export function buildEndpointRequestInit<
         ...options,
         headers,
         method: filterToValidMethod(endpoint, method),
-        ...(requestData instanceof FormData
-            ? {
-                  body: requestData,
-              }
-            : requestData
-              ? {
-                    body: JSON.stringify(requestData),
-                }
-              : {}),
+        ...(requestData
+            ? shouldStringify
+                ? {
+                      body: JSON.stringify(requestData),
+                  }
+                : {
+                      body: requestData,
+                  }
+            : {}),
     };
 
     return {

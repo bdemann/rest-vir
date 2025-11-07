@@ -462,10 +462,11 @@ describe(fetchEndpoint.name, () => {
             expect: {
                 url: 'https://example.com/test',
                 requestInit: {
-                    body: JSON.stringify({
+                    /** This is not stringified because the content type is not json. */
+                    body: {
                         somethingHere: 'hi',
                         testValue: 4,
-                    }),
+                    } as any,
                     method: HttpMethod.Post,
                     headers: {
                         'content-type': 'derp',
