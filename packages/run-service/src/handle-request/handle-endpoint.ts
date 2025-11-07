@@ -1,5 +1,5 @@
 import {assert, assertWrap} from '@augment-vir/assert';
-import {ensureErrorAndPrependMessage, HttpStatus, isErrorHttpStatus} from '@augment-vir/common';
+import {ensureErrorAndPrependMessage, isErrorHttpStatus} from '@augment-vir/common';
 import {
     createRestVirHandlerErrorPrefix,
     type EndpointImplementationOutput,
@@ -106,12 +106,12 @@ export async function handleEndpointRequest(
                     'content-type': endpointResult.dataType || 'application/json',
                     ...endpointResult.headers,
                 },
-                statusCode: HttpStatus.Ok,
+                statusCode: endpointResult.statusCode,
                 body: endpointResult.responseData,
             };
         } else {
             return {
-                statusCode: HttpStatus.Ok,
+                statusCode: endpointResult.statusCode,
                 headers: endpointResult.headers,
             };
         }
