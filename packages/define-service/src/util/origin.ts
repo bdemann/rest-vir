@@ -3,8 +3,8 @@ import {type MaybePromise} from '@augment-vir/common';
 import {classShape, defineShape, exactShape, unionShape} from 'object-shape-tester';
 
 /**
- * Explicity denotes that any origin is allowed. Use {@link isAnyOrigin} to check if something is
- * equal to this.
+ * Explicity denotes that any origin (`*`) is allowed. Use {@link isAnyOrigin} to check if something
+ * is equal to this.
  *
  * @category Internal
  * @category Package : @rest-vir/define-service
@@ -35,13 +35,48 @@ export function isAnyOrigin(input: unknown): input is AnyOrigin {
 export type AnyOrigin = typeof AnyOrigin;
 
 /**
+ * Different from {@link AnyOrigin} in that it accepts _all origins_ as the accepted origin. In
+ * practice this is similar to {@link AnyOrigin} but allows credentials to be included in requests
+ * when the browser normally blocks them for {@link AnyOrigin} (`*`).
+ *
+ * @category Internal
+ * @category Package : @rest-vir/define-service
+ * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
+ */
+export const AllOrigins = {
+    allOrigins: true,
+};
+
+/**
+ * Checks if the input is equal to {@link AllOrigins}.
+ *
+ * @category Internal
+ * @category Package : @rest-vir/define-service
+ * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
+ */
+export function isAllOrigins(input: unknown): input is AllOrigins {
+    return check.jsonEquals(input, AllOrigins);
+}
+
+/**
+ * Type for {@link AllOrigins}.
+ *
+ * @category Internal
+ * @category Package : @rest-vir/define-service
+ * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
+ */
+export type AllOrigins = typeof AllOrigins;
+
+/**
  * Options explained:
  *
  * - `undefined`: when on an endpoint, this denotes that the endpoint defers origin checks to the
  *   parent service's origin requirement. When on the service, `undefined` is not allowed.
  * - `string`: require all request origins to exactly match the given string.
  * - `RegExp`: all request origins must match the RegExp.
- * - {@link AnyOrigin}: allow any origin.
+ * - {@link AnyOrigin}: allow any origin with a `*`.
+ * - {@link AllOrigins}: accept whatever origin is received as the required origin (See
+ *   {@link AllOrigins} for details on how this is different from {@link AnyOrigin}).
  * - A function: allow custom checking. If this function returns something truthy, the origin is
  *   allowed.
  * - An array: a combination of `string` values, `RegExp` values, or functions to compare against. If
@@ -56,6 +91,7 @@ export type OriginRequirement =
     | string
     | RegExp
     | AnyOrigin
+    | AllOrigins
     | (((origin: string | undefined) => MaybePromise<boolean>) | string | RegExp)[]
     | ((origin: string | undefined) => MaybePromise<boolean>);
 
@@ -98,6 +134,8 @@ export async function checkOriginRequirement(
     if (isAnyOrigin(originRequirement)) {
         /** Any origin has been explicitly allowed. */
         return AnyOrigin;
+    } else if (isAllOrigins(originRequirement)) {
+        return true;
     } else if (originRequirement == undefined) {
         /** No checking occurred. */
         return undefined;
