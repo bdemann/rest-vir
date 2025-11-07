@@ -213,7 +213,7 @@ describe(startService.name, () => {
             });
 
             assert.isTrue(postResponse.ok);
-            assert.strictEquals(postResponse.status, HttpStatus.Ok);
+            assert.strictEquals(postResponse.status, HttpStatus.Accepted);
 
             assert.deepEquals(await postResponse.json(), {
                 result: 4,
@@ -293,7 +293,7 @@ describe(startService.name, () => {
                         }),
                     })
                 ).status,
-                HttpStatus.Ok,
+                HttpStatus.Accepted,
             );
         });
         it('rejects fetch to WebSocket path', async ({fetchEndpoint}) => {
@@ -635,7 +635,7 @@ describe(startService.name, () => {
             assert.isUndefined(output.data);
 
             assert.deepEquals(await condenseResponse(output.response), {
-                status: HttpStatus.Ok,
+                status: HttpStatus.Accepted,
                 headers: {
                     'access-control-allow-origin': '*',
                     'access-control-expose-headers': restVirServiceNameHeader,
@@ -671,7 +671,7 @@ describe(startService.name, () => {
                     'access-control-allow-origin': '*',
                     'access-control-expose-headers': restVirServiceNameHeader,
                 },
-                status: HttpStatus.Ok,
+                status: HttpStatus.Accepted,
             });
         });
     });

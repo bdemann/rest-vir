@@ -425,7 +425,7 @@ function toRegExp(tokens: Flattened[], keys: Keys) {
             if (token.type === 'param') {
                 result += `(${negate(DEFAULT_DELIMITER, isSafeSegmentParam ? '' : backtrack)}+)`;
             } else {
-                result += `([\\s\\S]+)`;
+                result += String.raw`([\s\S]+)`;
             }
 
             keys.push(token);
@@ -448,5 +448,5 @@ function negate(delimiter: string, backtrack: string) {
     if (delimiter.length < 2) {
         return `(?:(?!${escape(backtrack)})[^${escape(delimiter)}])`;
     }
-    return `(?:(?!${escape(backtrack)}|${escape(delimiter)})[\\s\\S])`;
+    return String.raw`(?:(?!${escape(backtrack)}|${escape(delimiter)})[\s\S])`;
 }

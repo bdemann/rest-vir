@@ -2,8 +2,10 @@ import {assert} from '@augment-vir/assert';
 import {describe, it, itCases} from '@augment-vir/test';
 import {assertValidShape, defineShape} from 'object-shape-tester';
 import {
+    AllOrigins,
     AnyOrigin,
     checkOriginRequirement,
+    isAllOrigins,
     isAnyOrigin,
     matchesOriginRequirement,
     originRequirementShape,
@@ -11,6 +13,11 @@ import {
 
 describe(isAnyOrigin.name, () => {
     itCases(isAnyOrigin, [
+        {
+            it: 'works with AnyOrigin',
+            input: AnyOrigin,
+            expect: true,
+        },
         {
             it: 'works with a separate object',
             input: {
@@ -21,6 +28,28 @@ describe(isAnyOrigin.name, () => {
         {
             it: 'rejects a string',
             input: 'AnyOrigin',
+            expect: false,
+        },
+    ]);
+});
+
+describe(isAllOrigins.name, () => {
+    itCases(isAllOrigins, [
+        {
+            it: 'works with a AllOrigins',
+            input: AllOrigins,
+            expect: true,
+        },
+        {
+            it: 'works with a separate object',
+            input: {
+                allOrigins: true,
+            },
+            expect: true,
+        },
+        {
+            it: 'rejects a string',
+            input: 'AllOrigins',
             expect: false,
         },
     ]);
@@ -54,6 +83,14 @@ describe(checkOriginRequirement.name, () => {
                 AnyOrigin,
             ],
             expect: AnyOrigin,
+        },
+        {
+            it: 'handles AllOrigins',
+            inputs: [
+                undefined,
+                AllOrigins,
+            ],
+            expect: true,
         },
         {
             it: 'handles a missing origin',

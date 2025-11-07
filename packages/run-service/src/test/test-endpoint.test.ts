@@ -15,7 +15,7 @@ describe(testEndpoint.name, () => {
                 'access-control-allow-origin': '*',
                 'access-control-expose-headers': restVirServiceNameHeader,
             },
-            status: HttpStatus.Ok,
+            status: HttpStatus.Accepted,
         });
     });
     it('tests a failed response', async () => {
@@ -60,7 +60,7 @@ describe(testEndpoint.name, () => {
                 'content-type': 'application/json; charset=utf-8',
                 'access-control-expose-headers': restVirServiceNameHeader,
             },
-            status: HttpStatus.Ok,
+            status: HttpStatus.Accepted,
             body: JSON.stringify({
                 requestData: {somethingHere: 'hi', testValue: -1},
                 result: 4,
