@@ -103,9 +103,17 @@ export type OriginRequirement =
  * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
  */
 export const originRequirementShape = defineShape(
-    unionShape(undefined, '', exactShape(AnyOrigin), classShape(RegExp), () => {}, [
-        unionShape('', exactShape(AnyOrigin), classShape(RegExp), () => {}),
-    ]),
+    unionShape(
+        undefined,
+        '',
+        exactShape(AllOrigins),
+        exactShape(AnyOrigin),
+        classShape(RegExp),
+        () => {},
+        [
+            unionShape('', exactShape(AnyOrigin), classShape(RegExp), () => {}),
+        ],
+    ),
 );
 
 /**
