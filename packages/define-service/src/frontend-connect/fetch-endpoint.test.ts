@@ -124,7 +124,7 @@ describe('FetchEndpointParams', () => {
 
         assert.tsType<Params>().equals<
             Readonly<{
-                searchParams?: never;
+                searchParams?: Record<string, string[]> | undefined;
                 pathParams?: never;
                 wildcard?: never;
                 requestData: {
@@ -143,7 +143,7 @@ describe('FetchEndpointParams', () => {
             .tsType<FetchEndpointParams<(typeof mockService.endpoints)['/with/:param1/:param2']>>()
             .equals<
                 Readonly<{
-                    searchParams?: never;
+                    searchParams?: Record<string, string[]> | undefined;
                     pathParams: Readonly<Record<'param1' | 'param2', string>>;
                     wildcard?: never;
                     requestData?: never;
@@ -161,7 +161,7 @@ describe('FetchEndpointParams', () => {
             >()
             .equals<
                 Readonly<{
-                    searchParams?: never;
+                    searchParams?: Record<string, string[]> | undefined;
                     pathParams: Readonly<Record<'param1' | 'param2', string>>;
                     wildcard: string;
                     requestData?: never;

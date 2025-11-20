@@ -1,5 +1,5 @@
 import {assert, waitUntil} from '@augment-vir/assert';
-import {DeferredPromise, randomInteger} from '@augment-vir/common';
+import {DeferredPromise, extractErrorMessage, randomInteger} from '@augment-vir/common';
 import {describe, it} from '@augment-vir/test';
 import {
     AnyOrigin,
@@ -628,7 +628,7 @@ describe(testExistingServer.name, () => {
         const errors: string[] = [];
 
         server.setErrorHandler((error, request, reply) => {
-            errors.push(error.message);
+            errors.push(extractErrorMessage(error));
             reply.status(HttpStatus.InternalServerError).send();
         });
 
