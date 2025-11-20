@@ -15,7 +15,7 @@ import {
 import {type IncomingHttpHeaders} from 'node:http';
 import {type RequireExactlyOne} from 'type-fest';
 import {type ServerRequest, type ServerResponse} from '../util/data.js';
-import {type ReplaceUndefinedWithEmptyObject} from '../util/types.js';
+import {type ReplaceUndefined} from '../util/types.js';
 import {
     type EndpointImplementationErrorOutput,
     type RunningServerInfo,
@@ -70,13 +70,14 @@ export type ContextInitParams<
         ? NoParam
         : WithFinalWebSocketProps<Values<WebSocketsInit>, any>['path']
 > & {
-    searchParams: ReplaceUndefinedWithEmptyObject<
+    searchParams: ReplaceUndefined<
         | (WebSocketsInit extends NoParam
               ? BaseSearchParams | undefined
               : WithFinalWebSocketProps<Values<WebSocketsInit>, any>['SearchParamsType'])
         | (EndpointsInit extends NoParam
               ? BaseSearchParams | undefined
-              : WithFinalEndpointProps<Values<EndpointsInit>, any>['SearchParamsType'])
+              : WithFinalEndpointProps<Values<EndpointsInit>, any>['SearchParamsType']),
+        BaseSearchParams
     >;
     service: MinimalService<ServiceName>;
     requestHeaders: IncomingHttpHeaders;

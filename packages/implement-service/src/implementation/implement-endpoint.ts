@@ -26,7 +26,7 @@ import {type IncomingHttpHeaders, type OutgoingHttpHeaders} from 'node:http';
 import {type IsEqual, type IsNever} from 'type-fest';
 import {type ServerRequest, type ServerResponse} from '../util/data.js';
 import {type ServiceLogger} from '../util/service-logger.js';
-import {type ReplaceUndefinedWithEmptyObject} from '../util/types.js';
+import {type ReplaceUndefined} from '../util/types.js';
 
 /**
  * The part of {@link EndpointImplementationOutput} allowed for error responses.
@@ -113,10 +113,11 @@ export type EndpointImplementationParams<
     request: ServerRequest;
     response: ServerResponse;
     log: Readonly<ServiceLogger>;
-    searchParams: ReplaceUndefinedWithEmptyObject<
+    searchParams: ReplaceUndefined<
         SpecificEndpoint extends NoParam
             ? BaseSearchParams
-            : Exclude<SpecificEndpoint, NoParam>['SearchParamsType']
+            : Exclude<SpecificEndpoint, NoParam>['SearchParamsType'],
+        BaseSearchParams
     >;
     /** The actual running server info. */
     server: RunningServerInfo;

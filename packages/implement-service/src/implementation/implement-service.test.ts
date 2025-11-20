@@ -1,10 +1,9 @@
 import {assert} from '@augment-vir/assert';
 import {HttpStatus} from '@augment-vir/common';
 import {describe, it} from '@augment-vir/test';
-import {AnyOrigin, defineService} from '@rest-vir/define-service';
+import {AnyOrigin, type BaseSearchParams, defineService} from '@rest-vir/define-service';
 import {mockService} from '@rest-vir/define-service/src/service/define-service.mock.js';
 import {unionShape} from 'object-shape-tester';
-import {type EmptyObject} from 'type-fest';
 import {
     type EndpointImplementationOutput,
     type EndpointImplementationParams,
@@ -245,7 +244,7 @@ describe(implementService.name, () => {
                           param1: [string];
                           param2: string[];
                       }
-                    | EmptyObject
+                    | BaseSearchParams
                 >();
 
                 searchParams;

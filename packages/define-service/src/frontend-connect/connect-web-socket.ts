@@ -4,6 +4,7 @@ import {
     type RequiredKeysOf,
     type SelectFrom,
 } from '@augment-vir/common';
+import {type BaseSearchParams} from '@rest-vir/define-service';
 import {buildUrl} from 'url-vir';
 import {type ConstructPathParams} from '../endpoint/endpoint-path.js';
 import {type NoParam} from '../util/no-param.js';
@@ -131,10 +132,10 @@ export type ConnectWebSocketParams<
           }) &
     (WebSocketToConnect['searchParamsShape'] extends undefined
         ? {
-              searchParams?: Record<string, string[]>;
+              searchParams?: BaseSearchParams | undefined;
           }
         : {
-              searchParams: WebSocketToConnect['SearchParamsType'] & Record<string, string[]>;
+              searchParams: WebSocketToConnect['SearchParamsType'] & BaseSearchParams;
           });
 
 /**

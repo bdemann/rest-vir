@@ -1,6 +1,7 @@
 import {assert} from '@augment-vir/assert';
 import {DeferredPromise, HttpMethod, HttpStatus} from '@augment-vir/common';
 import {describe, it, itCases} from '@augment-vir/test';
+import {type BaseSearchParams} from '@rest-vir/define-service';
 import {parseUrl} from 'url-vir';
 import {type EndpointDefinition} from '../endpoint/endpoint.js';
 import {mockService} from '../service/define-service.mock.js';
@@ -124,7 +125,7 @@ describe('FetchEndpointParams', () => {
 
         assert.tsType<Params>().equals<
             Readonly<{
-                searchParams?: Record<string, string[]> | undefined;
+                searchParams?: BaseSearchParams | undefined;
                 pathParams?: never;
                 wildcard?: never;
                 requestData: {
@@ -143,7 +144,7 @@ describe('FetchEndpointParams', () => {
             .tsType<FetchEndpointParams<(typeof mockService.endpoints)['/with/:param1/:param2']>>()
             .equals<
                 Readonly<{
-                    searchParams?: Record<string, string[]> | undefined;
+                    searchParams?: BaseSearchParams | undefined;
                     pathParams: Readonly<Record<'param1' | 'param2', string>>;
                     wildcard?: never;
                     requestData?: never;
@@ -161,7 +162,7 @@ describe('FetchEndpointParams', () => {
             >()
             .equals<
                 Readonly<{
-                    searchParams?: Record<string, string[]> | undefined;
+                    searchParams?: BaseSearchParams | undefined;
                     pathParams: Readonly<Record<'param1' | 'param2', string>>;
                     wildcard: string;
                     requestData?: never;

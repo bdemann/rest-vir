@@ -3,6 +3,7 @@ import {DeferredPromise, extractErrorMessage, randomInteger} from '@augment-vir/
 import {describe, it} from '@augment-vir/test';
 import {
     AnyOrigin,
+    type BaseSearchParams,
     buildEndpointUrl,
     defineService,
     HttpMethod,
@@ -14,7 +15,6 @@ import {implementService, RejectRequestError} from '@rest-vir/implement-service'
 import {mockServiceImplementation} from '@rest-vir/implement-service/src/implementation/implement-service.mock.js';
 import fastify from 'fastify';
 import {exactShape} from 'object-shape-tester';
-import {type EmptyObject} from 'type-fest';
 import {buildUrl, parseUrl} from 'url-vir';
 import {
     condenseResponse,
@@ -221,7 +221,7 @@ const serviceWithPostHook = implementService({
             };
         }
 
-        assert.tsType(searchParams).equals<{data: string[]} | EmptyObject>();
+        assert.tsType(searchParams).equals<{data: string[]} | BaseSearchParams>();
 
         return {
             context: 'hello there',
@@ -238,7 +238,7 @@ const serviceWithPostHook = implementService({
             };
         },
         '/health2'({context, searchParams}) {
-            assert.tsType(searchParams).equals<EmptyObject>();
+            assert.tsType(searchParams).equals<BaseSearchParams>();
             assert.tsType(context).equals<string>();
 
             return {

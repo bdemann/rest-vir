@@ -1,12 +1,12 @@
 import {assert} from '@augment-vir/assert';
 import {describe, it} from '@augment-vir/test';
 import {type EmptyObject} from 'type-fest';
-import {type ReplaceUndefinedWithEmptyObject} from './types.js';
+import {type ReplaceUndefined} from './types.js';
 
-describe('ReplaceUndefinedWithEmptyObject', () => {
+describe('ReplaceUndefined', () => {
     it('works', () => {
         assert
-            .tsType<ReplaceUndefinedWithEmptyObject<string | undefined>>()
+            .tsType<ReplaceUndefined<string | undefined, EmptyObject>>()
             .equals<string | EmptyObject>();
     });
 });
