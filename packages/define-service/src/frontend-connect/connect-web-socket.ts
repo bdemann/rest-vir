@@ -131,10 +131,10 @@ export type ConnectWebSocketParams<
           }) &
     (WebSocketToConnect['searchParamsShape'] extends undefined
         ? {
-              searchParams?: never;
+              searchParams?: Record<string, string[]>;
           }
         : {
-              searchParams: WebSocketToConnect['SearchParamsType'];
+              searchParams: WebSocketToConnect['SearchParamsType'] & Record<string, string[]>;
           });
 
 /**

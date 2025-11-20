@@ -132,9 +132,7 @@ export type WithFinalWebSocketProps<
                   ? string[]
                   : ShapeInitType<Init['protocolsShape']>;
               searchParamsShape: 'searchParamsShape' extends keyof Init
-                  ? undefined extends Init['searchParamsShape']
-                      ? undefined
-                      : Shape<Init['searchParamsShape']> | undefined
+                  ? Shape<Init['searchParamsShape']> | undefined
                   : undefined;
               SearchParamsType: 'searchParamsShape' extends keyof Init
                   ? ShapeInitType<Init['searchParamsShape']>

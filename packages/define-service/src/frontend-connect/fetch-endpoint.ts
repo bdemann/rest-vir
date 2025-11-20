@@ -102,10 +102,11 @@ export type FetchEndpointParams<
           ConstructPathParams<EndpointToFetch['path']> &
               (EndpointToFetch['SearchParamsType'] extends undefined
                   ? {
-                        searchParams?: never;
+                        searchParams?: Record<string, string[]>;
                     }
                   : {
-                        searchParams: EndpointToFetch['SearchParamsType'];
+                        searchParams: EndpointToFetch['SearchParamsType'] &
+                            Record<string, string[]>;
                     }) &
               (EndpointExecutorData<EndpointToFetch>['request'] extends undefined
                   ? {
