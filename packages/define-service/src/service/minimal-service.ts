@@ -10,7 +10,7 @@ import {type OriginRequirement} from '../util/origin.js';
  * @category Package : @rest-vir/define-service
  * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
  */
-export type MinimalService<ServiceName extends string = string> = {
+export type MinimalService<ServiceName extends string = any> = {
     serviceName: IsEqual<ServiceName, ''> extends true ? never : ServiceName;
     /**
      * The origin at which the service will be hosted. Fetch requests and WebSocket connections will
