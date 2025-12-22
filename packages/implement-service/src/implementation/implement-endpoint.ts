@@ -146,7 +146,7 @@ export type GenericEndpointImplementationParams = {
     context: any;
     method: any;
     endpoint: any;
-    service: MinimalService<any>;
+    service: MinimalService;
     requestHeaders: IncomingHttpHeaders;
     searchParams: BaseSearchParams;
 

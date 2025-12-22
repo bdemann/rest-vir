@@ -36,7 +36,7 @@ export async function handleRoute({
     route,
     attachId,
     server,
-    options = {},
+    options,
     postHook,
     service,
 }: {

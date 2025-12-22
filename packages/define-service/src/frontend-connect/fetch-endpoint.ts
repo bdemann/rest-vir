@@ -40,6 +40,8 @@ export type GenericFetchEndpointParams = PartialWithUndefined<GenericPathParams>
     bypassResponseValidation?: undefined | boolean;
     method?: HttpMethod | undefined;
     options?: Omit<RequestInit, 'body' | 'method'> | undefined;
+    /** If `true`, Skip automatic request data `'Content-Type'` header assignment. */
+    skipAutomaticContentType?: boolean | undefined;
     /**
      * A custom fetch implementation. Useful for debugging or unit testing. This can safely be
      * omitted to use the default JavaScript built-in global `fetch` function.
@@ -78,6 +80,19 @@ export type FetchMethod<EndpointToFetch extends Pick<EndpointDefinition, 'method
         :
               | Extract<HttpMethod, ExtractKeysWithMatchingValues<EndpointToFetch['methods'], true>>
               | `${Extract<HttpMethod, ExtractKeysWithMatchingValues<EndpointToFetch['methods'], true>>}`;
+
+/**
+ * Properties from {@link GenericFetchEndpointParams} that are also used in
+ * {@link FetchEndpointParams}.
+ *
+ * @category Internal
+ * @category Package : @rest-vir/define-service
+ * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
+ */
+export type GenericFetchEndpointKeysAllowedInSpecificParams =
+    | 'options'
+    | 'bypassResponseValidation'
+    | 'skipAutomaticContentType';
 
 /**
  * All type safe parameters for sending a request to an endpoint using {@link fetchEndpoint}.
@@ -132,9 +147,12 @@ export type FetchEndpointParams<
               (AllowFetchMock extends true
                   ? Pick<
                         GenericFetchEndpointParams,
-                        'options' | 'fetch' | 'bypassResponseValidation'
+                        'fetch' | GenericFetchEndpointKeysAllowedInSpecificParams
                     >
-                  : Pick<GenericFetchEndpointParams, 'options' | 'bypassResponseValidation'>)
+                  : Pick<
+                        GenericFetchEndpointParams,
+                        GenericFetchEndpointKeysAllowedInSpecificParams
+                    >)
       >
     : GenericFetchEndpointParams;
 
@@ -415,7 +433,15 @@ export function buildEndpointRequestInit<
               }
           >,
     ...[
-        {method, options = {}, pathParams, requestData, searchParams, wildcard} = {},
+        {
+            method,
+            options = {},
+            pathParams,
+            requestData,
+            searchParams,
+            wildcard,
+            skipAutomaticContentType,
+        } = {},
     ]: CollapsedFetchEndpointParams<EndpointToFetch, false>
 ) {
     const headers: OutgoingHttpHeaders & Record<string, string> = mapObject(
@@ -433,11 +459,11 @@ export function buildEndpointRequestInit<
     );
 
     if (!headers['content-type']) {
-        if (requestData instanceof FormData) {
+        if (requestData instanceof FormData || skipAutomaticContentType) {
             /**
-             * Do not set `content-type` manually when submitting form data because the browser will
-             * set it automatically _and_ include a boundary in the content type, which is needed
-             * for reading the form data properly.
+             * Do not set `content-type` manually when submitting form data because `fetch` will set
+             * it automatically _and_ include a boundary in the content type, which is needed for
+             * reading the form data properly.
              */
         } else if (requestData) {
             headers['content-type'] = 'application/json';

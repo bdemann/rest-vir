@@ -136,6 +136,7 @@ describe('FetchEndpointParams', () => {
                 method?: never;
                 options?: FetchOptions;
                 fetch?: GenericFetchEndpointParams['fetch'];
+                skipAutomaticContentType?: GenericFetchEndpointParams['skipAutomaticContentType'];
             }>
         >();
     });
@@ -152,6 +153,7 @@ describe('FetchEndpointParams', () => {
                     method: HttpMethod.Get | HttpMethod.Head | 'GET' | 'HEAD';
                     options?: FetchOptions;
                     fetch?: GenericFetchEndpointParams['fetch'];
+                    skipAutomaticContentType?: GenericFetchEndpointParams['skipAutomaticContentType'];
                 }>
             >();
     });
@@ -170,6 +172,7 @@ describe('FetchEndpointParams', () => {
                     method?: never;
                     options?: FetchOptions;
                     fetch?: GenericFetchEndpointParams['fetch'];
+                    skipAutomaticContentType?: GenericFetchEndpointParams['skipAutomaticContentType'];
                 }>
             >();
     });
