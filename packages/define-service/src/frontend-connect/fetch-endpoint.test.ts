@@ -247,7 +247,20 @@ describe(fetchEndpoint.name, () => {
               }>
             | Readonly<{
                   ok: false;
-                  data: string | undefined;
+                  data:
+                      | {
+                            result:
+                                | number
+                                | {
+                                      hello: string;
+                                  };
+                            requestData: {
+                                somethingHere: string;
+                                testValue: number;
+                            };
+                        }
+                      | string
+                      | undefined;
                   response: Readonly<Response>;
               }>
         >();

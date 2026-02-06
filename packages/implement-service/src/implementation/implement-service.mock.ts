@@ -2,7 +2,7 @@
 
 import {assert} from '@augment-vir/assert';
 import {HttpStatus, log, wait, type AnyObject} from '@augment-vir/common';
-import {mockService} from '@rest-vir/define-service/src/service/define-service.mock';
+import {mockService} from '@rest-vir/define-service/src/service/define-service.mock.js';
 import {implementService} from './implement-service.js';
 
 export type MockServiceContext = {

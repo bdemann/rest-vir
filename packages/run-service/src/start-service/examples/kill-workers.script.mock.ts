@@ -1,4 +1,4 @@
-import {mockServiceImplementation} from '@rest-vir/implement-service/src/implementation/implement-service.mock';
+import {mockServiceImplementation} from '@rest-vir/implement-service/src/implementation/implement-service.mock.js';
 import {startService} from '../start-service.js';
 
 const {worker, kill} = await startService(mockServiceImplementation, {
