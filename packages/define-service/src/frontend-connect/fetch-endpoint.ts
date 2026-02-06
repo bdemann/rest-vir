@@ -13,7 +13,7 @@ import {
     type SelectFrom,
 } from '@augment-vir/common';
 import {type OutgoingHttpHeaders} from 'node:http';
-import {assertValidShape} from 'object-shape-tester';
+import {assertValidShape, checkWrapValidShape} from 'object-shape-tester';
 import {type IsEqual, type IsNever} from 'type-fest';
 import {buildUrl} from 'url-vir';
 import {parseJsonWithUndefined} from '../augments/json.js';
@@ -191,7 +191,15 @@ export type FetchEndpointOutput<
       }>
     | Readonly<{
           ok: false;
-          data: string | undefined;
+          data: EndpointToFetch extends SelectFrom<
+              EndpointDefinition,
+              {
+                  requestDataShape: true;
+                  responseDataShape: true;
+              }
+          >
+              ? EndpointExecutorData<EndpointToFetch>['response'] | string | undefined
+              : any;
           response: Readonly<Response>;
       }>;
 
@@ -366,11 +374,12 @@ export async function fetchEndpoint<
         endpoint as EndpointDefinition,
     );
 
-    if (response.ok) {
-        const responseData = endpoint.responseDataShape
-            ? parseJsonWithUndefined(await response.text())
-            : undefined;
+    const responseText = await response.clone().text();
+    const responseData = endpoint.responseDataShape
+        ? parseJsonWithUndefined(responseText)
+        : undefined;
 
+    if (response.ok) {
         if (endpoint.responseDataShape && !bypassResponseValidation) {
             assertValidShape(responseData, endpoint.responseDataShape, {allowExtraKeys: true});
         }
@@ -381,10 +390,17 @@ export async function fetchEndpoint<
             response,
         };
     } else {
+        const validResponseData = endpoint.responseDataShape
+            ? bypassResponseValidation
+                ? responseData
+                : checkWrapValidShape(responseData, endpoint.responseDataShape, {
+                      allowExtraKeys: true,
+                  })
+            : undefined;
+
         return {
             ok: false,
-            /** This will be an error message. */
-            data: (await response.text()) || undefined,
+            data: validResponseData || responseText || undefined,
             response,
         };
     }
