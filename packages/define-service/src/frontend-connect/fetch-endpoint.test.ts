@@ -311,6 +311,60 @@ describe(fetchEndpoint.name, () => {
         assert.isUndefined(output.data);
         assert.isFalse(output.ok);
     });
+    it('handles a failed response with bypassResponseValidation', async () => {
+        const output = await fetchEndpoint(
+            {
+                ...mockService.endpoints['/test'],
+                service: {
+                    ...mockService.endpoints['/test'].service,
+                    serviceOrigin: 'localhost:0',
+                },
+            },
+            {
+                requestData: {
+                    somethingHere: 'hi',
+                    testValue: -1,
+                },
+                bypassResponseValidation: true,
+                fetch() {
+                    return Promise.resolve(
+                        createMockResponse({
+                            status: HttpStatus.BadRequest,
+                            body: JSON.stringify({
+                                result: 5,
+                                requestData: {somethingHere: 'hi', testValue: -1},
+                            }),
+                        }),
+                    );
+                },
+            },
+        );
+
+        assert.isFalse(output.ok);
+    });
+    it('handles a failed response without responseDataShape', async () => {
+        const output = await fetchEndpoint(
+            {
+                ...mockService.endpoints['/requires-origin'],
+                service: {
+                    ...mockService.endpoints['/requires-origin'].service,
+                    serviceOrigin: 'localhost:0',
+                },
+            },
+            {
+                fetch() {
+                    return Promise.resolve(
+                        createMockResponse({
+                            status: HttpStatus.BadRequest,
+                        }),
+                    );
+                },
+            },
+        );
+
+        assert.isUndefined(output.data);
+        assert.isFalse(output.ok);
+    });
     it('sends form data', async () => {
         const receivedData = new DeferredPromise<any>();
 

@@ -455,14 +455,14 @@ export async function testExistingServer<
                     /**
                      * `injectWS` creates a `ws` WebSocket with `_closeTimeout = undefined`.
                      * `setTimeout(fn, undefined)` fires immediately (0ms), which destroys the
-                     * socket before the close frame can be sent, preventing the server-side
-                     * close event from firing. Set a reasonable fallback timeout.
+                     * socket before the close frame can be sent, preventing the server-side close
+                     * event from firing. Set a reasonable fallback timeout.
                      *
-                     * Additionally, `injectWS` uses `Duplexify` streams which don't emit
-                     * `'close'` after `end()` like real TCP sockets do. The `ws` library relies
-                     * on the socket `'close'` event to complete the close handshake. Destroying
-                     * the socket when it finishes writing triggers `'close'` promptly instead of
-                     * waiting for the full close timeout.
+                     * Additionally, `injectWS` uses `Duplexify` streams which don't emit `'close'`
+                     * after `end()` like real TCP sockets do. The `ws` library relies on the socket
+                     * `'close'` event to complete the close handshake. Destroying the socket when
+                     * it finishes writing triggers `'close'` promptly instead of waiting for the
+                     * full close timeout.
                      */
                     const wsInternal = webSocket as unknown as {
                         _closeTimeout: number;
