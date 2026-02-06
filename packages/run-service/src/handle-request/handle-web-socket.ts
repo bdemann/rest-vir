@@ -49,6 +49,24 @@ export async function handleWebSocketRequest(
         WebSocketLocation.OnHost,
     );
 
+    /**
+     * `Duplexify`-based sockets (used by `@fastify/websocket`'s `injectWS` for testing) don't
+     * emit `'close'` after `end()` like real TCP sockets do. The `ws` library relies on the
+     * socket `'close'` event to fire `emitClose()` and complete the close handshake. Destroying
+     * the socket when it finishes writing triggers `'close'` promptly. For real TCP sockets this
+     * is effectively a no-op since they close naturally after the FIN handshake.
+     */
+    const rawSocket = (wsWebSocket as unknown as {_socket?: {
+        on: (event: string, listener: () => void) => void;
+        destroyed?: boolean;
+        destroy: () => void;
+    }})._socket;
+    rawSocket?.on('finish', () => {
+        if (!rawSocket.destroyed) {
+            rawSocket.destroy();
+        }
+    });
+
     const webSocketCallbackParams: WebSocketImplementationParams = {
         context: restVirContext.context,
         headers: request.headers,
