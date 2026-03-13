@@ -204,7 +204,10 @@ async function startServer(
         throwErrorsForExternalHandling: false,
     });
 
-    await server.listen({port, host});
+    await server.listen({
+        port,
+        host,
+    });
 
     return {
         host,

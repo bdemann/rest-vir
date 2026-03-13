@@ -120,7 +120,12 @@ describe(findDevServicePort.name, () => {
 
     it('rejects a service without endpoints', async () => {
         await assert.throws(
-            () => findDevServicePort({endpoints: {}, serviceName: '', serviceOrigin: ''}),
+            () =>
+                findDevServicePort({
+                    endpoints: {},
+                    serviceName: '',
+                    serviceOrigin: '',
+                }),
             {
                 matchMessage: 'Service has no endpoints',
             },
@@ -157,7 +162,9 @@ describe(findLivePort.name, () => {
                 findLivePort('localhost:3000', '/my-path', {
                     async fetch(url) {
                         const {port} = parseUrl(url);
-                        await wait({milliseconds: 10});
+                        await wait({
+                            milliseconds: 10,
+                        });
 
                         return {
                             ok: false,
@@ -207,7 +214,10 @@ describe(mapServiceDevPort.name, () => {
         assert.deepEquals(result.serviceOrigin, 'http://localhost:3005');
     });
     it('does not map a service without a port number', async () => {
-        const result = await mapServiceDevPort({...mockService, serviceOrigin: 'http://localhost'});
+        const result = await mapServiceDevPort({
+            ...mockService,
+            serviceOrigin: 'http://localhost',
+        });
         assert.deepEquals(result.serviceOrigin, 'http://localhost');
     });
 });

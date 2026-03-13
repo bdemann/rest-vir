@@ -61,7 +61,12 @@ describe('originRequirementShape', () => {
     });
     it('blocks a random object', () => {
         assert.throws(() =>
-            assertValidShape({hello: 'there'}, defineShape(originRequirementShape)),
+            assertValidShape(
+                {
+                    hello: 'there',
+                },
+                defineShape(originRequirementShape),
+            ),
         );
     });
 });

@@ -590,7 +590,9 @@ describe(startService.name, () => {
                 await condenseResponse(
                     await fetchEndpoint(mockService.endpoints['/plain'].path, {
                         method: HttpMethod.Post,
-                        body: JSON.stringify({somethingHere: 'hi'}),
+                        body: JSON.stringify({
+                            somethingHere: 'hi',
+                        }),
                         headers: {
                             'content-type': 'application/json',
                         },

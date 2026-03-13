@@ -62,7 +62,10 @@ describe(testEndpoint.name, () => {
             },
             status: HttpStatus.Accepted,
             body: JSON.stringify({
-                requestData: {somethingHere: 'hi', testValue: -1},
+                requestData: {
+                    somethingHere: 'hi',
+                    testValue: -1,
+                },
                 result: 4,
             } satisfies (typeof mockServiceImplementation.endpoints)['/test']['ResponseType']),
         });

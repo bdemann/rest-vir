@@ -118,7 +118,14 @@ function buildStandardCorsHeaders(
 }
 
 const accessControlMaxAgeValue: string = String(
-    convertDuration({hours: 1}, {seconds: true}).seconds,
+    convertDuration(
+        {
+            hours: 1,
+        },
+        {
+            seconds: true,
+        },
+    ).seconds,
 );
 
 const contentLengthHeaders = {

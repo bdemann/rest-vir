@@ -103,7 +103,9 @@ export async function handleWebSocketRequest(
                     assertValidShape(
                         message,
                         implementedWebSocket.messageFromClientShape,
-                        {allowExtraKeys: true},
+                        {
+                            allowExtraKeys: true,
+                        },
                         'Invalid message send shape.',
                     );
                 } else if (message) {

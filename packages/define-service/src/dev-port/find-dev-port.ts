@@ -186,7 +186,9 @@ export async function findLivePort(
         fetch = globalThis.fetch,
         maxScanDistance = 100,
         isValidResponse,
-        timeout = {seconds: 10},
+        timeout = {
+            seconds: 10,
+        },
     }: Readonly<Omit<FindPortOptions, 'overwriteOrigin'>> = {},
 ): Promise<number | undefined> {
     const {port: originalPort} = parseUrl(originWithStartingPort);
@@ -202,7 +204,9 @@ export async function findLivePort(
 
     let foundValidPort = false;
 
-    const timeoutMs = convertDuration(timeout, {milliseconds: true}).milliseconds;
+    const timeoutMs = convertDuration(timeout, {
+        milliseconds: true,
+    }).milliseconds;
 
     const startTime = Date.now();
 

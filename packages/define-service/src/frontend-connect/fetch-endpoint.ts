@@ -357,7 +357,9 @@ export async function fetchEndpoint<
 
     if (requestData) {
         if (endpoint.requestDataShape) {
-            assertValidShape(requestData, endpoint.requestDataShape, {allowExtraKeys: true});
+            assertValidShape(requestData, endpoint.requestDataShape, {
+                allowExtraKeys: true,
+            });
         } else {
             throw new Error(
                 `Request data was given but endpoint '${endpoint.path}' is not expecting any request data.`,
@@ -381,7 +383,9 @@ export async function fetchEndpoint<
 
     if (response.ok) {
         if (endpoint.responseDataShape && !bypassResponseValidation) {
-            assertValidShape(responseData, endpoint.responseDataShape, {allowExtraKeys: true});
+            assertValidShape(responseData, endpoint.responseDataShape, {
+                allowExtraKeys: true,
+            });
         }
 
         return {
@@ -599,7 +603,13 @@ export function buildEndpointUrl<
                 throw new Error(`Missing value for path param '${paramName}'.`);
             }
         })
-        .replace(/\/\*$/, addPrefix({value: wildcard || '', prefix: '/'}));
+        .replace(
+            /\/\*$/,
+            addPrefix({
+                value: wildcard || '',
+                prefix: '/',
+            }),
+        );
 
     const builtUrl = buildUrl(endpoint.service.serviceOrigin, {
         search: searchParams,

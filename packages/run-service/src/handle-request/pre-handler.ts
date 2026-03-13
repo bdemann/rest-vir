@@ -165,7 +165,10 @@ export async function preHandler({
     }
 
     attachedRestVirContext.requestData = requestData;
-    const searchParams = handleSearchParams({request, route});
+    const searchParams = handleSearchParams({
+        request,
+        route,
+    });
 
     if (!('data' in searchParams)) {
         return handleHandlerOutputWithoutSending(searchParams, response);

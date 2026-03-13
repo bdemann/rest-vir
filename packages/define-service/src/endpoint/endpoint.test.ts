@@ -19,10 +19,14 @@ describe('EndpointInit', () => {
             {inputTest: string},
             undefined
         > = {
-            requestDataShape: {inputTest: 'a'},
+            requestDataShape: {
+                inputTest: 'a',
+            },
             responseDataShape: undefined,
             requiredClientOrigin: '',
-            methods: {[HttpMethod.Get]: true},
+            methods: {
+                [HttpMethod.Get]: true,
+            },
         };
     });
     it('allows defined output shape', () => {
@@ -32,9 +36,14 @@ describe('EndpointInit', () => {
             {outputTest: string; anotherProp: number}
         > = {
             requestDataShape: undefined,
-            responseDataShape: {outputTest: 'b', anotherProp: 4},
+            responseDataShape: {
+                outputTest: 'b',
+                anotherProp: 4,
+            },
             requiredClientOrigin: '',
-            methods: {[HttpMethod.Get]: true},
+            methods: {
+                [HttpMethod.Get]: true,
+            },
         };
     });
     it('allows both I/O shapes', () => {
@@ -43,10 +52,17 @@ describe('EndpointInit', () => {
             {inputTest: string},
             {outputTest: string; anotherProp: number}
         > = {
-            requestDataShape: {inputTest: 'a'},
-            responseDataShape: {outputTest: 'b', anotherProp: 4},
+            requestDataShape: {
+                inputTest: 'a',
+            },
+            responseDataShape: {
+                outputTest: 'b',
+                anotherProp: 4,
+            },
             requiredClientOrigin: '',
-            methods: {[HttpMethod.Get]: true},
+            methods: {
+                [HttpMethod.Get]: true,
+            },
         };
     });
     it('allows undefined I/O shapes', () => {
@@ -54,7 +70,9 @@ describe('EndpointInit', () => {
             requestDataShape: undefined,
             responseDataShape: undefined,
             requiredClientOrigin: '',
-            methods: {[HttpMethod.Get]: true},
+            methods: {
+                [HttpMethod.Get]: true,
+            },
         };
     });
     it('allows assignment to default type params', () => {

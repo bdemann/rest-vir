@@ -332,7 +332,10 @@ describe(fetchEndpoint.name, () => {
                             status: HttpStatus.BadRequest,
                             body: JSON.stringify({
                                 result: 5,
-                                requestData: {somethingHere: 'hi', testValue: -1},
+                                requestData: {
+                                    somethingHere: 'hi',
+                                    testValue: -1,
+                                },
                             }),
                         }),
                     );

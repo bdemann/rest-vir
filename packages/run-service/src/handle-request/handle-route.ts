@@ -130,7 +130,10 @@ export async function handleRoute({
             assert.isDefined(response, 'no response object');
 
             await handleHandlerOutput(
-                {statusCode: error.httpStatus, body: error.responseErrorMessage},
+                {
+                    statusCode: error.httpStatus,
+                    body: error.responseErrorMessage,
+                },
                 response,
             );
 

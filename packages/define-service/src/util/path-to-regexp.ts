@@ -126,20 +126,44 @@ function* lexer(str: string): Generator<LexToken, LexToken> {
         const type = SIMPLE_TOKENS[value];
 
         if (type) {
-            yield {type, index: i++, value};
+            yield {
+                type,
+                index: i++,
+                value,
+            };
         } else if (value === '\\') {
-            yield {type: 'ESCAPED', index: i++, value: chars[i++]!};
+            yield {
+                type: 'ESCAPED',
+                index: i++,
+                value: chars[i++]!,
+            };
         } else if (value === ':') {
             const value = name();
-            yield {type: 'PARAM', index: i, value};
+            yield {
+                type: 'PARAM',
+                index: i,
+                value,
+            };
         } else if (value === '*') {
-            yield {type: 'WILDCARD', index: i++, value: '*'};
+            yield {
+                type: 'WILDCARD',
+                index: i++,
+                value: '*',
+            };
         } else {
-            yield {type: 'CHAR', index: i, value: chars[i++]!};
+            yield {
+                type: 'CHAR',
+                index: i,
+                value: chars[i++]!,
+            };
         }
     }
 
-    return {type: 'END', index: i, value: ''};
+    return {
+        type: 'END',
+        index: i,
+        value: '',
+    };
 }
 
 class Iter {
@@ -232,7 +256,10 @@ function parse(stringToParse: string): TokenData {
         while (true) {
             const path = iterator.text();
             if (path) {
-                tokens.push({type: 'text', value: path});
+                tokens.push({
+                    type: 'text',
+                    value: path,
+                });
             }
 
             const param = iterator.tryConsume('PARAM');
@@ -357,7 +384,10 @@ export function match(path: string): MatchFunction {
             params[key.name] = decoder(m[i]!);
         }
 
-        return {path, params};
+        return {
+            path,
+            params,
+        };
     };
 }
 
@@ -375,7 +405,10 @@ function pathToRegexp(path: string) {
     pattern += '$';
 
     const regexp = new RegExp(pattern, flags);
-    return {regexp, keys};
+    return {
+        regexp,
+        keys,
+    };
 }
 
 /** Flattened token set. */
@@ -444,8 +477,7 @@ function negate(delimiter: string, backtrack: string) {
             return `[^${escape(delimiter + backtrack)}]`;
         }
         return `(?:(?!${escape(delimiter)})[^${escape(backtrack)}])`;
-    }
-    if (delimiter.length < 2) {
+    } else if (delimiter.length < 2) {
         return `(?:(?!${escape(backtrack)})[^${escape(delimiter)}])`;
     }
     return String.raw`(?:(?!${escape(backtrack)}|${escape(delimiter)})[\s\S])`;

@@ -68,7 +68,13 @@ function finalizeServiceDefinition<
         const genericEndpoints = (serviceInit.endpoints || {}) as BaseServiceEndpointsInit;
 
         const endpoints = mapObjectValues(genericEndpoints, (endpointPath, endpointInit) => {
-            assertValidShape({searchParamsShape: undefined, ...endpointInit}, endpointInitShape);
+            assertValidShape(
+                {
+                    searchParamsShape: undefined,
+                    ...endpointInit,
+                },
+                endpointInitShape,
+            );
             const endpoint = {
                 ...endpointInit,
                 requestDataShape:
@@ -102,7 +108,11 @@ function finalizeServiceDefinition<
 
         const webSockets = mapObjectValues(genericWebSockets, (webSocketPath, webSocketInit) => {
             assertValidShape(
-                {protocolsShape: undefined, searchParamsShape: undefined, ...webSocketInit},
+                {
+                    protocolsShape: undefined,
+                    searchParamsShape: undefined,
+                    ...webSocketInit,
+                },
                 webSocketInitShape,
             );
             const webSocketDefinition = {

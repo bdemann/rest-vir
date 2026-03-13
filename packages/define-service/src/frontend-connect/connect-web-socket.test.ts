@@ -202,7 +202,9 @@ describe(connectWebSocket.name, () => {
 
         const replyPromise = clientWebSocket.sendAndWaitForReply();
 
-        await wait({milliseconds: 100});
+        await wait({
+            milliseconds: 100,
+        });
         clientWebSocket.sendFromHost('ok');
 
         assert.strictEquals(await replyPromise, 'ok');
@@ -220,7 +222,9 @@ describe(connectWebSocket.name, () => {
             },
         });
 
-        await wait({milliseconds: 100});
+        await wait({
+            milliseconds: 100,
+        });
         clientWebSocket.sendFromHost(['a']);
         clientWebSocket.sendFromHost(['b']);
         clientWebSocket.sendFromHost(['c']);
@@ -236,7 +240,9 @@ describe(connectWebSocket.name, () => {
                     NonNullable<GenericConnectWebSocketParams<any>['webSocketConstructor']>
                 >
             ) {
-                super(...params, {preventImmediateOpen: true});
+                super(...params, {
+                    preventImmediateOpen: true,
+                });
                 setTimeout(() => this.dispatchEvent('error', {}), 3000);
             }
         }
@@ -276,7 +282,9 @@ describe(connectWebSocket.name, () => {
                     NonNullable<GenericConnectWebSocketParams<any>['webSocketConstructor']>
                 >
             ) {
-                super(...params, {preventImmediateOpen: true});
+                super(...params, {
+                    preventImmediateOpen: true,
+                });
                 this.readyState = CommonWebSocketState.Closed;
             }
         }
@@ -305,7 +313,9 @@ describe(connectWebSocket.name, () => {
 
         const replyPromise = clientWebSocket.sendAndWaitForReply();
 
-        await wait({milliseconds: 100});
+        await wait({
+            milliseconds: 100,
+        });
         clientWebSocket.sendFromHost('ok');
 
         assert.strictEquals(await replyPromise, 'ok');

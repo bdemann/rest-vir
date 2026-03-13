@@ -87,7 +87,9 @@ async function readBodyStream(response: Response): Promise<unknown> {
         if (done) {
             break;
         }
-        result += decoder.decode(value, {stream: true});
+        result += decoder.decode(value, {
+            stream: true,
+        });
     }
 
     result += decoder.decode();
@@ -97,7 +99,9 @@ async function readBodyStream(response: Response): Promise<unknown> {
 
 describe(createMockResponse.name, () => {
     it('supports Response.body for a string body', async () => {
-        const response = createMockResponse({body: 'hi'});
+        const response = createMockResponse({
+            body: 'hi',
+        });
 
         const result = await readBodyStream(response);
 
@@ -106,17 +110,28 @@ describe(createMockResponse.name, () => {
         assert.throws(() => response.body?.getReader());
     });
     it('supports Response.body for an object body', async () => {
-        const response = createMockResponse({body: {hi: 'hi'}});
+        const response = createMockResponse({
+            body: {
+                hi: 'hi',
+            },
+        });
 
         const result = await readBodyStream(response);
 
-        assert.strictEquals(result, JSON.stringify({hi: 'hi'}));
+        assert.strictEquals(
+            result,
+            JSON.stringify({
+                hi: 'hi',
+            }),
+        );
         assert.isTrue(response.bodyUsed);
         assert.throws(() => response.body?.getReader());
     });
     it('supports Response.body for a Uint8Array body', async () => {
         const body: Uint8Array = new TextEncoder().encode('bye');
-        const response = createMockResponse({body});
+        const response = createMockResponse({
+            body,
+        });
 
         const result = await readBodyStream(response);
 
@@ -125,7 +140,9 @@ describe(createMockResponse.name, () => {
         assert.throws(() => response.body?.getReader());
     });
     it('supports Response.arrayBuffer()', async () => {
-        const response = createMockResponse({body: 'hi'});
+        const response = createMockResponse({
+            body: 'hi',
+        });
 
         assert.strictEquals(new TextDecoder().decode(await response.arrayBuffer()), 'hi');
         assert.isTrue(response.bodyUsed);
@@ -133,28 +150,36 @@ describe(createMockResponse.name, () => {
     });
     it('supports Response.arrayBuffer() for an ArrayBuffer body', async () => {
         const body = new TextEncoder().encode('hello').buffer;
-        const response = createMockResponse({body});
+        const response = createMockResponse({
+            body,
+        });
 
         assert.strictEquals(new TextDecoder().decode(await response.arrayBuffer()), 'hello');
         assert.isTrue(response.bodyUsed);
         await assert.throws(() => response.arrayBuffer());
     });
     it('supports Response.blob()', async () => {
-        const response = createMockResponse({body: 'hi'});
+        const response = createMockResponse({
+            body: 'hi',
+        });
 
         assert.strictEquals(await (await response.blob()).text(), 'hi');
         assert.isTrue(response.bodyUsed);
         await assert.throws(() => response.blob());
     });
     it('supports Response.bytes()', async () => {
-        const response = createMockResponse({body: 'hi'});
+        const response = createMockResponse({
+            body: 'hi',
+        });
 
         assert.strictEquals(new TextDecoder().decode(await response.bytes()), 'hi');
         assert.isTrue(response.bodyUsed);
         await assert.throws(() => response.bytes());
     });
     it('supports Response.text()', async () => {
-        const response = createMockResponse({body: 'hi'});
+        const response = createMockResponse({
+            body: 'hi',
+        });
 
         assert.strictEquals(await response.text(), 'hi');
         assert.isTrue(response.bodyUsed);
@@ -164,8 +189,12 @@ describe(createMockResponse.name, () => {
         const response = createMockResponse({
             body: {
                 hi: 'bye',
-                hi2: {not: 'a string'},
-                hi3: new Blob(['something'], {type: 'text/plain'}),
+                hi2: {
+                    not: 'a string',
+                },
+                hi3: new Blob(['something'], {
+                    type: 'text/plain',
+                }),
             },
         });
 
@@ -179,7 +208,9 @@ describe(createMockResponse.name, () => {
             ],
             [
                 'hi2',
-                JSON.stringify({not: 'a string'}),
+                JSON.stringify({
+                    not: 'a string',
+                }),
             ],
         ]);
 
@@ -190,7 +221,11 @@ describe(createMockResponse.name, () => {
         await assert.throws(() => response.formData());
     });
     it('supports Response.json()', async () => {
-        const response = createMockResponse({body: {hi: 'bye'}});
+        const response = createMockResponse({
+            body: {
+                hi: 'bye',
+            },
+        });
 
         assert.deepEquals(await response.json(), {
             hi: 'bye',
@@ -199,7 +234,11 @@ describe(createMockResponse.name, () => {
         await assert.throws(() => response.json());
     });
     it('supports Response.clone()', async () => {
-        const response = createMockResponse({body: {hi: 'bye'}});
+        const response = createMockResponse({
+            body: {
+                hi: 'bye',
+            },
+        });
         const response2 = response.clone();
 
         assert.deepEquals(await response.json(), {

@@ -219,9 +219,7 @@ export function assertValidWebSocketImplementations(
             isEndpoint: undefined,
             isWebSocket: undefined,
         });
-    }
-
-    if (extraImplementationPaths.length) {
+    } else if (extraImplementationPaths.length) {
         throw new ServiceDefinitionError({
             path: undefined,
             errorMessage: `WebSocket implementations have extra paths: '${extraImplementationPaths.join(

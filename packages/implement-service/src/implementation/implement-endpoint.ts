@@ -264,9 +264,7 @@ export function assertValidEndpointImplementations(
             isEndpoint: undefined,
             isWebSocket: undefined,
         });
-    }
-
-    if (extraEndpointImplementationPaths.length) {
+    } else if (extraEndpointImplementationPaths.length) {
         throw new ServiceDefinitionError({
             path: undefined,
             errorMessage: `Endpoint implementations have extra endpoints: '${extraEndpointImplementationPaths.join(

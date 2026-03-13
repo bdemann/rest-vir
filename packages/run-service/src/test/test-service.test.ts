@@ -23,21 +23,26 @@ import {
     testService,
 } from './test-service.js';
 
-describeService({service: mockServiceImplementation}, ({fetchEndpoint}) => {
-    it('responds to a request', async () => {
-        const response = await fetchEndpoint['/empty']();
+describeService(
+    {
+        service: mockServiceImplementation,
+    },
+    ({fetchEndpoint}) => {
+        it('responds to a request', async () => {
+            const response = await fetchEndpoint['/empty']();
 
-        assert.isTrue(response.ok);
-    });
-    it('rejects an invalid request', async () => {
-        const response = await fetchEndpoint['/test']({
-            // @ts-expect-error: invalid request data
-            requestData: undefined,
+            assert.isTrue(response.ok);
         });
+        it('rejects an invalid request', async () => {
+            const response = await fetchEndpoint['/test']({
+                // @ts-expect-error: invalid request data
+                requestData: undefined,
+            });
 
-        assert.isFalse(response.ok);
-    });
-});
+            assert.isFalse(response.ok);
+        });
+    },
+);
 
 const plainService = implementService({
     service: defineService({
@@ -99,23 +104,36 @@ const plainService = implementService({
     },
 });
 
-describeService({service: plainService, options: {}}, ({fetchEndpoint}) => {
-    it('responds to a request', async () => {
-        const response = await fetchEndpoint['/health']();
+describeService(
+    {
+        service: plainService,
+        options: {},
+    },
+    ({fetchEndpoint}) => {
+        it('responds to a request', async () => {
+            const response = await fetchEndpoint['/health']();
 
-        assert.isTrue(response.ok);
-    });
-    it('includes fastify headers', async () => {
-        const response = await fetchEndpoint['/health']();
+            assert.isTrue(response.ok);
+        });
+        it('includes fastify headers', async () => {
+            const response = await fetchEndpoint['/health']();
 
-        assert.hasKeys((await condenseResponse(response, {includeDefaultHeaders: true})).headers, [
-            'access-control-allow-origin',
-            'connection',
-            'content-length',
-            'date',
-        ]);
-    });
-});
+            assert.hasKeys(
+                (
+                    await condenseResponse(response, {
+                        includeDefaultHeaders: true,
+                    })
+                ).headers,
+                [
+                    'access-control-allow-origin',
+                    'connection',
+                    'content-length',
+                    'date',
+                ],
+            );
+        });
+    },
+);
 
 const serviceWithPostHook = implementService({
     service: defineService({
@@ -356,150 +374,160 @@ const serviceWithPostHook = implementService({
     },
 });
 
-describeService({service: serviceWithPostHook}, ({fetchEndpoint, getServer, service}) => {
-    it('ignores postHook output', async () => {
-        const response = await fetchEndpoint['/health']({
-            requestData: 'health request',
-            searchParams: {
-                data: ['something'],
-            },
+describeService(
+    {
+        service: serviceWithPostHook,
+    },
+    ({fetchEndpoint, getServer, service}) => {
+        it('ignores postHook output', async () => {
+            const response = await fetchEndpoint['/health']({
+                requestData: 'health request',
+                searchParams: {
+                    data: ['something'],
+                },
+            });
+            assert.isTrue(response.ok);
+            assert.strictEquals(response.status, HttpStatus.Ok);
+            assert.strictEquals(await response.text(), 'health response');
         });
-        assert.isTrue(response.ok);
-        assert.strictEquals(response.status, HttpStatus.Ok);
-        assert.strictEquals(await response.text(), 'health response');
-    });
-    it('uses postHook output', async () => {
-        const response = await fetchEndpoint['/health2']({
-            requestData: 'health2 request',
+        it('uses postHook output', async () => {
+            const response = await fetchEndpoint['/health2']({
+                requestData: 'health2 request',
+            });
+            assert.isTrue(response.ok);
+            assert.strictEquals(response.status, HttpStatus.Accepted);
+            assert.strictEquals(await response.text(), 'wrong data');
         });
-        assert.isTrue(response.ok);
-        assert.strictEquals(response.status, HttpStatus.Accepted);
-        assert.strictEquals(await response.text(), 'wrong data');
-    });
-    it('handles invalid method to actual path', async () => {
-        const {fullPath, href} = parseUrl(buildEndpointUrl(service.endpoints['/health2'], {}));
+        it('handles invalid method to actual path', async () => {
+            const {fullPath, href} = parseUrl(buildEndpointUrl(service.endpoints['/health2'], {}));
 
-        const innerResponse = await (
-            await getServer()
-        ).inject({
-            remoteAddress: href,
-            // cspell:ignore PROPFIND
-            method: 'PROPFIND' as any,
-            url: fullPath,
-        });
+            const innerResponse = await (
+                await getServer()
+            ).inject({
+                remoteAddress: href,
+                // cspell:ignore PROPFIND
+                method: 'PROPFIND' as any,
+                url: fullPath,
+            });
 
-        const response = new Response(innerResponse.rawPayload as BodyInit, {
-            status: innerResponse.statusCode,
-            headers: innerResponse.headers as Record<string, string>,
-            statusText: innerResponse.statusMessage,
-        });
+            const response = new Response(innerResponse.rawPayload as BodyInit, {
+                status: innerResponse.statusCode,
+                headers: innerResponse.headers as Record<string, string>,
+                statusText: innerResponse.statusMessage,
+            });
 
-        assert.isFalse(response.ok);
-        assert.strictEquals(response.status, HttpStatus.MethodNotAllowed);
-        assert.strictEquals(await response.text(), '');
-    });
-    it('handles invalid method to invalid path', async () => {
-        const {fullPath, href} = buildUrl(buildEndpointUrl(service.endpoints['/health2'], {}), {
-            paths: ['invalid-path'],
+            assert.isFalse(response.ok);
+            assert.strictEquals(response.status, HttpStatus.MethodNotAllowed);
+            assert.strictEquals(await response.text(), '');
         });
+        it('handles invalid method to invalid path', async () => {
+            const {fullPath, href} = buildUrl(buildEndpointUrl(service.endpoints['/health2'], {}), {
+                paths: ['invalid-path'],
+            });
 
-        const innerResponse = await (
-            await getServer()
-        ).inject({
-            remoteAddress: href,
-            // cspell:ignore PROPFIND
-            method: 'PROPFIND' as any,
-            url: fullPath,
-        });
+            const innerResponse = await (
+                await getServer()
+            ).inject({
+                remoteAddress: href,
+                // cspell:ignore PROPFIND
+                method: 'PROPFIND' as any,
+                url: fullPath,
+            });
 
-        const response = new Response(innerResponse.rawPayload as BodyInit, {
-            status: innerResponse.statusCode,
-            headers: innerResponse.headers as Record<string, string>,
-            statusText: innerResponse.statusMessage,
-        });
+            const response = new Response(innerResponse.rawPayload as BodyInit, {
+                status: innerResponse.statusCode,
+                headers: innerResponse.headers as Record<string, string>,
+                statusText: innerResponse.statusMessage,
+            });
 
-        assert.isFalse(response.ok);
-        assert.strictEquals(response.status, HttpStatus.NotFound);
-        assert.deepEquals(await response.json(), {
-            message: 'Route PROPFIND:/invalid-path not found',
-            error: 'Not Found',
-            statusCode: HttpStatus.NotFound,
+            assert.isFalse(response.ok);
+            assert.strictEquals(response.status, HttpStatus.NotFound);
+            assert.deepEquals(await response.json(), {
+                message: 'Route PROPFIND:/invalid-path not found',
+                error: 'Not Found',
+                statusCode: HttpStatus.NotFound,
+            });
         });
-    });
-    it('can wipe output with postHook', async () => {
-        const response = await condenseResponse(await fetchEndpoint['/health3']());
-        assert.strictEquals(response.body, undefined);
-        assert.strictEquals(response.status, HttpStatus.Unauthorized);
-        assert.deepEquals(response.headers, {
-            'access-control-allow-origin': '*',
-            'access-control-expose-headers': 'rest-vir-service',
-            extra: 'value',
+        it('can wipe output with postHook', async () => {
+            const response = await condenseResponse(await fetchEndpoint['/health3']());
+            assert.strictEquals(response.body, undefined);
+            assert.strictEquals(response.status, HttpStatus.Unauthorized);
+            assert.deepEquals(response.headers, {
+                'access-control-allow-origin': '*',
+                'access-control-expose-headers': 'rest-vir-service',
+                extra: 'value',
+            });
         });
-    });
-    it('can wipe error messages with postHook', async () => {
-        const response = await fetchEndpoint['/health4']();
-        assert.isFalse(response.ok);
-        assert.strictEquals(response.status, HttpStatus.Forbidden);
-        assert.strictEquals(await response.text(), '');
-    });
-    it('uses a new error message', async () => {
-        const response = await fetchEndpoint['/health5']();
-        assert.isFalse(response.ok);
-        assert.strictEquals(response.status, HttpStatus.Forbidden);
-        assert.strictEquals(await response.text(), 'new error');
-    });
-    it('falls back to the original message', async () => {
-        const response = await fetchEndpoint['/health6']();
-        assert.isFalse(response.ok);
-        assert.strictEquals(response.status, HttpStatus.Forbidden);
-        assert.strictEquals(await response.text(), 'this is an error');
-    });
-    it('fires postHook if context rejects', async () => {
-        const response = await fetchEndpoint['/health7']();
-        assert.isFalse(response.ok);
-        assert.strictEquals(response.status, HttpStatus.BadRequest);
-        assert.strictEquals(await response.text(), 'failed in context');
-    });
-    it('handles a RejectRequestError', async () => {
-        const response = await fetchEndpoint['/rejects-with-error']();
-        assert.isFalse(response.ok);
-        assert.strictEquals(response.status, HttpStatus.BadGateway);
-        assert.isEmpty(await response.text());
-    });
-    it('handles no origin', async () => {
-        assert.isTrue((await fetchEndpoint['/always-accept-cors']()).ok);
-        assert.isTrue((await fetchEndpoint['/always-accept-cors-fallback']()).ok);
-    });
-    it('handles any origin', async () => {
-        assert.isTrue(
-            (
-                await fetchEndpoint['/always-accept-cors']({
-                    options: {
-                        headers: {
-                            origin: 'something',
+        it('can wipe error messages with postHook', async () => {
+            const response = await fetchEndpoint['/health4']();
+            assert.isFalse(response.ok);
+            assert.strictEquals(response.status, HttpStatus.Forbidden);
+            assert.strictEquals(await response.text(), '');
+        });
+        it('uses a new error message', async () => {
+            const response = await fetchEndpoint['/health5']();
+            assert.isFalse(response.ok);
+            assert.strictEquals(response.status, HttpStatus.Forbidden);
+            assert.strictEquals(await response.text(), 'new error');
+        });
+        it('falls back to the original message', async () => {
+            const response = await fetchEndpoint['/health6']();
+            assert.isFalse(response.ok);
+            assert.strictEquals(response.status, HttpStatus.Forbidden);
+            assert.strictEquals(await response.text(), 'this is an error');
+        });
+        it('fires postHook if context rejects', async () => {
+            const response = await fetchEndpoint['/health7']();
+            assert.isFalse(response.ok);
+            assert.strictEquals(response.status, HttpStatus.BadRequest);
+            assert.strictEquals(await response.text(), 'failed in context');
+        });
+        it('handles a RejectRequestError', async () => {
+            const response = await fetchEndpoint['/rejects-with-error']();
+            assert.isFalse(response.ok);
+            assert.strictEquals(response.status, HttpStatus.BadGateway);
+            assert.isEmpty(await response.text());
+        });
+        it('handles no origin', async () => {
+            assert.isTrue((await fetchEndpoint['/always-accept-cors']()).ok);
+            assert.isTrue((await fetchEndpoint['/always-accept-cors-fallback']()).ok);
+        });
+        it('handles any origin', async () => {
+            assert.isTrue(
+                (
+                    await fetchEndpoint['/always-accept-cors']({
+                        options: {
+                            headers: {
+                                origin: 'something',
+                            },
                         },
-                    },
-                })
-            ).ok,
-        );
-        assert.isTrue(
-            (
-                await fetchEndpoint['/always-accept-cors-fallback']({
-                    options: {
-                        headers: {
-                            origin: 'something',
+                    })
+                ).ok,
+            );
+            assert.isTrue(
+                (
+                    await fetchEndpoint['/always-accept-cors-fallback']({
+                        options: {
+                            headers: {
+                                origin: 'something',
+                            },
                         },
-                    },
-                })
-            ).ok,
-        );
-    });
-});
+                    })
+                ).ok,
+            );
+        });
+    },
+);
 
 describe(testService.name, () => {
     it('works with an actual port', async () => {
         const {fetchEndpoint, connectWebSocket, kill} = await testService(plainService, {
-            port: 4500 + randomInteger({min: 0, max: 4000}),
+            port:
+                4500 +
+                randomInteger({
+                    min: 0,
+                    max: 4000,
+                }),
         });
 
         try {
@@ -521,7 +549,9 @@ describe(testService.name, () => {
                 },
             });
             try {
-                const reply = await webSocket.sendAndWaitForReply({message: 'from client'});
+                const reply = await webSocket.sendAndWaitForReply({
+                    message: 'from client',
+                });
                 assert.tsType(reply).equals<'from server'>();
                 assert.strictEquals(reply, 'from server');
                 webSocket.send('from client');
@@ -540,7 +570,12 @@ describe(testService.name, () => {
         const {fetchEndpoint, connectWebSocket, kill} = await testService(
             mockServiceImplementation,
             {
-                port: 4500 + randomInteger({min: 0, max: 4000}),
+                port:
+                    4500 +
+                    randomInteger({
+                        min: 0,
+                        max: 4000,
+                    }),
             },
         );
 
@@ -604,7 +639,9 @@ describe(testService.name, () => {
                 },
             });
             try {
-                const reply = await webSocket.sendAndWaitForReply({message: 'from client'});
+                const reply = await webSocket.sendAndWaitForReply({
+                    message: 'from client',
+                });
                 assert.tsType(reply).equals<'from server'>();
                 assert.strictEquals(reply, 'from server');
                 webSocket.send('from client');

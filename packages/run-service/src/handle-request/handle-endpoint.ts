@@ -72,9 +72,7 @@ export async function handleEndpointRequest(
         /** If the dev forgets to set a status code. */
         if (!(endpointResult.statusCode as any)) {
             throw new RestVirHandlerError(endpoint, 'Missing response status code.');
-        }
-
-        if (isErrorHttpStatus(endpointResult.statusCode)) {
+        } else if (isErrorHttpStatus(endpointResult.statusCode)) {
             endpoint.service.logger.error(
                 new RestVirHandlerError(
                     endpoint,
@@ -96,7 +94,9 @@ export async function handleEndpointRequest(
                 assertValidShape(
                     endpointResult.responseData,
                     endpoint.responseDataShape,
-                    {allowExtraKeys: true},
+                    {
+                        allowExtraKeys: true,
+                    },
                     'invalid response data',
                 );
             }

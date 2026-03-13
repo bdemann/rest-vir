@@ -26,8 +26,12 @@ describe(mergeHeaders.name, () => {
         {
             it: 'merges multiple object headers',
             inputs: [
-                {foo: 'bar'},
-                {baz: 'qux'},
+                {
+                    foo: 'bar',
+                },
+                {
+                    baz: 'qux',
+                },
             ],
             expect: {
                 foo: 'bar',
@@ -147,7 +151,9 @@ describe(mergeHeaders.name, () => {
                         'first',
                     ],
                 ]),
-                {multi: 'second'},
+                {
+                    multi: 'second',
+                },
             ],
             expect: {
                 multi: 'first, second',

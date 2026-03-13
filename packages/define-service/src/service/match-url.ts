@@ -36,8 +36,16 @@ export function matchUrlToService<
         return undefined;
     } else {
         return {
-            ...(endpointPath ? {endpointPath} : {}),
-            ...(webSocketPath ? {webSocketPath} : {}),
+            ...(endpointPath
+                ? {
+                      endpointPath,
+                  }
+                : {}),
+            ...(webSocketPath
+                ? {
+                      webSocketPath,
+                  }
+                : {}),
         } satisfies Partial<MatchedServicePath<Service>> as MatchedServicePath<Service>;
     }
 }

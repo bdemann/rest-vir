@@ -24,9 +24,9 @@
         "test:docs": "exit 0"
     },
     "dependencies": {
-        "@virmator/docs": "^14.5.0",
-        "type-fest": "^5.4.3",
-        "typedoc": "^0.28.16"
+        "@virmator/docs": "^14.9.0",
+        "type-fest": "^5.4.4",
+        "typedoc": "^0.28.17"
     },
     "engines": {
         "node": ">=22"

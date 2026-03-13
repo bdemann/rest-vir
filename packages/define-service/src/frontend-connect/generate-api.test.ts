@@ -128,7 +128,9 @@ describe(makeMockApi.name, () => {
 
         const replyPromise = webSocket.sendAndWaitForReply();
 
-        await wait({milliseconds: 100});
+        await wait({
+            milliseconds: 100,
+        });
 
         webSocket.sendFromHost('ok');
 

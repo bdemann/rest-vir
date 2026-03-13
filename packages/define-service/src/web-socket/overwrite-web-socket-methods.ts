@@ -625,7 +625,9 @@ export function overwriteWebSocketMethods<
         },
         async sendAndWaitForReply({
             message,
-            timeout = {seconds: 10},
+            timeout = {
+                seconds: 10,
+            },
             replyCheck,
         }: SendAndWaitForReplyParams<Location> | undefined = {}) {
             const deferredReply = new DeferredPromise<any>();
@@ -653,7 +655,9 @@ export function overwriteWebSocketMethods<
                         deferredReply.reject('Timeout: got no reply from the host.');
                     }
                 },
-                convertDuration(timeout, {milliseconds: true}).milliseconds,
+                convertDuration(timeout, {
+                    milliseconds: true,
+                }).milliseconds,
             );
 
             webSocket.addEventListener('message', listener);
@@ -733,9 +737,7 @@ export async function waitForOpenWebSocket(
             () => {
                 if (webSocketOpenedPromise.isSettled) {
                     return true;
-                }
-
-                if (webSocket.readyState === CommonWebSocketState.Closed) {
+                } else if (webSocket.readyState === CommonWebSocketState.Closed) {
                     webSocketOpenedPromise.reject('WebSocket closed while waiting for it to open.');
                     return true;
                 } else if (webSocket.readyState === CommonWebSocketState.Open) {

@@ -160,7 +160,9 @@ export const mockServiceImplementation = implementService({
         '/incorrectly-has-response-data'() {
             return {
                 statusCode: HttpStatus.Ok,
-                responseData: {data: 'should not be here'},
+                responseData: {
+                    data: 'should not be here',
+                },
             };
         },
         '/custom-props'() {
@@ -195,7 +197,9 @@ export const mockServiceImplementation = implementService({
             };
         },
         async '/plain'() {
-            await wait({milliseconds: 1});
+            await wait({
+                milliseconds: 1,
+            });
 
             return {
                 statusCode: HttpStatus.Ok,
@@ -295,7 +299,9 @@ export const mockServiceImplementation = implementService({
         },
         '/async-rejection'() {
             async function delayedCrash() {
-                await wait({milliseconds: 200});
+                await wait({
+                    milliseconds: 200,
+                });
                 throw new Error('ASYNC CRASH');
             }
 

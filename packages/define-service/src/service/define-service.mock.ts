@@ -107,7 +107,9 @@ export const mockService = defineService({
             requestDataShape: undefined,
             responseDataShape: undefined,
             async requiredClientOrigin(origin) {
-                await wait({milliseconds: 1});
+                await wait({
+                    milliseconds: 1,
+                });
                 return !!origin?.includes('example.com');
             },
         },
@@ -141,7 +143,12 @@ export const mockService = defineService({
                 [HttpMethod.Post]: true,
             },
             responseDataShape: {
-                result: unionShape({hello: 'there'}, 5),
+                result: unionShape(
+                    {
+                        hello: 'there',
+                    },
+                    5,
+                ),
                 requestData: {
                     somethingHere: '',
                     testValue: 5,
@@ -167,7 +174,9 @@ export const mockService = defineService({
             requiredClientOrigin: mockWebsiteOrigin,
         },
         '/long-running': {
-            requestDataShape: unionShape(undefined, {count: -1}),
+            requestDataShape: unionShape(undefined, {
+                count: -1,
+            }),
             methods: {
                 [HttpMethod.Get]: true,
             },

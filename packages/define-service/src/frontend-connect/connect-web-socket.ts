@@ -81,7 +81,10 @@ export function buildWebSocketUrl(
             service: webSocketDefinition.service,
             searchParamsShape: webSocketDefinition.searchParamsShape,
         },
-        {pathParams, searchParams},
+        {
+            pathParams,
+            searchParams,
+        },
     );
 
     return buildUrl(httpUrl, {

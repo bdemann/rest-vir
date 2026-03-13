@@ -61,7 +61,9 @@ export function handleSearchParams({
 
     const validationError: undefined | Error = shape
         ? wrapInTry(() => {
-              assertValidShape(searchParams, shape, {allowExtraKeys: true});
+              assertValidShape(searchParams, shape, {
+                  allowExtraKeys: true,
+              });
               return undefined;
           })
         : undefined;
