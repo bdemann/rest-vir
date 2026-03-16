@@ -9,6 +9,11 @@ describe(parseJsonWithUndefined.name, () => {
             expect: undefined,
         },
         {
+            it: 'handles empty string',
+            input: '',
+            expect: undefined,
+        },
+        {
             it: 'handles normal JSON',
             input: JSON.stringify({
                 a: 'hi',

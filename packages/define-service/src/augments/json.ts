@@ -8,7 +8,11 @@ import {wrapInTry} from '@augment-vir/common';
  * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
  */
 export function parseJsonWithUndefined(data: string): any {
+    if (!data || data === 'undefined') {
+        return undefined;
+    }
+
     return wrapInTry(() => JSON.parse(data), {
-        fallbackValue: data === 'undefined' ? undefined : data,
+        fallbackValue: data,
     });
 }
