@@ -82,6 +82,10 @@ describe(makeMockApi.name, () => {
         webSocketConstructor: MockClientWebSocket,
     });
 
+    it('preserves serviceOrigin', () => {
+        assert.strictEquals(mockMockApi.serviceOrigin, 'https://example.com');
+    });
+
     it('has proper types', () => {
         assert.tsType(mockServiceApi.endpoints['/with-search-params']).notEquals<never>();
         assert.tsType(mockServiceApi.endpoints['/empty']).notEquals<never>();

@@ -1,4 +1,5 @@
 import {
+    type AnyObject,
     mapObjectValues,
     type MaybePromise,
     type Overwrite,
@@ -275,6 +276,7 @@ export function makeMockApi<
     mocks: RestVirApiMocks<Api, WebSocketClass>,
 ): MockExistingApi<Api, WebSocketClass> {
     return {
+        serviceOrigin: api.serviceOrigin,
         endpoints: mapObjectValues(api.endpoints, (endpointPath, endpointDefinition) => {
             return {
                 ...endpointDefinition,
@@ -303,5 +305,8 @@ export function makeMockApi<
                 },
             };
         }),
-    } as unknown as MockExistingApi<Api, WebSocketClass>;
+    } satisfies Record<keyof RestVirApi<any>, any> as AnyObject as MockExistingApi<
+        Api,
+        WebSocketClass
+    >;
 }
