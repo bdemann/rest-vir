@@ -1,6 +1,6 @@
 {
     "name": "@rest-vir/implement-service",
-    "version": "1.5.1",
+    "version": "1.5.2",
     "description": "Implement a service defined by @rest-vir/define-service.",
     "keywords": [
         "rest",
@@ -39,17 +39,17 @@
         "test:update": "npm test update"
     },
     "dependencies": {
-        "@augment-vir/assert": "^31.68.1",
-        "@augment-vir/common": "^31.68.1",
-        "@rest-vir/define-service": "^1.5.1",
+        "@augment-vir/assert": "^31.68.2",
+        "@augment-vir/common": "^31.68.2",
+        "@rest-vir/define-service": "^1.5.2",
         "@types/ws": "^8.18.1",
         "fastify": "^5.8.2",
         "path-to-regexp": "^8.3.0",
-        "type-fest": "^5.4.4"
+        "type-fest": "^5.5.0"
     },
     "devDependencies": {
-        "@augment-vir/test": "^31.68.1",
-        "@types/node": "^25.3.0",
+        "@augment-vir/test": "^31.68.2",
+        "@types/node": "^25.5.0",
         "c8": "^11.0.0",
         "istanbul-smart-text-reporter": "^1.1.5",
         "markdown-code-example-inserter": "^3.0.3",

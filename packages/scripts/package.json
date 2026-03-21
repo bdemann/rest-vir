@@ -1,6 +1,6 @@
 {
     "name": "@rest-vir/scripts",
-    "version": "1.5.1",
+    "version": "1.5.2",
     "private": true,
     "homepage": "https://github.com/electrovir/rest-vir",
     "bugs": {
@@ -24,8 +24,8 @@
         "test:docs": "exit 0"
     },
     "dependencies": {
-        "@virmator/docs": "^14.9.0",
-        "type-fest": "^5.4.4",
+        "@virmator/docs": "^14.9.1",
+        "type-fest": "^5.5.0",
         "typedoc": "^0.28.17"
     },
     "engines": {
