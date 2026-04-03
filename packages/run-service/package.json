@@ -48,11 +48,11 @@
         "@rest-vir/implement-service": "^1.5.2",
         "cluster-vir": "^1.0.1",
         "date-vir": "^8.2.1",
-        "fastify": "^5.8.2",
+        "fastify": "^5.8.4",
         "light-my-request": "^6.6.0",
         "portfinder": "^1.0.38",
         "type-fest": "^5.5.0",
-        "url-vir": "^2.1.7"
+        "url-vir": "^2.1.8"
     },
     "devDependencies": {
         "@augment-vir/test": "^31.68.2",

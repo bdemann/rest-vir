@@ -44,7 +44,7 @@
         "@augment-vir/common": "^31.68.2",
         "date-vir": "^8.2.1",
         "type-fest": "^5.5.0",
-        "url-vir": "^2.1.7"
+        "url-vir": "^2.1.8"
     },
     "devDependencies": {
         "@augment-vir/test": "^31.68.2",
@@ -56,8 +56,8 @@
         "istanbul-smart-text-reporter": "^1.1.5",
         "markdown-code-example-inserter": "^3.0.3",
         "object-shape-tester": "^6.11.0",
-        "typedoc": "^0.28.17",
-        "ws": "^8.19.0"
+        "typedoc": "^0.28.18",
+        "ws": "^8.20.0"
     },
     "peerDependencies": {
         "object-shape-tester": ">=5"
