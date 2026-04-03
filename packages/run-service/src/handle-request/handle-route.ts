@@ -84,6 +84,11 @@ export async function handleRoute({
                 server,
             });
 
+            /** The implementation already handled the response (e.g. SSE streaming). */
+            if (response.sent) {
+                return;
+            }
+
             const endpointResult = handleHandlerOutputWithoutSending(result, response);
 
             const postHookResult =

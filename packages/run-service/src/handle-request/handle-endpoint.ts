@@ -69,8 +69,11 @@ export async function handleEndpointRequest(
             endpointParams,
         )) as EndpointImplementationOutput;
 
-        /** If the dev forgets to set a status code. */
-        if (!(endpointResult.statusCode as any)) {
+        /** The implementation already handled the response (e.g. SSE streaming). */
+        if ('responseHandled' in endpointResult) {
+            return undefined;
+            /** If the dev forgets to set a status code. */
+        } else if (!(endpointResult.statusCode as any)) {
             throw new RestVirHandlerError(endpoint, 'Missing response status code.');
         } else if (isErrorHttpStatus(endpointResult.statusCode)) {
             endpoint.service.logger.error(

@@ -46,6 +46,7 @@ export type EndpointImplementationErrorOutput = {
     responseData?: undefined;
     headers?: OutgoingHttpHeaders | undefined;
     dataType?: undefined;
+    responseHandled?: never;
 };
 
 /**
@@ -55,8 +56,28 @@ export type EndpointImplementationErrorOutput = {
  * @category Package : @rest-vir/implement-service
  * @package [`@rest-vir/implement-service`](https://www.npmjs.com/package/@rest-vir/implement-service)
  */
+/**
+ * Returned by an endpoint implementation that has taken full control of the response (e.g. SSE
+ * streaming via `response.hijack()`). When the framework receives this, it skips response
+ * validation, the post-hook, and the final `response.send()`.
+ *
+ * @category Internal
+ * @category Package : @rest-vir/implement-service
+ * @package [`@rest-vir/implement-service`](https://www.npmjs.com/package/@rest-vir/implement-service)
+ */
+export type EndpointImplementationHandledOutput = {
+    /** The response has been fully handled by the endpoint implementation. */
+    responseHandled: true;
+    statusCode?: never;
+    responseData?: never;
+    responseErrorMessage?: never;
+    dataType?: never;
+    headers?: never;
+};
+
 export type EndpointImplementationOutput<ResponseDataType = unknown> =
     | EndpointImplementationErrorOutput
+    | EndpointImplementationHandledOutput
     | ({
           statusCode: HttpStatusByCategory<SuccessHttpStatusCategories>;
 
@@ -68,6 +89,7 @@ export type EndpointImplementationOutput<ResponseDataType = unknown> =
            */
           dataType?: string | undefined;
           headers?: OutgoingHttpHeaders | undefined;
+          responseHandled?: never;
       } & (ResponseDataType extends undefined
           ? {
                 responseData?: ResponseDataType;

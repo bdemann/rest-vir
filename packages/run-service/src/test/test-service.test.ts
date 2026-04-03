@@ -11,7 +11,11 @@ import {
     type MinimalService,
     restVirServiceNameHeader,
 } from '@rest-vir/define-service';
-import {implementService, RejectRequestError} from '@rest-vir/implement-service';
+import {
+    type EndpointImplementationHandledOutput,
+    implementService,
+    RejectRequestError,
+} from '@rest-vir/implement-service';
 import {mockServiceImplementation} from '@rest-vir/implement-service/src/implementation/implement-service.mock.js';
 import fastify from 'fastify';
 import {exactShape} from 'object-shape-tester';
@@ -652,6 +656,156 @@ describe(testService.name, () => {
             } finally {
                 await webSocket.close();
             }
+        } finally {
+            await kill();
+        }
+    });
+});
+
+const sseService = implementService({
+    service: defineService({
+        endpoints: {
+            '/sse-stream': {
+                methods: {
+                    [HttpMethod.Get]: true,
+                },
+                requestDataShape: undefined,
+                responseDataShape: undefined,
+            },
+        },
+        webSockets: {},
+        requiredClientOrigin: AnyOrigin,
+        serviceName: 'sse service',
+        serviceOrigin: 'https://example.com',
+    }),
+    createContext() {
+        return {
+            context: undefined,
+        };
+    },
+})({
+    endpoints: {
+        '/sse-stream'({response}): EndpointImplementationHandledOutput {
+            response.hijack();
+            const raw = response.raw;
+
+            raw.writeHead(200, {
+                'content-type': 'text/event-stream',
+                'cache-control': 'no-cache',
+                connection: 'keep-alive',
+            });
+
+            raw.write('event: status\ndata: {"message":"thinking"}\n\n');
+            raw.write('event: done\ndata: {}\n\n');
+            raw.end();
+
+            return {
+                responseHandled: true,
+            };
+        },
+    },
+});
+
+describe('responseHandled (SSE)', () => {
+    it('streams SSE events when endpoint hijacks the response', async () => {
+        const port =
+            4500 +
+            randomInteger({
+                min: 0,
+                max: 4000,
+            });
+        const {fetchEndpoint, kill} = await testService(sseService, {
+            port,
+        });
+
+        try {
+            const response = await fetchEndpoint['/sse-stream']();
+
+            assert.strictEquals(response.status, HttpStatus.Ok);
+            assert.strictEquals(response.headers.get('content-type'), 'text/event-stream');
+
+            const body = await response.text();
+
+            assert.isTrue(body.includes('event: status'));
+            assert.isTrue(body.includes('event: done'));
+        } finally {
+            await kill();
+        }
+    });
+});
+
+const sseServiceWithPostHook = implementService({
+    service: defineService({
+        endpoints: {
+            '/sse-with-post-hook': {
+                methods: {
+                    [HttpMethod.Get]: true,
+                },
+                requestDataShape: undefined,
+                responseDataShape: undefined,
+            },
+        },
+        webSockets: {},
+        requiredClientOrigin: AnyOrigin,
+        serviceName: 'sse post-hook service',
+        serviceOrigin: 'https://example.com',
+    }),
+    createContext() {
+        return {
+            context: undefined,
+        };
+    },
+})({
+    endpoints: {
+        '/sse-with-post-hook'({response}): EndpointImplementationHandledOutput {
+            response.hijack();
+            const raw = response.raw;
+
+            raw.writeHead(200, {
+                'content-type': 'text/event-stream',
+                'cache-control': 'no-cache',
+                connection: 'keep-alive',
+            });
+
+            raw.write('event: data\ndata: {"value":"original"}\n\n');
+            raw.end();
+
+            return {
+                responseHandled: true,
+            };
+        },
+    },
+    postHook() {
+        /** This should never fire for hijacked responses. */
+        return {
+            statusCode: HttpStatus.ImATeapot,
+        };
+    },
+});
+
+describe('responseHandled skips post-hook', () => {
+    it('does not run post-hook when response is already handled', async () => {
+        const port =
+            4500 +
+            randomInteger({
+                min: 0,
+                max: 4000,
+            });
+        const {fetchEndpoint, kill} = await testService(sseServiceWithPostHook, {
+            port,
+        });
+
+        try {
+            const response = await fetchEndpoint['/sse-with-post-hook']();
+
+            /** Post-hook would set 418, but it should be skipped. */
+            assert.strictEquals(response.status, HttpStatus.Ok);
+            assert.strictEquals(response.headers.get('content-type'), 'text/event-stream');
+
+            const body = await response.text();
+
+            assert.isTrue(body.includes('event: data'));
+            assert.isTrue(body.includes('"value":"original"'));
         } finally {
             await kill();
         }
