@@ -24,6 +24,8 @@ import {
     type CollapsedFetchEndpointParams,
     fetchEndpoint,
     type FetchEndpointOutput,
+    fetchStreamEndpoint,
+    type FetchStreamEndpointOutput,
     type GenericFetchEndpointParams,
 } from './fetch-endpoint.js';
 
@@ -49,6 +51,16 @@ export class RestVirApi<SpecificService extends ServiceDefinition> {
                           SpecificService['endpoints'][EndpointPath]
                       >
                   ): Promise<FetchEndpointOutput<SpecificService['endpoints'][EndpointPath]>>;
+                  /**
+                   * Send a fetch request to this endpoint and return a `ReadableStream` instead of
+                   * parsing the response body. Useful for consuming SSE (Server-Sent Events)
+                   * endpoints.
+                   */
+                  fetchStream(
+                      ...params: CollapsedFetchEndpointParams<
+                          SpecificService['endpoints'][EndpointPath]
+                      >
+                  ): Promise<FetchStreamEndpointOutput>;
                   buildUrl(
                       params: Parameters<
                           typeof buildEndpointUrl<SpecificService['endpoints'][EndpointPath]>
@@ -92,22 +104,27 @@ export class RestVirApi<SpecificService extends ServiceDefinition> {
         this.serviceOrigin = serviceOrigin || service.serviceOrigin;
 
         this.endpoints = mapObjectValues(service.endpoints, (endpointPath, endpointDefinition) => {
+            const endpointWithOrigin = () => ({
+                ...endpointDefinition,
+                service: {
+                    ...endpointDefinition.service,
+                    serviceOrigin: this.serviceOrigin,
+                },
+            });
+
             return {
                 ...endpointDefinition,
                 fetch: (...params: CollapsedFetchEndpointParams<EndpointDefinition>) => {
-                    return fetchEndpoint(
-                        {
-                            ...endpointDefinition,
-                            service: {
-                                ...endpointDefinition.service,
-                                serviceOrigin: this.serviceOrigin,
-                            },
-                        },
-                        {
-                            ...endpointFetch,
-                            ...params[0],
-                        },
-                    );
+                    return fetchEndpoint(endpointWithOrigin(), {
+                        ...endpointFetch,
+                        ...params[0],
+                    });
+                },
+                fetchStream: (...params: CollapsedFetchEndpointParams<EndpointDefinition>) => {
+                    return fetchStreamEndpoint(endpointWithOrigin(), {
+                        ...endpointFetch,
+                        ...params[0],
+                    });
                 },
                 buildUrl(params: Parameters<typeof buildEndpointUrl<EndpointDefinition>>[1]) {
                     return buildEndpointUrl(endpointDefinition, params);
@@ -282,6 +299,12 @@ export function makeMockApi<
                 ...endpointDefinition,
                 fetch: (...params: CollapsedFetchEndpointParams<EndpointDefinition>) => {
                     return fetchEndpoint(endpointDefinition as EndpointDefinition, {
+                        fetch: mocks.fetch as GenericFetchEndpointParams['fetch'],
+                        ...params[0],
+                    });
+                },
+                fetchStream: (...params: CollapsedFetchEndpointParams<EndpointDefinition>) => {
+                    return fetchStreamEndpoint(endpointDefinition as EndpointDefinition, {
                         fetch: mocks.fetch as GenericFetchEndpointParams['fetch'],
                         ...params[0],
                     });

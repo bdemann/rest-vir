@@ -1,5 +1,5 @@
 import {assert} from '@augment-vir/assert';
-import {DeferredPromise, HttpMethod, HttpStatus} from '@augment-vir/common';
+import {DeferredPromise, HttpMethod, HttpStatus, type MaybePromise} from '@augment-vir/common';
 import {describe, it, itCases} from '@augment-vir/test';
 import {type BaseSearchParams} from '@rest-vir/define-service';
 import {parseUrl} from 'url-vir';
@@ -16,6 +16,7 @@ import {
     type CollapsedFetchEndpointParams,
     fetchEndpoint,
     type FetchEndpointParams,
+    fetchStreamEndpoint,
     type GenericFetchEndpointParams,
 } from './fetch-endpoint.js';
 
@@ -638,4 +639,116 @@ describe(fetchEndpoint.name, () => {
             },
         },
     ]);
+});
+
+describe(fetchStreamEndpoint.name, () => {
+    it('returns a stream on success', async () => {
+        const result = await fetchStreamEndpoint(mockService.endpoints['/test'], {
+            requestData: {
+                somethingHere: 'hi',
+                testValue: -1,
+            },
+            fetch() {
+                return Promise.resolve(
+                    createMockResponse({
+                        status: HttpStatus.Ok,
+                        body: 'streamed data',
+                    }),
+                );
+            },
+        });
+
+        assert.isTrue(result.ok);
+        assert.instanceOf(result.stream, ReadableStream);
+    });
+    it('returns error data on failure', async () => {
+        const result = await fetchStreamEndpoint(mockService.endpoints['/test'], {
+            requestData: {
+                somethingHere: 'hi',
+                testValue: -1,
+            },
+            fetch() {
+                return Promise.resolve(
+                    createMockResponse({
+                        status: HttpStatus.BadRequest,
+                        body: 'error message',
+                    }),
+                );
+            },
+        });
+
+        assert.isFalse(result.ok);
+        assert.strictEquals(result.data, 'error message');
+    });
+    it('returns undefined data on failure with empty body', async () => {
+        const result = await fetchStreamEndpoint(mockService.endpoints['/test'], {
+            requestData: {
+                somethingHere: 'hi',
+                testValue: -1,
+            },
+            fetch() {
+                return Promise.resolve(
+                    createMockResponse({
+                        status: HttpStatus.BadRequest,
+                    }),
+                );
+            },
+        });
+
+        assert.isFalse(result.ok);
+        assert.isUndefined(result.data);
+    });
+    it('throws on missing response body', async () => {
+        await assert.throws(
+            () =>
+                fetchStreamEndpoint(mockService.endpoints['/test'], {
+                    requestData: {
+                        somethingHere: 'hi',
+                        testValue: -1,
+                    },
+                    fetch(): MaybePromise<Response> {
+                        const response = createMockResponse({
+                            status: HttpStatus.Ok,
+                        });
+                        /** Override body to null to simulate a missing body. */
+                        Object.defineProperty(response, 'body', {
+                            value: null,
+                        });
+                        return response;
+                    },
+                }),
+            {
+                matchMessage: 'no body to stream',
+            },
+        );
+    });
+    it('validates request data', async () => {
+        await assert.throws(
+            () =>
+                fetchStreamEndpoint(mockService.endpoints['/with/:param1/:param2'], {
+                    pathParams: {
+                        param1: 'hi',
+                        param2: 'bye',
+                    },
+                    method: HttpMethod.Head,
+                    requestData: {
+                        invalid: 'hi',
+                    },
+                } as any),
+            {
+                matchMessage: 'not expecting any request data',
+            },
+        );
+    });
+    it('fails on an invalid endpoint', async () => {
+        await assert.throws(() =>
+            fetchStreamEndpoint({
+                ...mockService.endpoints['/empty'],
+                service: {
+                    ...mockService.endpoints['/empty'].service,
+                    serviceOrigin: 'localhost:0',
+                },
+            }),
+        );
+    });
 });

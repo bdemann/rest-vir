@@ -37,6 +37,10 @@ describe(generateApi.name, () => {
         /** This will fail because the service origin is invalid. */
         await assert.throws(() => testApi.endpoints['/test'].fetch());
     });
+    it('sends a fetchStream', async () => {
+        /** This will fail because the service origin is invalid. */
+        await assert.throws(() => testApi.endpoints['/test'].fetchStream());
+    });
     it('connects a WebSocket', async () => {
         /** This will fail because the service origin is invalid. */
         await assert.throws(() => testApi.webSockets['/test'].connect());
@@ -99,6 +103,11 @@ describe(makeMockApi.name, () => {
 
         assert.isTrue(response.ok);
         assert.isUndefined(data);
+    });
+    it('stream-fetches a mock endpoint', async () => {
+        const result = await mockMockApi.endpoints['/empty'].fetchStream();
+
+        assert.isTrue(result.ok);
     });
     it('fetches with search params', async () => {
         // @ts-expect-error: missing search params

@@ -411,6 +411,133 @@ export async function fetchEndpoint<
 }
 
 /**
+ * Type safe output from sending a stream request to an endpoint definition. Used by
+ * {@link fetchStreamEndpoint}.
+ *
+ * @category Internal
+ * @category Package : @rest-vir/define-service
+ * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
+ */
+export type FetchStreamEndpointOutput =
+    | Readonly<{
+          ok: true;
+          stream: ReadableStream<Uint8Array>;
+          response: Readonly<Response>;
+      }>
+    | Readonly<{
+          ok: false;
+          data: string | undefined;
+          response: Readonly<Response>;
+      }>;
+
+/**
+ * Send a request to an endpoint definition and return a `ReadableStream` instead of parsing the
+ * response body. This is useful for consuming SSE (Server-Sent Events) endpoints from frontend
+ * clients.
+ *
+ * Uses the same request-building and validation flow as {@link fetchEndpoint}, but skips response
+ * body and JSON validation.
+ *
+ * @category Client (Frontend) Connection
+ * @category Package : @rest-vir/define-service
+ * @example
+ *
+ * ```ts
+ * import {fetchStreamEndpoint} from '@rest-vir/define-service';
+ *
+ * const result = await fetchStreamEndpoint(myService.endpoints['/my-sse-endpoint']);
+ *
+ * if (result.ok) {
+ *     const reader = result.stream.getReader();
+ * }
+ * ```
+ *
+ * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
+ */
+export async function fetchStreamEndpoint<
+    const EndpointToFetch extends
+        | Readonly<
+              SelectFrom<
+                  EndpointDefinition,
+                  {
+                      requestDataShape: true;
+                      path: true;
+                      responseDataShape: true;
+                      methods: true;
+                      service: {
+                          serviceOrigin: true;
+                          serviceName: true;
+                      };
+                  }
+              >
+          >
+        | NoParam,
+>(
+    endpoint: EndpointToFetch extends EndpointDefinition
+        ? EndpointToFetch
+        : SelectFrom<
+              EndpointDefinition,
+              {
+                  requestDataShape: true;
+                  path: true;
+                  responseDataShape: true;
+                  searchParamsShape: true;
+                  methods: true;
+                  service: {
+                      serviceOrigin: true;
+                      serviceName: true;
+                  };
+              }
+          >,
+    ...params: CollapsedFetchEndpointParams<EndpointToFetch>
+): Promise<FetchStreamEndpointOutput> {
+    const {requestData, fetch} = params[0] || {};
+
+    if (requestData) {
+        if (endpoint.requestDataShape) {
+            assertValidShape(requestData, endpoint.requestDataShape, {
+                allowExtraKeys: true,
+            });
+        } else {
+            throw new Error(
+                `Request data was given but endpoint '${endpoint.path}' is not expecting any request data.`,
+            );
+        }
+    }
+
+    const {requestInit, url} = buildEndpointRequestInit(endpoint, ...params);
+
+    /* node:coverage ignore next: all tests mock fetch so we're never going to have a fallback here. */
+    const response = await (fetch || defaultFetch)(
+        url,
+        requestInit,
+        endpoint as EndpointDefinition,
+    );
+
+    if (response.ok) {
+        if (!response.body) {
+            throw new Error(
+                `Endpoint '${endpoint.path}' returned an ok response with no body to stream.`,
+            );
+        }
+
+        return {
+            ok: true,
+            stream: response.body,
+            response,
+        };
+    } else {
+        const responseText = await response.clone().text();
+
+        return {
+            ok: false,
+            data: responseText || undefined,
+            response,
+        };
+    }
+}
+
+/**
  * Build request init and URL for fetching an endpoint. Used in {@link fetchEndpoint}.
  *
  * @category Internal
