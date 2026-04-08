@@ -1,6 +1,6 @@
 import {getObjectTypedEntries} from '@augment-vir/common';
 import {type ServerResponse} from '@rest-vir/implement-service';
-import {type OutgoingHttpHeaders} from 'node:http';
+import {type ServerResponse as NodeServerResponse, type OutgoingHttpHeaders} from 'node:http';
 
 /**
  * Easily apply an object of headers to a Response object. Setting a header to `undefined` removes
@@ -28,6 +28,34 @@ export function setResponseHeaders(
                 response.removeHeader(String(name));
             } else {
                 response.header(String(name), value);
+            }
+        },
+    );
+}
+
+/**
+ * Sets headers directly on the raw Node.js `http.ServerResponse`. Unlike headers set via Fastify's
+ * `response.header()`, these survive `response.hijack()` because they are written to the underlying
+ * Node response. When an endpoint later calls `writeHead()`, these headers are merged in, with
+ * `writeHead()` headers taking precedence.
+ *
+ * @category Internal
+ * @category Package : @rest-vir/run-service
+ * @package [`@rest-vir/run-service`](https://www.npmjs.com/package/@rest-vir/run-service)
+ */
+export function setRawResponseHeaders(
+    rawResponse: Readonly<Pick<NodeServerResponse, 'setHeader' | 'removeHeader'>>,
+    headers: Readonly<OutgoingHttpHeaders>,
+): void {
+    getObjectTypedEntries(headers).forEach(
+        ([
+            name,
+            value,
+        ]) => {
+            if (value == undefined) {
+                rawResponse.removeHeader(String(name));
+            } else {
+                rawResponse.setHeader(String(name), value);
             }
         },
     );

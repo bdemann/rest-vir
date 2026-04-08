@@ -732,6 +732,30 @@ describe('responseHandled (SSE)', () => {
             await kill();
         }
     });
+
+    it('preserves CORS headers on hijacked responses', async () => {
+        const port =
+            4500 +
+            randomInteger({
+                min: 0,
+                max: 4000,
+            });
+        const {fetchEndpoint, kill} = await testService(sseService, {
+            port,
+        });
+
+        try {
+            const response = await fetchEndpoint['/sse-stream']();
+
+            assert.strictEquals(response.headers.get('access-control-allow-origin'), '*');
+            assert.strictEquals(
+                response.headers.get('access-control-expose-headers'),
+                restVirServiceNameHeader,
+            );
+        } finally {
+            await kill();
+        }
+    });
 });
 
 const sseServiceWithPostHook = implementService({
