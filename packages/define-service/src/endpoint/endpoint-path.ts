@@ -52,7 +52,54 @@ export type GenericPathParams = {
 };
 
 /**
+ * Resolves the wildcard portion of path params. Extracted to avoid re-evaluating `HasWildcardParam`
+ * multiple times inside {@link ConstructPathParams}.
+ *
+ * @category Internal
+ * @category Package : @rest-vir/define-service
+ * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
+ */
+export type ResolveWildcard<HasWildcard extends boolean> = [HasWildcard] extends [true]
+    ? Readonly<{
+          wildcard: string;
+      }>
+    : [HasWildcard] extends [false]
+      ? Readonly<{
+            wildcard?: undefined;
+        }>
+      : Readonly<{
+            wildcard?: string | undefined;
+        }>;
+
+/**
+ * Resolves the pathParams portion of path params. Extracted to avoid re-evaluating
+ * `NamedPathParams` multiple times inside {@link ConstructPathParams}.
+ *
+ * Tuple wrapping (`[Named] extends [string]`) prevents distributive conditional behavior so that a
+ * union like `'a' | 'b'` produces a single `Record<'a' | 'b', string>` instead of `Record<'a',
+ * string> | Record<'b', string>`.
+ *
+ * @category Internal
+ * @category Package : @rest-vir/define-service
+ * @package [`@rest-vir/define-service`](https://www.npmjs.com/package/@rest-vir/define-service)
+ */
+export type ResolveNamedParams<Named extends string> =
+    IsNever<Named> extends true
+        ? Readonly<{
+              pathParams?: undefined;
+          }>
+        : [Named] extends [string]
+          ? Readonly<{
+                pathParams: Readonly<Record<Named, string>>;
+            }>
+          : Readonly<{
+                pathParams?: undefined;
+            }>;
+
+/**
  * Converts an endpoint path into the fetch params needed for its to operate.
+ *
+ * Fast-paths simple paths (no `:` or `/*`) to avoid recursive template literal parsing.
  *
  * @category Internal
  * @category Package : @rest-vir/define-service
@@ -61,36 +108,22 @@ export type GenericPathParams = {
 export type ConstructPathParams<EndpointPath extends string | NoParam> =
     EndpointPath extends NoParam
         ? GenericPathParams
-        : (IsEqual<PathParams<Exclude<EndpointPath, NoParam>>['hasWildcard'], true> extends true
-              ? Readonly<{
-                    wildcard: string;
-                }>
-              : IsEqual<
-                      PathParams<Exclude<EndpointPath, NoParam>>['hasWildcard'],
-                      false
-                  > extends true
-                ? Readonly<{
+        : Exclude<EndpointPath, NoParam> extends infer Path extends string
+          ? Path extends `${string}:${string}` | `${string}/*`
+              ? ResolveWildcard<HasWildcardParam<Path>> & ResolveNamedParams<NamedPathParams<Path>>
+              : /**
+                 * Guard against generic pattern types like `/${string}` which don't match the literal param
+                 * patterns above but still need full evaluation.
+                 */
+                IsEqual<`/${string}`, Path> extends true
+                ? ResolveWildcard<HasWildcardParam<Path>> &
+                      ResolveNamedParams<NamedPathParams<Path>>
+                : /** Fast path: concrete literal with no `:param` or `/*` segments. */
+                  Readonly<{
                       wildcard?: undefined;
+                      pathParams?: undefined;
                   }>
-                : Readonly<{
-                      wildcard?: string | undefined;
-                  }>) &
-              (IsNever<PathParams<Exclude<EndpointPath, NoParam>>['namedParams']> extends true
-                  ? Readonly<{
-                        pathParams?: undefined;
-                    }>
-                  : PathParams<Exclude<EndpointPath, NoParam>>['namedParams'] extends string
-                    ? Readonly<{
-                          pathParams: Readonly<
-                              Record<
-                                  PathParams<Exclude<EndpointPath, NoParam>>['namedParams'],
-                                  string
-                              >
-                          >;
-                      }>
-                    : Readonly<{
-                          pathParams?: undefined;
-                      }>);
+          : GenericPathParams;
 
 /**
  * Base requirement for endpoint paths.

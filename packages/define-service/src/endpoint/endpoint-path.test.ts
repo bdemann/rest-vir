@@ -1,6 +1,10 @@
 import {assert} from '@augment-vir/assert';
 import {describe, it, itCases} from '@augment-vir/test';
-import {assertValidEndpointPath, type PathParams} from './endpoint-path.js';
+import {
+    assertValidEndpointPath,
+    type ConstructPathParams,
+    type PathParams,
+} from './endpoint-path.js';
 
 describe('PathParams', () => {
     it('extracts named params', () => {
@@ -26,6 +30,47 @@ describe('PathParams', () => {
             namedParams: never;
             hasWildcard: false;
         }>();
+    });
+});
+
+describe('ConstructPathParams', () => {
+    it('returns optional params for simple paths', () => {
+        assert.tsType<ConstructPathParams<'/my-path'>>().equals<
+            Readonly<{
+                wildcard?: undefined;
+                pathParams?: undefined;
+            }>
+        >();
+    });
+    it('returns required pathParams for named params', () => {
+        assert.tsType<ConstructPathParams<'/my-path/:id'>>().equals<
+            Readonly<{
+                wildcard?: undefined;
+            }> &
+                Readonly<{
+                    pathParams: Readonly<Record<'id', string>>;
+                }>
+        >();
+    });
+    it('returns required wildcard and pathParams for combined paths', () => {
+        assert.tsType<ConstructPathParams<'/my-path/:hello/something/:derp/*'>>().equals<
+            Readonly<{
+                wildcard: string;
+            }> &
+                Readonly<{
+                    pathParams: Readonly<Record<'hello' | 'derp', string>>;
+                }>
+        >();
+    });
+    it('returns required wildcard for wildcard-only paths', () => {
+        assert.tsType<ConstructPathParams<'/my-path/*'>>().equals<
+            Readonly<{
+                wildcard: string;
+            }> &
+                Readonly<{
+                    pathParams?: undefined;
+                }>
+        >();
     });
 });
 
