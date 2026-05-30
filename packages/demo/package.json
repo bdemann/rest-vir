@@ -1,0 +1,46 @@
+{
+    "name": "@rest-vir/demo",
+    "version": "2.0.0",
+    "private": true,
+    "homepage": "https://github.com/electrovir/rest-vir",
+    "bugs": {
+        "url": "https://github.com/electrovir/rest-vir/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/electrovir/rest-vir.git"
+    },
+    "license": "(MIT or CC0 1.0)",
+    "author": {
+        "name": "electrovir",
+        "url": "https://github.com/electrovir"
+    },
+    "type": "module",
+    "scripts": {
+        "compile": "virmator compile",
+        "start": "runstorm --colors green,blue --names backend,frontend \"npm run start:backend\" \"npm run start:frontend\"",
+        "start:backend": "tsx --watch src/server/demo-server.script.ts",
+        "start:frontend": "virmator frontend",
+        "test": "exit 0",
+        "test:coverage": "npm test",
+        "test:docs": "exit 0"
+    },
+    "dependencies": {
+        "@augment-vir/assert": "^31.71.0",
+        "@augment-vir/common": "^31.71.0",
+        "@fastify/multipart": "^10.0.0",
+        "@rest-vir/api": "*",
+        "@rest-vir/host": "*",
+        "element-vir": "^26.16.0",
+        "object-shape-tester": "^6.12.1",
+        "type-fest": "^5.6.0",
+        "vira": "^31.18.1"
+    },
+    "devDependencies": {
+        "typescript": "^5.9.3",
+        "vite": "^8.0.13"
+    },
+    "engines": {
+        "node": ">=22"
+    }
+}

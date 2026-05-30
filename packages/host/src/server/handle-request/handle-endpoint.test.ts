@@ -1,0 +1,709 @@
+import {assert} from '@augment-vir/assert';
+import {type AnyObject, HttpMethod, HttpStatus} from '@augment-vir/common';
+import {describe, it} from '@augment-vir/test';
+import {defineApi, defineEndpoint} from '@rest-vir/api';
+import {defineShape, exactShape} from 'object-shape-tester';
+import {type EndpointImplementation} from '../../implementation/implement-endpoint.js';
+import {
+    type RunningServerInfo,
+    type ServerRequest,
+    type ServerResponse,
+} from '../../implementation/raw-route-data.js';
+import {silentServerLogger} from '../../implementation/server-logger.js';
+import {handleEndpointRequest} from './handle-endpoint.js';
+
+const endpointDefinition = defineEndpoint({
+    path: '/example',
+    requests: {
+        [HttpMethod.Get]: {
+            responses: {
+                [HttpStatus.Ok]: {
+                    responseData: undefined,
+                },
+            },
+        },
+    },
+});
+
+const api = defineApi({
+    apiName: 'handle-endpoint test api',
+    endpoints: [endpointDefinition],
+    webSockets: [],
+});
+
+describe(handleEndpointRequest.name, () => {
+    it('throws when the api implementation is missing a definition for the dispatched method', async () => {
+        /**
+         * Forge an implementation that has POST but the definition only declares GET. The api type
+         * system pairs methods between implementation and definition, so this case can only happen
+         * when something bypasses those types. Verifying the runtime guard fires anyway.
+         */
+        const forgedImplementation: EndpointImplementation = {
+            path: endpointDefinition.path,
+            isEndpoint: true,
+            isWebSocket: false,
+            definition: endpointDefinition,
+            implementation: {
+                [HttpMethod.Post]: () => ({
+                    [HttpStatus.Ok]: {
+                        responseData: undefined,
+                    },
+                }),
+            },
+        };
+
+        await assert.throws(
+            async () =>
+                await handleEndpointRequest({
+                    endpoint: forgedImplementation,
+                    request: {
+                        method: HttpMethod.Post,
+                        originalUrl: '/example',
+                        params: {},
+                        headers: {},
+                        restVirContext: {
+                            attach: {
+                                context: undefined,
+                                requestData: undefined,
+                                searchParams: {},
+                                protocols: [],
+                            },
+                        },
+                    } as AnyObject as ServerRequest,
+                    response: {} as ServerResponse,
+                    attachId: 'attach',
+                    server: {} as RunningServerInfo,
+                    serverLogger: silentServerLogger,
+                    api,
+                }),
+            {
+                matchMessage: `No definition found for method '${HttpMethod.Post}'`,
+            },
+        );
+    });
+
+    it('accepts a string body on an undeclared error status', async () => {
+        /**
+         * `DefaultErrorResponseType` (`undefined | string`) is the contract for error statuses that
+         * the endpoint definition did not explicitly declare a `responses[Status]` entry for. The
+         * type system allows it, so the runtime must too.
+         */
+        const undeclaredErrorImpl: EndpointImplementation = {
+            path: endpointDefinition.path,
+            isEndpoint: true,
+            isWebSocket: false,
+            definition: endpointDefinition,
+            implementation: {
+                [HttpMethod.Get]: () => ({
+                    [HttpStatus.BadRequest]: {
+                        responseData: 'Please enter a question.',
+                    },
+                }),
+            },
+        };
+
+        const handled = await handleEndpointRequest({
+            endpoint: undeclaredErrorImpl,
+            request: {
+                method: HttpMethod.Get,
+                originalUrl: '/example',
+                params: {},
+                headers: {},
+                restVirContext: {
+                    attach: {
+                        context: undefined,
+                        requestData: undefined,
+                        searchParams: {},
+                        protocols: [],
+                    },
+                },
+            } as AnyObject as ServerRequest,
+            response: {} as ServerResponse,
+            attachId: 'attach',
+            server: {} as RunningServerInfo,
+            serverLogger: silentServerLogger,
+            api,
+        });
+
+        assert.deepEquals(handled, {
+            statusCode: HttpStatus.BadRequest,
+            body: 'Please enter a question.',
+            headers: {
+                'content-type': 'text/plain',
+            },
+        });
+    });
+
+    it('accepts an undefined body on an undeclared error status', async () => {
+        /**
+         * `DefaultErrorResponseType` is `undefined | string`. The undefined half of the union must
+         * round-trip the same way the string half does — an undeclared 4xx status with
+         * `responseData: undefined` should produce the corresponding status code with an empty
+         * body, not throw.
+         */
+        const undefinedErrorImpl: EndpointImplementation = {
+            path: endpointDefinition.path,
+            isEndpoint: true,
+            isWebSocket: false,
+            definition: endpointDefinition,
+            implementation: {
+                [HttpMethod.Get]: () => ({
+                    [HttpStatus.BadRequest]: {
+                        responseData: undefined,
+                    },
+                }),
+            },
+        };
+
+        const handled = await handleEndpointRequest({
+            endpoint: undefinedErrorImpl,
+            request: {
+                method: HttpMethod.Get,
+                originalUrl: '/example',
+                params: {},
+                headers: {},
+                restVirContext: {
+                    attach: {
+                        context: undefined,
+                        requestData: undefined,
+                        searchParams: {},
+                        protocols: [],
+                    },
+                },
+            } as AnyObject as ServerRequest,
+            response: {} as ServerResponse,
+            attachId: 'attach',
+            server: {} as RunningServerInfo,
+            serverLogger: silentServerLogger,
+            api,
+        });
+
+        assert.deepEquals(handled, {
+            statusCode: HttpStatus.BadRequest,
+            body: undefined,
+            headers: {
+                'content-type': 'text/plain',
+            },
+        });
+    });
+
+    it('rejects a non-string body on an undeclared error status', async () => {
+        /**
+         * `DefaultErrorResponseType` only allows `undefined | string`. An object body for an
+         * undeclared error status violates the contract and must still throw.
+         */
+        const nonStringErrorImpl: EndpointImplementation = {
+            path: endpointDefinition.path,
+            isEndpoint: true,
+            isWebSocket: false,
+            definition: endpointDefinition,
+            implementation: {
+                [HttpMethod.Get]: () =>
+                    ({
+                        [HttpStatus.BadRequest]: {
+                            responseData: {
+                                error: 'object body is not allowed for undeclared error statuses',
+                            },
+                        },
+                    }) as never,
+            },
+        };
+
+        await assert.throws(
+            async () =>
+                await handleEndpointRequest({
+                    endpoint: nonStringErrorImpl,
+                    request: {
+                        method: HttpMethod.Get,
+                        originalUrl: '/example',
+                        params: {},
+                        headers: {},
+                        restVirContext: {
+                            attach: {
+                                context: undefined,
+                                requestData: undefined,
+                                searchParams: {},
+                                protocols: [],
+                            },
+                        },
+                    } as AnyObject as ServerRequest,
+                    response: {} as ServerResponse,
+                    attachId: 'attach',
+                    server: {} as RunningServerInfo,
+                    serverLogger: silentServerLogger,
+                    api,
+                }),
+            {
+                matchMessage: 'Got response data but none was expected.',
+            },
+        );
+    });
+
+    it('rejects a body on an undeclared success status', async () => {
+        /**
+         * `undefined | string` is the default only for `ErrorHttpStatus`. A success status (e.g.
+         * 202 Accepted) that wasn't declared must still reject any `responseData`, since success
+         * statuses have no default response type.
+         */
+        const undeclaredSuccessImpl: EndpointImplementation = {
+            path: endpointDefinition.path,
+            isEndpoint: true,
+            isWebSocket: false,
+            definition: endpointDefinition,
+            implementation: {
+                [HttpMethod.Get]: () =>
+                    ({
+                        [HttpStatus.Accepted]: {
+                            responseData: 'string body is not allowed for undeclared success',
+                        },
+                    }) as never,
+            },
+        };
+
+        await assert.throws(
+            async () =>
+                await handleEndpointRequest({
+                    endpoint: undeclaredSuccessImpl,
+                    request: {
+                        method: HttpMethod.Get,
+                        originalUrl: '/example',
+                        params: {},
+                        headers: {},
+                        restVirContext: {
+                            attach: {
+                                context: undefined,
+                                requestData: undefined,
+                                searchParams: {},
+                                protocols: [],
+                            },
+                        },
+                    } as AnyObject as ServerRequest,
+                    response: {} as ServerResponse,
+                    attachId: 'attach',
+                    server: {} as RunningServerInfo,
+                    serverLogger: silentServerLogger,
+                    api,
+                }),
+            {
+                matchMessage: 'Got response data but none was expected.',
+            },
+        );
+    });
+
+    it('rejects falsy response data when no body is expected', async () => {
+        const falsyDataImplementation: EndpointImplementation = {
+            path: endpointDefinition.path,
+            isEndpoint: true,
+            isWebSocket: false,
+            definition: endpointDefinition,
+            implementation: {
+                [HttpMethod.Get]: () =>
+                    ({
+                        [HttpStatus.Ok]: {
+                            responseData: false,
+                        },
+                    }) as never,
+            },
+        };
+
+        await assert.throws(
+            async () =>
+                await handleEndpointRequest({
+                    endpoint: falsyDataImplementation,
+                    request: {
+                        method: HttpMethod.Get,
+                        originalUrl: '/example',
+                        params: {},
+                        headers: {},
+                        restVirContext: {
+                            attach: {
+                                context: undefined,
+                                requestData: undefined,
+                                searchParams: {},
+                                protocols: [],
+                            },
+                        },
+                    } as AnyObject as ServerRequest,
+                    response: {} as ServerResponse,
+                    attachId: 'attach',
+                    server: {} as RunningServerInfo,
+                    serverLogger: silentServerLogger,
+                    api,
+                }),
+            {
+                matchMessage: 'Got response data but none was expected.',
+            },
+        );
+    });
+
+    it('JSON-encodes a string body on a declared application/json response', async () => {
+        /**
+         * Fastify treats string bodies as pre-serialized JSON when `content-type` is
+         * `application/json` — sending the raw string `'hello'` over the wire as `application/json`
+         * produces an invalid JSON document. The framework must JSON-encode the string itself so
+         * the wire body is a well-formed JSON string literal (`"hello"`).
+         */
+        const stringResponseEndpoint = defineEndpoint({
+            path: '/string-response',
+            requests: {
+                [HttpMethod.Get]: {
+                    responses: {
+                        [HttpStatus.Ok]: {
+                            responseData: defineShape(''),
+                        },
+                    },
+                },
+            },
+        });
+        const stringResponseApi = defineApi({
+            apiName: 'string-response test api',
+            endpoints: [stringResponseEndpoint],
+            webSockets: [],
+        });
+        const stringResponseImpl: EndpointImplementation = {
+            path: stringResponseEndpoint.path,
+            isEndpoint: true,
+            isWebSocket: false,
+            definition: stringResponseEndpoint,
+            implementation: {
+                [HttpMethod.Get]: () => ({
+                    [HttpStatus.Ok]: {
+                        responseData: 'hello',
+                    },
+                }),
+            },
+        };
+
+        const handled = await handleEndpointRequest({
+            endpoint: stringResponseImpl,
+            request: {
+                method: HttpMethod.Get,
+                originalUrl: '/string-response',
+                params: {},
+                headers: {},
+                restVirContext: {
+                    attach: {
+                        context: undefined,
+                        requestData: undefined,
+                        searchParams: {},
+                        protocols: [],
+                    },
+                },
+            } as AnyObject as ServerRequest,
+            response: {} as ServerResponse,
+            attachId: 'attach',
+            server: {} as RunningServerInfo,
+            serverLogger: silentServerLogger,
+            api: stringResponseApi,
+        });
+
+        assert.deepEquals(handled, {
+            statusCode: HttpStatus.Ok,
+            body: '"hello"',
+            headers: {
+                'content-type': 'application/json',
+            },
+        });
+    });
+
+    it('JSON-encodes string bodies for JSON suffix content types', async () => {
+        const stringResponseEndpoint = defineEndpoint({
+            path: '/string-json-suffix',
+            requests: {
+                [HttpMethod.Get]: {
+                    responses: {
+                        [HttpStatus.Ok]: {
+                            responseData: defineShape(''),
+                        },
+                    },
+                },
+            },
+        });
+        const stringResponseApi = defineApi({
+            apiName: 'string-json-suffix test api',
+            endpoints: [stringResponseEndpoint],
+            webSockets: [],
+        });
+        const stringResponseImpl: EndpointImplementation = {
+            path: stringResponseEndpoint.path,
+            isEndpoint: true,
+            isWebSocket: false,
+            definition: stringResponseEndpoint,
+            implementation: {
+                [HttpMethod.Get]: () => ({
+                    [HttpStatus.Ok]: {
+                        responseData: 'hello',
+                        headers: {
+                            'content-type': 'application/vnd.api+json',
+                        },
+                    },
+                }),
+            },
+        };
+
+        const handled = await handleEndpointRequest({
+            endpoint: stringResponseImpl,
+            request: {
+                method: HttpMethod.Get,
+                originalUrl: '/string-json-suffix',
+                params: {},
+                headers: {},
+                restVirContext: {
+                    attach: {
+                        context: undefined,
+                        requestData: undefined,
+                        searchParams: {},
+                        protocols: [],
+                    },
+                },
+            } as AnyObject as ServerRequest,
+            response: {} as ServerResponse,
+            attachId: 'attach',
+            server: {} as RunningServerInfo,
+            serverLogger: silentServerLogger,
+            api: stringResponseApi,
+        });
+
+        assert.deepEquals(handled, {
+            statusCode: HttpStatus.Ok,
+            body: '"hello"',
+            headers: {
+                'content-type': 'application/vnd.api+json',
+            },
+        });
+    });
+
+    it('preserves declared false response data', async () => {
+        const falseResponseEndpoint = defineEndpoint({
+            path: '/false-response',
+            requests: {
+                [HttpMethod.Get]: {
+                    responses: {
+                        [HttpStatus.Ok]: {
+                            responseData: exactShape(false),
+                        },
+                    },
+                },
+            },
+        });
+        const falseResponseApi = defineApi({
+            apiName: 'false-response test api',
+            endpoints: [falseResponseEndpoint],
+            webSockets: [],
+        });
+        const falseResponseImpl: EndpointImplementation = {
+            path: falseResponseEndpoint.path,
+            isEndpoint: true,
+            isWebSocket: false,
+            definition: falseResponseEndpoint,
+            implementation: {
+                [HttpMethod.Get]: () => ({
+                    [HttpStatus.Ok]: {
+                        responseData: false,
+                    },
+                }),
+            },
+        };
+
+        const handled = await handleEndpointRequest({
+            endpoint: falseResponseImpl,
+            request: {
+                method: HttpMethod.Get,
+                originalUrl: '/false-response',
+                params: {},
+                headers: {},
+                restVirContext: {
+                    attach: {
+                        context: undefined,
+                        requestData: undefined,
+                        searchParams: {},
+                        protocols: [],
+                    },
+                },
+            } as AnyObject as ServerRequest,
+            response: {} as ServerResponse,
+            attachId: 'attach',
+            server: {} as RunningServerInfo,
+            serverLogger: silentServerLogger,
+            api: falseResponseApi,
+        });
+
+        assert.deepEquals(handled, {
+            statusCode: HttpStatus.Ok,
+            body: false,
+            headers: {
+                'content-type': 'application/json',
+            },
+        });
+    });
+
+    it('leaves a string body as-is when content-type is explicitly text/plain', async () => {
+        /**
+         * The JSON-encoding policy only applies to `application/json`. When an implementation
+         * explicitly sets `content-type: text/plain` (or any other non-JSON content-type), the
+         * string body must be sent raw.
+         */
+        const stringResponseEndpoint = defineEndpoint({
+            path: '/string-text',
+            requests: {
+                [HttpMethod.Get]: {
+                    responses: {
+                        [HttpStatus.Ok]: {
+                            responseData: defineShape(''),
+                        },
+                    },
+                },
+            },
+        });
+        const stringResponseApi = defineApi({
+            apiName: 'string-text test api',
+            endpoints: [stringResponseEndpoint],
+            webSockets: [],
+        });
+        const stringResponseImpl: EndpointImplementation = {
+            path: stringResponseEndpoint.path,
+            isEndpoint: true,
+            isWebSocket: false,
+            definition: stringResponseEndpoint,
+            implementation: {
+                [HttpMethod.Get]: () => ({
+                    [HttpStatus.Ok]: {
+                        responseData: 'hello',
+                        headers: {
+                            'content-type': 'text/plain',
+                        },
+                    },
+                }),
+            },
+        };
+
+        const handled = await handleEndpointRequest({
+            endpoint: stringResponseImpl,
+            request: {
+                method: HttpMethod.Get,
+                originalUrl: '/string-text',
+                params: {},
+                headers: {},
+                restVirContext: {
+                    attach: {
+                        context: undefined,
+                        requestData: undefined,
+                        searchParams: {},
+                        protocols: [],
+                    },
+                },
+            } as AnyObject as ServerRequest,
+            response: {} as ServerResponse,
+            attachId: 'attach',
+            server: {} as RunningServerInfo,
+            serverLogger: silentServerLogger,
+            api: stringResponseApi,
+        });
+
+        assert.deepEquals(handled, {
+            statusCode: HttpStatus.Ok,
+            body: 'hello',
+            headers: {
+                'content-type': 'text/plain',
+            },
+        });
+    });
+
+    it('throws when the implementation returns multiple status entries', async () => {
+        /**
+         * Forge an implementation that returns two status keys at once. The framework's
+         * `RequireExactlyOne` type prevents this in user code; we bypass it to hit the runtime
+         * guard.
+         */
+        const multiStatusImplementation: EndpointImplementation = {
+            path: endpointDefinition.path,
+            isEndpoint: true,
+            isWebSocket: false,
+            definition: endpointDefinition,
+            implementation: {
+                [HttpMethod.Get]: () =>
+                    ({
+                        [HttpStatus.Ok]: {
+                            responseData: undefined,
+                        },
+                        [HttpStatus.Accepted]: {
+                            responseData: undefined,
+                        },
+                    }) as never,
+            },
+        };
+
+        await assert.throws(
+            async () =>
+                await handleEndpointRequest({
+                    endpoint: multiStatusImplementation,
+                    request: {
+                        method: HttpMethod.Get,
+                        originalUrl: '/example',
+                        params: {},
+                        headers: {},
+                        restVirContext: {
+                            attach: {
+                                context: undefined,
+                                requestData: undefined,
+                                searchParams: {},
+                                protocols: [],
+                            },
+                        },
+                    } as AnyObject as ServerRequest,
+                    response: {} as ServerResponse,
+                    attachId: 'attach',
+                    server: {} as RunningServerInfo,
+                    serverLogger: silentServerLogger,
+                    api,
+                }),
+            {
+                matchMessage: 'Expected exactly one status code response key',
+            },
+        );
+    });
+
+    it('throws a clear error when a status response is missing', async () => {
+        const missingStatusResponseImplementation: EndpointImplementation = {
+            path: endpointDefinition.path,
+            isEndpoint: true,
+            isWebSocket: false,
+            definition: endpointDefinition,
+            implementation: {
+                [HttpMethod.Get]: () =>
+                    ({
+                        [HttpStatus.Ok]: undefined,
+                    }) as never,
+            },
+        };
+
+        await assert.throws(
+            async () =>
+                await handleEndpointRequest({
+                    endpoint: missingStatusResponseImplementation,
+                    request: {
+                        method: HttpMethod.Get,
+                        originalUrl: '/example',
+                        params: {},
+                        headers: {},
+                        restVirContext: {
+                            attach: {
+                                context: undefined,
+                                requestData: undefined,
+                                searchParams: {},
+                                protocols: [],
+                            },
+                        },
+                    } as AnyObject as ServerRequest,
+                    response: {} as ServerResponse,
+                    attachId: 'attach',
+                    server: {} as RunningServerInfo,
+                    serverLogger: silentServerLogger,
+                    api,
+                }),
+            {
+                matchMessage: 'Missing status response.',
+            },
+        );
+    });
+});

@@ -1,0 +1,515 @@
+import {assertWrap, check} from '@augment-vir/assert';
+import {
+    HttpStatus,
+    isErrorHttpStatus,
+    mapObject,
+    typedObjectFromEntries,
+    type AnyFunction,
+    type BivariantFunction,
+    type MaybePromise,
+    type RequiredAndNotNull,
+} from '@augment-vir/common';
+import {type OutgoingHttpHeaders} from 'node:http';
+import {assertValidShape} from 'object-shape-tester';
+import {type Constructor} from 'type-fest';
+import {buildUrl} from 'url-vir';
+import {type ApiDefinition} from './api/api.js';
+import {
+    extractEndpointMethodDefinition,
+    type DefaultResponseHeadersType,
+    type DefinableHttpMethod,
+    type EndpointDefinition,
+    type ExtractEndpointMethodDefinition,
+    type ResponseStatusDefinition,
+} from './api/endpoint.js';
+import {
+    buildRoutePath,
+    type ExtractPathParams,
+    type GenericPathParams,
+    type RoutePathDefinition,
+} from './api/path-params.js';
+import {type BaseRoutePath, type RouteSearchParamsType} from './api/route.js';
+import {type WebSocketDefinition} from './api/web-socket.js';
+import {parseJsonWithUndefined} from './augments/json.js';
+import {type SetNullishPropertiesAsOptional} from './augments/object.js';
+import {
+    type ClientFetch,
+    type EndpointFetchParamObject,
+    type EndpointFetchParams,
+} from './endpoint-fetch/endpoint-params.js';
+import {
+    httpStatusToKey,
+    readResponseHeaders,
+    type EndpointFetchOutput,
+    type EndpointFetchStreamOutput,
+    type UnknownFetchOutput,
+} from './endpoint-fetch/endpoint-response.js';
+import {extractRequiredHeaders} from './required-headers.js';
+import {extractSearchParams} from './search-params.js';
+import {isJsonContentType, readHeaderValue} from './util/header-util.js';
+import {type NoParam} from './util/no-param.js';
+import {type CommonWebSocket} from './websocket-connect/common-web-socket.js';
+import {
+    type OverwriteWebSocketMethods,
+    type WebSocketLocation,
+} from './websocket-connect/overwrite-web-socket-types.js';
+import {finalizeClientWebSocket} from './websocket-connect/overwrite-web-socket.js';
+import {assertValidWebSocketProtocols} from './websocket-connect/web-socket-protocols.js';
+import {
+    type WebSocketConnectParamObject,
+    type WebSocketConnectParams,
+    type WebSocketConnectWebSocketConstructor,
+} from './websocket-connect/websocket-params.js';
+
+export class RestVirClient<const ClientApi extends ApiDefinition> {
+    constructor(
+        public readonly api: Readonly<ClientApi>,
+        /** All route paths are joined to this URL. */
+        public baseUrl: string,
+        /** Optional fetch override to wrap or reimplement the native `fetch` function. */
+        public fetchOverride?: ClientFetch | undefined,
+        /**
+         * Optional WebSocket constructor used as the fallback when
+         * {@link RestVirClient.connectWebSocket} is called without an explicit
+         * `webSocketConstructor` param.
+         */
+        public webSocketConstructor?: WebSocketConnectWebSocketConstructor | undefined,
+    ) {}
+
+    /**
+     * Return a method-keyed object for the given endpoint. Each property is a function that runs
+     * the fetch for that specific HTTP method.
+     *
+     * @example
+     *
+     * ```ts
+     * const response = await client.fetch(healthEndpoint).GET();
+     * const created = await client.fetch(usersEndpoint).POST({requestData: ...});
+     * ```
+     */
+    public fetch<const Endpoint extends EndpointDefinition & {path: keyof ClientApi['endpoints']}>(
+        endpoint: Endpoint,
+    ) {
+        return mapObject(endpoint.requests, (method) => {
+            return {
+                key: method,
+                value: async (
+                    ...restParams: EndpointFetchParams<Endpoint, typeof method>
+                ): Promise<EndpointFetchOutput<Endpoint, typeof method>> => {
+                    return (await this.runEndpointRequest(
+                        endpoint satisfies EndpointDefinition as EndpointDefinition,
+                        method,
+                        restParams[0],
+                        async ({response, headers, responseDefinition}) => {
+                            const responseData = await readResponseBodyAsJsonOrText(
+                                response,
+                                headers,
+                            );
+
+                            if (responseDefinition.responseData) {
+                                assertValidShape(
+                                    responseData,
+                                    responseDefinition.responseData,
+                                    {
+                                        allowExtraKeys: true,
+                                    },
+                                    `Response from endpoint '${endpoint.path}' has invalid data.`,
+                                );
+                            } else if (responseData !== undefined) {
+                                throw new Error(
+                                    `Response from endpoint '${endpoint.path}' has unexpectedly present data.`,
+                                );
+                            }
+
+                            return responseData;
+                        },
+                    )) as EndpointFetchOutput<Endpoint, typeof method>;
+                },
+            };
+        }) satisfies Partial<Record<DefinableHttpMethod, AnyFunction>> as {
+            [Method in Extract<
+                keyof NoInfer<Endpoint>['requests'],
+                DefinableHttpMethod
+            >]: BivariantFunction<
+                EndpointFetchParams<NoInfer<Endpoint>, Method>,
+                Promise<EndpointFetchOutput<Endpoint, Method>>
+            >;
+        };
+    }
+
+    /**
+     * Send a request to an endpoint definition and return a `ReadableStream` instead of parsing the
+     * response body. Useful for consuming SSE (Server-Sent Events) endpoints from the frontend.
+     *
+     * Uses the same request-building flow as `.fetch()`, but skips response body and JSON
+     * validation.
+     */
+    public async fetchStream<
+        const Endpoint extends EndpointDefinition & {path: keyof ClientApi['endpoints']},
+        const Method extends Extract<keyof NoInfer<Endpoint>['requests'], DefinableHttpMethod>,
+    >(
+        endpoint: Endpoint,
+        method: Method,
+        ...restParams: EndpointFetchParams<NoInfer<Endpoint>, NoInfer<Method>>
+    ): Promise<EndpointFetchStreamOutput<Endpoint, Method>> {
+        return (await this.runEndpointRequest(endpoint, method, restParams[0], ({response}) => {
+            if (!response.body) {
+                throw new Error(
+                    `Endpoint '${endpoint.path}' returned an ok response with no body to stream.`,
+                );
+            }
+
+            return response.body;
+        })) as EndpointFetchStreamOutput<Endpoint, Method>;
+    }
+
+    /**
+     * Validate that the endpoint is registered, build its request init, send the request, and shape
+     * the response into the status-keyed output. The body of {@link RestVirClient.fetch} and
+     * {@link RestVirClient.fetchStream}; their only divergent step is how they read `responseData`
+     * out of the response.
+     */
+    protected async runEndpointRequest<
+        const Endpoint extends EndpointDefinition & {path: keyof ClientApi['endpoints']},
+        const Method extends Extract<keyof NoInfer<Endpoint>['requests'], DefinableHttpMethod>,
+    >(
+        endpoint: Endpoint,
+        method: Method,
+        params: EndpointFetchParamObject | undefined,
+        getResponseData: (params: {
+            response: Response;
+            status: HttpStatus;
+            headers: DefaultResponseHeadersType;
+            responseDefinition: ResponseStatusDefinition;
+        }) => MaybePromise<unknown>,
+    ): Promise<Record<string, UnknownFetchOutput>> {
+        if (!check.hasKey(this.api.endpoints, endpoint.path)) {
+            throw new Error(`Cannot fetch: this api has no '${endpoint.path}' endpoint.`);
+        }
+
+        const endpointMethodDefinition = assertWrap.isDefined(
+            extractEndpointMethodDefinition(endpoint, method),
+            `Endpoint '${endpoint.path}' does not support method '${method}'.`,
+        );
+
+        const {requestInit, url} = this.buildEndpointRequestInit(
+            endpoint,
+            method,
+            params satisfies EndpointFetchParamObject | undefined as
+                | EndpointFetchParamObject<NoInfer<Endpoint>, NoInfer<Method>>
+                | undefined,
+        );
+
+        const response = await (params?.fetchOverride || this.fetchOverride || fetch)(
+            url,
+            requestInit,
+            endpoint,
+        );
+
+        const status = assertWrap.isEnumValue(
+            response.status,
+            HttpStatus,
+            `Received unexpected HTTP status from '${endpoint.path}': ${response.status}`,
+        );
+        const responseDefinition = endpointMethodDefinition.responses[status];
+        const headers = readResponseHeaders(response.headers);
+
+        if (!responseDefinition) {
+            if (isErrorHttpStatus(status)) {
+                const errorResponseData = await readResponseBodyAsText(response);
+
+                return {
+                    unexpectedError: {
+                        status,
+                        responseData: errorResponseData,
+                        headers,
+                        response,
+                    },
+                } satisfies Pick<
+                    RequiredAndNotNull<EndpointFetchOutput<Endpoint, Method>>,
+                    'unexpectedError'
+                > as EndpointFetchOutput<Endpoint, Method>;
+            } else {
+                throw new Error(
+                    `Received unexpected successful response status from '${endpoint.path}': ${status}`,
+                );
+            }
+        }
+
+        const responseData = await getResponseData({
+            response,
+            status,
+            headers,
+            responseDefinition,
+        });
+
+        const outputKey = httpStatusToKey[status];
+
+        return {
+            [outputKey]: {
+                status,
+                headers,
+                response,
+                responseData: responseData as any,
+            },
+        };
+    }
+
+    /**
+     * @throws Error if given searchParams or pathParams are invalid for the given endpoint or path
+     *   (respectively).
+     */
+    public buildEndpointUrl<
+        const Endpoint extends EndpointDefinition & {path: keyof ClientApi['endpoints']},
+        const Method extends Extract<keyof NoInfer<Endpoint>['requests'], DefinableHttpMethod>,
+    >(
+        endpoint: Endpoint,
+        method: Method,
+        params: Readonly<
+            SetNullishPropertiesAsOptional<{
+                searchParams: RouteSearchParamsType<
+                    ExtractEndpointMethodDefinition<NoInfer<Endpoint>, NoInfer<Method>>
+                >;
+                pathParams: ExtractPathParams<NoInfer<Endpoint>['path']>;
+            }>
+        >,
+    ) {
+        const genericParams: Readonly<
+            SetNullishPropertiesAsOptional<{
+                searchParams: RouteSearchParamsType;
+                pathParams: ExtractPathParams;
+            }>
+        > = params;
+
+        const endpointMethod = extractEndpointMethodDefinition(endpoint, method);
+
+        if (!endpointMethod) {
+            throw new Error(`Method '${method}' does not exist on endpoint '${endpoint.path}'.`);
+        }
+
+        const searchParams = extractSearchParams(
+            endpointMethod.searchParams,
+            genericParams.searchParams,
+        );
+
+        const pathname = buildRoutePath(
+            endpoint satisfies RoutePathDefinition as RoutePathDefinition,
+            {
+                pathParams:
+                    genericParams.pathParams satisfies GenericPathParams as ExtractPathParams<BaseRoutePath>,
+            },
+        );
+
+        const builtUrl = buildUrl(this.baseUrl, {
+            search: searchParams,
+            pathname,
+        }).href;
+
+        return builtUrl;
+    }
+
+    /** @throws Error if the given params are invalid for the given endpoint. */
+    public buildEndpointRequestInit<
+        const Endpoint extends EndpointDefinition & {path: keyof ClientApi['endpoints']},
+        const Method extends Extract<keyof NoInfer<Endpoint>['requests'], DefinableHttpMethod>,
+    >(
+        endpoint: Endpoint,
+        method: Method,
+        params: EndpointFetchParamObject<NoInfer<Endpoint>, NoInfer<Method>> | undefined,
+    ) {
+        const genericParams: EndpointFetchParamObject | undefined = params;
+        const endpointMethod = extractEndpointMethodDefinition(endpoint, method);
+
+        if (!endpointMethod) {
+            throw new Error(`Method '${method}' does not exist on endpoint '${endpoint.path}'.`);
+        }
+
+        const requiredHeaders = extractRequiredHeaders(
+            endpoint.path,
+            endpointMethod.requiredRequestHeaders,
+            genericParams?.requiredHeaders,
+        );
+        const hasRequestData =
+            !!genericParams &&
+            'requestData' in genericParams &&
+            genericParams.requestData !== undefined;
+
+        const optionsHeaders: OutgoingHttpHeaders & Record<string, string> = mapObject(
+            genericParams?.options?.headers instanceof Headers
+                ? typedObjectFromEntries(Array.from(genericParams.options.headers.entries()))
+                : check.isArray(genericParams?.options?.headers)
+                  ? typedObjectFromEntries(genericParams.options.headers)
+                  : genericParams?.options?.headers || {},
+            (key, value) => {
+                return {
+                    key: key.toLowerCase(),
+                    value,
+                };
+            },
+        );
+
+        const allHeaders: OutgoingHttpHeaders & Record<string, string> = {
+            ...optionsHeaders,
+            ...requiredHeaders,
+        };
+
+        if (!allHeaders['content-type']) {
+            if (
+                genericParams?.requestData instanceof FormData ||
+                genericParams?.skipAutomaticContentTypeHeader
+            ) {
+                /**
+                 * Do not automatically set `content-type` when submitting form data because `fetch`
+                 * will set it automatically _and_ include a boundary in the content type, which is
+                 * needed for reading the form data properly.
+                 */
+            } else if (hasRequestData) {
+                /** By default, set content type as json. */
+                allHeaders['content-type'] = 'application/json';
+            }
+        }
+
+        const shouldStringify: boolean = !!allHeaders['content-type']?.match(/\bjson\b/i);
+
+        const url = this.buildEndpointUrl(
+            endpoint,
+            method,
+            (genericParams || {}) satisfies Readonly<
+                SetNullishPropertiesAsOptional<{
+                    searchParams: RouteSearchParamsType;
+                    pathParams: ExtractPathParams;
+                }>
+            > as Readonly<
+                SetNullishPropertiesAsOptional<{
+                    searchParams: RouteSearchParamsType<
+                        ExtractEndpointMethodDefinition<NoInfer<Endpoint>, NoInfer<Method>>
+                    >;
+                    pathParams: ExtractPathParams<NoInfer<Endpoint>['path']>;
+                }>
+            >,
+        );
+
+        const requestInit: RequestInit = {
+            ...genericParams?.options,
+            headers: allHeaders,
+            method,
+            ...(hasRequestData
+                ? shouldStringify
+                    ? {
+                          body: JSON.stringify(genericParams.requestData),
+                      }
+                    : {
+                          body: genericParams.requestData,
+                      }
+                : {}),
+        };
+
+        return {
+            url,
+            requestInit,
+        };
+    }
+    public async connectWebSocket<
+        const ThisWebSocket extends WebSocketDefinition & {path: keyof ClientApi['webSockets']},
+        WebSocketClass extends CommonWebSocket,
+    >(
+        webSocket: ThisWebSocket,
+        ...restParams: WebSocketConnectParams<NoInfer<ThisWebSocket>, WebSocketClass>
+    ) {
+        const params: WebSocketConnectParamObject | undefined = restParams[0];
+
+        assertValidWebSocketProtocols(params?.protocols, webSocket);
+
+        const url = this.buildWebSocketUrl(
+            webSocket,
+            params satisfies WebSocketConnectParamObject | undefined as
+                | WebSocketConnectParamObject<NoInfer<ThisWebSocket>, WebSocketClass>
+                | undefined,
+        );
+
+        const webSocketConstructor: Constructor<WebSocketClass> = (params?.webSocketConstructor ||
+            this.webSocketConstructor ||
+            defaultWebSocket) as Constructor<WebSocketClass>;
+
+        const clientWebSocket: OverwriteWebSocketMethods<
+            WebSocketClass,
+            WebSocketLocation.OnClient,
+            ThisWebSocket
+        > = await finalizeClientWebSocket<ThisWebSocket, WebSocketClass>(
+            webSocket,
+            new webSocketConstructor(url, params?.protocols, webSocket),
+            params?.listeners,
+        );
+
+        return clientWebSocket;
+    }
+
+    public buildWebSocketUrl<
+        const ThisWebSocket extends
+            | (WebSocketDefinition & {path: keyof ClientApi['webSockets']})
+            | NoParam = NoParam,
+        WebSocketClass extends CommonWebSocket | NoParam = NoParam,
+    >(
+        webSocket: ThisWebSocket,
+        webSocketParams:
+            | WebSocketConnectParamObject<NoInfer<ThisWebSocket>, WebSocketClass>
+            | undefined,
+    ) {
+        const params: WebSocketConnectParamObject | undefined = webSocketParams;
+        const genericWebSocket = webSocket as WebSocketDefinition;
+
+        const searchParams = extractSearchParams(
+            genericWebSocket.searchParams,
+            params?.searchParams,
+        );
+        const pathname = buildRoutePath(genericWebSocket, {
+            pathParams: params?.pathParams satisfies GenericPathParams as ExtractPathParams<
+                typeof genericWebSocket.path
+            >,
+        });
+        const httpUrl = buildUrl(this.baseUrl, {
+            search: searchParams,
+            pathname,
+        }).href;
+
+        return buildUrl(httpUrl, {
+            protocol: httpUrl.startsWith('https') ? 'wss' : 'ws',
+        }).href;
+    }
+}
+
+/**
+ * Read the response body as text, then JSON-parse it if the response advertises a JSON
+ * `content-type`. Falls back to the raw text when JSON parsing yields nothing.
+ */
+export async function readResponseBodyAsJsonOrText(
+    response: Readonly<Response>,
+    headers: DefaultResponseHeadersType,
+): Promise<unknown> {
+    const responseText = await readResponseBodyAsText(response);
+
+    /**
+     * `readHeaderValue` always returns an array. Check whether _any_ entry's content-type string
+     * contains `json` — covers both single-valued (typical) and the rare multi-valued case.
+     */
+    const hasJsonContentType = readHeaderValue(headers, 'content-type').some(isJsonContentType);
+
+    const parsed: unknown =
+        hasJsonContentType && responseText ? parseJsonWithUndefined(responseText) : undefined;
+
+    return parsed === undefined ? responseText : parsed;
+}
+
+async function readResponseBodyAsText(response: Readonly<Response>) {
+    return (await response.clone().text()) || undefined;
+}
+
+const defaultWebSocket = function (
+    this: any,
+    ...[
+        url,
+        protocols,
+    ]: ConstructorParameters<WebSocketConnectWebSocketConstructor>
+): WebSocket {
+    return new globalThis.WebSocket(url, protocols);
+} as unknown as WebSocketConnectWebSocketConstructor;

@@ -1,196 +1,276 @@
 # rest-vir
 
-`rest-vir` is a collection of packages that allows you to define your own REST service with round-trip type safe endpoints and WebSockets. It also includes the following features:
+`rest-vir` is a TypeScript-first toolkit for defining, hosting, calling, and testing REST endpoints and WebSockets from one shared API definition.
 
--   a single source of truth for shipped API documentation and types
--   browser-friendly API exports _without any build steps_
--   type safe endpoint fetching and WebSocket messaging both in clients (browsers) and hosts (servers)
--   separate server implementations to keep browser code and server code separate
--   automatic API entry point that can be shipped to internal and external users
--   extensive testing utilities for both frontend and backend unit and integration testing
+-   `@rest-vir/api`: define your API contract, create typed clients, and mock hosts in tests.
+-   `@rest-vir/host`: implement and run that API on Fastify.
+-   `@rest-vir/large-api-mock`: private stress-test package for TypeScript performance.
 
-See the full reference docs at https://electrovir.github.io/rest-vir
+See the full reference docs at https://electrovir.github.io/rest-vir.
 
-## Usage
+For a working package example, see
+[`packages/demo`](https://github.com/electrovir/rest-vir/tree/dev/packages/demo) on GitHub.
 
-1. [Define a service](#service-definition)
-2. [Implement a service](#service-implementation)
-3. [Run a service](#start-service)
-4. [Connect to the service in your client (frontend)](#client-frontend-connection)
-5. [Export an api](#export-an-api)
+> Migrating from the previously published `@rest-vir/define-service`, `@rest-vir/implement-service`, or `@rest-vir/run-service` packages? See [`MIGRATION.md`](./MIGRATION.md).
 
-### Service Definition
+## Install
 
-In code shared between your frontend and backend, install `npm i @rest-vir/define-service` and then define your service:
+Install the definition and client package wherever the API contract or client is used:
 
-```TypeScript
-import {AnyOrigin, defineService, HttpMethod} from '@rest-vir/define-service';
-
-export const myService = defineService({
-    /** The name of your service. This will be visible to all consumers of this service definition. */
-    serviceName: 'my-service',
-    /**
-     * The origin at which the service will be hosted. Fetch requests and WebSocket connections will
-     * be sent to this service will be sent to this origin.
-     *
-     * It is recommended to use a ternary to switch between dev and prod origins.
-     */
-    serviceOrigin: isDev ? 'http://localhost:3000' : 'https://example.com',
-    /**
-     * The service's `origin` requirement for all endpoint requests and WebSocket connections. This
-     * is used for CORS handshakes.
-     *
-     * This can be a string, a RegExp, a function, or an array of any of those. (If this is an
-     * array, the first matching array element will be used.)
-     *
-     * Set this to `AnyOrigin` (imported from `'@rest-vir/define-service'`) to allow any origins.
-     * Make sure that you're okay with the security impact this may have on your users of doing so.
-     */
-    requiredClientOrigin: AnyOrigin,
-    endpoints: {
-        '/my-endpoint': {
-            /** This endpoint requires all requests to contain a string body. */
-            requestDataShape: '',
-            /** This endpoint's response body will always be empty. */
-            responseDataShape: undefined,
-
-            methods: {
-                [HttpMethod.Post]: true,
-            },
-        },
-        /** Express-style path params are allowed. */
-        '/my-endpoint/:user-id': {
-            /** This endpoint expects no request body data. */
-            requestDataShape: undefined,
-            /**
-             * This endpoint will always response with data that matches:
-             *
-             *     {
-             *         username: string,
-             *         firstName: string,
-             *         lastName: string
-             *     }
-             */
-            responseDataShape: {
-                username: '',
-                firstName: '',
-                lastName: '',
-            },
-            methods: {
-                [HttpMethod.Get]: true,
-            },
-            /** Each endpoint may override the service's origin requirement. */
-            requiredClientOrigin: 'https://example.com',
-        },
-    },
-    webSockets: {
-        '/my-web-socket': {
-            /** This WebSocket requires all messages from the client to be a string. */
-            messageFromClientShape: '',
-            /** Same for messages from the host. */
-            messageFromHostShape: '',
-        },
-    },
-});
+```sh
+npm i @rest-vir/api object-shape-tester
 ```
 
-### Service Implementation
+Install the host package in the server project that implements and runs the API:
 
-In your backend code, install `npm i @rest-vir/implement-service` and implement your service endpoints and WebSockets:
+```sh
+npm i @rest-vir/host
+```
+
+`object-shape-tester` is a peer dependency because endpoint request and response data is validated from runtime shapes.
+
+## Quick Start
+
+The normal setup is:
+
+1. Put the shared API definition in code that both the frontend and backend can import.
+2. Implement that definition with `@rest-vir/host`.
+3. Run or attach the Fastify host.
+4. Call the same definition with `RestVirClient` from `@rest-vir/api`.
+
+### Shared API Definition
 
 ```TypeScript
-import {HttpStatus, implementService} from '@rest-vir/implement-service';
+import {defineApi, defineEndpoint, defineWebSocket, HttpMethod, HttpStatus} from '@rest-vir/api';
+import {defineShape} from 'object-shape-tester';
 
-export const myServiceImplementation = implementService(
-    {
-        service: myService,
-    },
-    {
-        endpoints: {
-            '/my-endpoint'() {
-                return {
-                    statusCode: HttpStatus.Ok,
-                };
-            },
-            async '/my-endpoint/:user-id'({pathParams}) {
-                const user = await readUserFromDatabase(pathParams['user-id']);
-
-                return {
-                    statusCode: HttpStatus.Ok,
-                    responseData: user,
-                };
-            },
-        },
-        webSockets: {
-            '/my-web-socket': {
-                message({webSocket}) {
-                    webSocket.send('hi!');
+export const healthEndpoint = defineEndpoint({
+    path: '/health',
+    requests: {
+        [HttpMethod.Get]: {
+            responses: {
+                [HttpStatus.Ok]: {
+                    responseData: defineShape({
+                        status: '',
+                    }),
                 },
             },
         },
     },
-);
-```
-
-### Start service
-
-In your backend code's startup script, install `npm i @rest-vir/run-service` run the service:
-
-```TypeScript
-import {startService} from '@rest-vir/run-service';
-
-await startService(myServiceImplementation, {
-    port: 3000,
-});
-```
-
-You can also attach your service to an existing server:
-
-```TypeScript
-import {myServiceImplementation} from '@rest-vir/implement-service/src/examples/my-service.example.js';
-import fastify from 'fastify';
-import {attachService} from '../index.js';
-
-const server = fastify();
-
-await attachService(server, myServiceImplementation);
-
-await server.listen({port: 3000});
-```
-
-### Client (frontend) connection
-
-In your frontend code, you can send fetch requests and WebSocket connections to the service:
-
-```TypeScript
-import {connectWebSocket, fetchEndpoint} from '@rest-vir/define-service';
-
-const response = await fetchEndpoint(myService.endpoints['/my-endpoint'], {
-    /** `requestData` is enforced by `myService`'s types. */
-    requestData: 'hello there',
 });
 
-const webSocket = await connectWebSocket(myService.webSockets['/my-web-socket'], {
-    listeners: {
-        message({
-            /** This `message` is type safe. */
-            message,
-        }) {
-            console.info('message received from server:', message);
+export const createUserEndpoint = defineEndpoint({
+    path: '/users',
+    requests: {
+        [HttpMethod.Post]: {
+            requestData: defineShape({
+                name: '',
+            }),
+            responses: {
+                [HttpStatus.Created]: {
+                    responseData: defineShape({
+                        id: '',
+                        name: '',
+                    }),
+                },
+                [HttpStatus.BadRequest]: {
+                    responseData: defineShape({
+                        message: '',
+                    }),
+                },
+            },
         },
     },
 });
 
-/** `.send()`'s input is enforced by `myService`'s types. */
-webSocket.send('hello there');
+export const notificationsWebSocket = defineWebSocket({
+    path: '/ws/notifications',
+    clientMessage: defineShape({
+        subscribeTo: '',
+    }),
+    hostMessage: defineShape({
+        event: '',
+        message: '',
+    }),
+});
+
+export const myApi = defineApi({
+    apiName: 'my-api',
+    endpoints: [
+        healthEndpoint,
+        createUserEndpoint,
+    ],
+    webSockets: [
+        notificationsWebSocket,
+    ],
+});
 ```
 
-### Export an API
-
-You can publish a wrapped API object with `@rest-vir/define-service`:
+### Server Implementation
 
 ```TypeScript
-import {generateApi} from '@rest-vir/define-service';
+import {AnyOrigin, HttpMethod, HttpStatus} from '@rest-vir/api';
+import {createApiImplementor, implementApi, startApiServer} from '@rest-vir/host';
+import {createUserEndpoint, healthEndpoint, myApi, notificationsWebSocket} from './my-api.js';
 
-export const myApi = generateApi(myService);
+type HostContext = {
+    requestId: string;
+};
+
+const implementor = createApiImplementor<HostContext>()(myApi);
+
+const healthImplementation = implementor.implementEndpoint(healthEndpoint, {
+    [HttpMethod.Get]() {
+        return {
+            [HttpStatus.Ok]: {
+                responseData: {
+                    status: 'ok',
+                },
+            },
+        };
+    },
+});
+
+const createUserImplementation = implementor.implementEndpoint(createUserEndpoint, {
+    async [HttpMethod.Post]({requestData}) {
+        const user = {
+            id: crypto.randomUUID(),
+            name: requestData.name,
+        };
+
+        return {
+            [HttpStatus.Created]: {
+                responseData: user,
+            },
+        };
+    },
+});
+
+const notificationsImplementation = implementor.implementWebSocket(notificationsWebSocket, {
+    message({message, webSocket}) {
+        webSocket.send({
+            event: message.subscribeTo,
+            message: 'Subscribed.',
+        });
+    },
+});
+
+export const myApiImplementation = implementApi<HostContext>()(myApi, {
+    createHostContext() {
+        return {
+            context: {
+                requestId: crypto.randomUUID(),
+            },
+        };
+    },
+    clientOriginRequirement: AnyOrigin,
+    endpoints: [
+        healthImplementation,
+        createUserImplementation,
+    ],
+    webSockets: [
+        notificationsImplementation,
+    ],
+});
+
+const {kill} = await startApiServer(myApiImplementation, {
+    externalOrigin: 'http://localhost:3000',
+    port: 3000,
+    workerCount: 1,
+});
+
+// await kill();
+```
+
+`clientOriginRequirement: AnyOrigin` is convenient for local development. Restrict it in production with an exact origin string, a `RegExp`, or an origin-check callback.
+
+You can also attach to an existing Fastify server:
+
+```TypeScript
+import {attachApi} from '@rest-vir/host';
+import fastify from 'fastify';
+import {myApiImplementation} from './my-api-implementation.js';
+
+const server = fastify();
+
+await attachApi(server, myApiImplementation, {
+    externalOrigin: 'http://localhost:3000',
+});
+
+await server.listen({
+    port: 3000,
+});
+```
+
+### Typed Client
+
+```TypeScript
+import {RestVirClient} from '@rest-vir/api';
+import {createUserEndpoint, healthEndpoint, myApi, notificationsWebSocket} from './my-api.js';
+
+const client = new RestVirClient(myApi, 'https://api.example.com');
+
+const health = await client.fetch(healthEndpoint).GET();
+
+if (health.Ok) {
+    console.info(health.Ok.responseData.status);
+}
+
+const created = await client.fetch(createUserEndpoint).POST({
+    requestData: {
+        name: 'Example User',
+    },
+});
+
+if (created.Created) {
+    console.info(created.Created.responseData.id);
+}
+
+const webSocket = await client.connectWebSocket(notificationsWebSocket, {
+    listeners: {
+        message({message}) {
+            console.info(message.event, message.message);
+        },
+    },
+});
+
+webSocket.send({
+    subscribeTo: 'user-created',
+});
+```
+
+Each `client.fetch(endpoint).METHOD(...)` call returns a status-keyed result such as `Ok`, `Created`, or `BadRequest`. If the server returns an undeclared error status, the result has `unexpectedError` and the response body is exposed as text.
+
+## Core Concepts
+
+Endpoint definitions describe paths, HTTP methods, request data, required request headers, search params, and response data. `defineShape` data is enforced in the client types and validated at runtime.
+
+WebSocket definitions describe the connection path, optional search params, optional protocol requirements, client message shape, and host message shape. Both `.send()` and message listeners are typed from those shapes.
+
+`implementApi` validates that every endpoint and WebSocket declared by `defineApi` has exactly one implementation. Missing or duplicate route implementations fail early.
+
+For better TypeScript performance on large APIs, batch related endpoint or WebSocket definitions together in files. Avoid creating one file per endpoint when an API has many routes.
+
+## Testing
+
+`@rest-vir/api` exports `createMockHost` for frontend and unit tests that need a typed `RestVirClient` without a real server.
+
+`@rest-vir/host` exports `testApi`, `testEndpoint`, `testWebSocket`, `describeApi`, and `condenseResponse` for backend integration tests against real request and response behavior.
+
+## Development
+
+From this monorepo root:
+
+```sh
+npm run init
+npm run format
+npm run test:lint
+npm run compile
+```
+
+Run focused package tests from the package directory:
+
+```sh
+cd packages/api && npm test
+cd packages/host && npm test
 ```
