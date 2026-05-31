@@ -1,11 +1,10 @@
 import {assert} from '@augment-vir/assert';
-import {HttpMethod, HttpStatus} from '@augment-vir/common';
+import {HttpMethod, HttpStatus, omitObjectKeys} from '@augment-vir/common';
 import {describe, it} from '@augment-vir/test';
-import {defineApi, defineEndpoint, restVirApiNameHeader} from '@rest-vir/api';
+import {defineApi, defineEndpoint, headersToObject, restVirApiNameHeader} from '@rest-vir/api';
 import {defineShape} from 'object-shape-tester';
 import {implementApi} from '../../implementation/implement-api.js';
 import {createApiImplementor} from '../../implementation/implementor.js';
-import {condenseResponse} from './test-api.js';
 import {testEndpoint} from './test-endpoint.js';
 
 const emptyEndpoint = defineEndpoint({
@@ -132,10 +131,64 @@ const pathParamsImplementation = implementor.implementEndpoint(pathParamsEndpoin
     },
 });
 
+type StrictHostContext = {
+    prefix: string;
+};
+
+const strictContextImplementor = createApiImplementor<StrictHostContext>()(api);
+
+const strictContextImplementation = strictContextImplementor.implementEndpoint(emptyEndpoint, {
+    [HttpMethod.Get]({context}) {
+        assert.strictEquals(context.prefix, 'strict');
+
+        return {
+            [HttpStatus.Accepted]: {
+                responseData: undefined,
+            },
+        };
+    },
+});
+
 function createTestHostContext() {
     return {
         context: undefined,
     };
+}
+
+function createStrictHostContext() {
+    return {
+        context: {
+            prefix: 'strict',
+        },
+    };
+}
+
+function assertTestEndpointTypes() {
+    void testEndpoint(strictContextImplementation, HttpMethod.Get, createStrictHostContext);
+
+    void testEndpoint(
+        strictContextImplementation,
+        HttpMethod.Get,
+        // @ts-expect-error: createHostContext must match the endpoint implementation context.
+        createTestHostContext,
+    );
+
+    void testEndpoint(echoImplementation, HttpMethod.Post, createTestHostContext, {
+        requestData: {
+            somethingHere: 'hi',
+            // @ts-expect-error: request data must match the endpoint's requestData shape.
+            testValue: 'wrong',
+        },
+    });
+
+    void testEndpoint(pathParamsImplementation, HttpMethod.Get, createTestHostContext, {
+        pathParams: {
+            param1: 'hi',
+            param2: 'bye',
+            // @ts-expect-error: path params must match the endpoint path.
+            wrongParam: 'wild',
+        },
+    });
 }
 
 implementApi<undefined>()(api, {
@@ -152,6 +205,10 @@ implementApi<undefined>()(api, {
 });
 
 describe(testEndpoint.name, () => {
+    it('has type checks', () => {
+        assert.isDefined(assertTestEndpointTypes);
+    });
+
     it('tests a basic endpoint', async () => {
         const response = await testEndpoint(
             emptyImplementation,
@@ -159,12 +216,14 @@ describe(testEndpoint.name, () => {
             createTestHostContext,
         );
 
-        assert.deepEquals(await condenseResponse(response), {
-            headers: {
-                'access-control-allow-origin': '*',
-                'access-control-expose-headers': restVirApiNameHeader,
-            },
-            status: HttpStatus.Accepted,
+        assert.strictEquals(response.status, HttpStatus.Accepted);
+
+        assert.deepEquals(omitObjectKeys(headersToObject(response.headers), ['date']), {
+            'access-control-allow-origin': '*',
+            'access-control-expose-headers': restVirApiNameHeader,
+            connection: 'keep-alive',
+            'content-length': '0',
+            'rest-vir-api': 'endpoint-test-/empty',
         });
     });
 
@@ -272,19 +331,25 @@ describe(testEndpoint.name, () => {
             },
         );
 
-        assert.deepEquals(await condenseResponse(response), {
-            headers: {
-                'access-control-allow-origin': '*',
-                'content-type': 'application/json; charset=utf-8',
-                'access-control-expose-headers': restVirApiNameHeader,
-            },
-            status: HttpStatus.Accepted,
-            body: JSON.stringify({
+        assert.deepEquals(omitObjectKeys(headersToObject(response.headers), ['date']), {
+            'access-control-allow-origin': '*',
+            'access-control-expose-headers': restVirApiNameHeader,
+            connection: 'keep-alive',
+            'content-length': '48',
+            'content-type': 'application/json; charset=utf-8',
+            'rest-vir-api': 'endpoint-test-/echo',
+        });
+
+        assert.strictEquals(response.status, HttpStatus.Accepted);
+
+        assert.deepEquals(
+            await response.text(),
+            JSON.stringify({
                 somethingHere: 'hi',
                 testValue: -1,
                 result: 4,
             }),
-        });
+        );
     });
 
     it('handles wildcard path params', async () => {

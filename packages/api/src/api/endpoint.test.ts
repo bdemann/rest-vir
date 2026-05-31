@@ -20,6 +20,8 @@ import {
     type DefaultResponseType,
     type DefinableHttpMethod,
     type EndpointDefinition,
+    type EndpointDefinitionMethods,
+    type EndpointDefinitionResponseStatuses,
     type EndpointDefinitionWithRequiredCustomProps,
     type EndpointMethodDefinition,
     type EndpointMethodDefinitionWithRequiredCustomProps,
@@ -33,6 +35,124 @@ import {
     type ResponseDefinitions,
     type ResponseStatusDefinition,
 } from './endpoint.js';
+
+describe('EndpointDefinitionMethods', () => {
+    it('falls back to all definable methods for NoParam', () => {
+        assert.tsType<EndpointDefinitionMethods<NoParam>>().equals<DefinableHttpMethod>();
+    });
+
+    it('extracts a single method from an endpoint definition', () => {
+        const endpoint = defineEndpoint({
+            path: '/health',
+            requests: {
+                [HttpMethod.Get]: {
+                    responses: {
+                        [HttpStatus.Ok]: {
+                            responseData: undefined,
+                        },
+                    },
+                },
+            },
+        });
+
+        assert.tsType<EndpointDefinitionMethods<typeof endpoint>>().equals<typeof HttpMethod.Get>();
+    });
+
+    it('extracts multiple methods from an endpoint definition', () => {
+        const endpoint = defineEndpoint({
+            path: '/items/:itemId',
+            requests: {
+                [HttpMethod.Get]: {
+                    responses: {
+                        [HttpStatus.Ok]: {
+                            responseData: undefined,
+                        },
+                    },
+                },
+                [HttpMethod.Patch]: {
+                    requestData: defineShape({
+                        value: '',
+                    }),
+                    responses: {
+                        [HttpStatus.Ok]: {
+                            responseData: undefined,
+                        },
+                    },
+                },
+                [HttpMethod.Delete]: {
+                    responses: {
+                        [HttpStatus.NoContent]: {
+                            responseData: undefined,
+                        },
+                    },
+                },
+            },
+        });
+
+        assert
+            .tsType<EndpointDefinitionMethods<typeof endpoint>>()
+            .equals<typeof HttpMethod.Get | typeof HttpMethod.Patch | typeof HttpMethod.Delete>();
+    });
+
+    it('extracts all definable methods from the generic endpoint definition', () => {
+        assert
+            .tsType<EndpointDefinitionMethods<EndpointDefinition>>()
+            .equals<DefinableHttpMethod>();
+    });
+});
+
+describe('EndpointDefinitionResponseStatuses', () => {
+    it('handles NoParam endpoint and method', () => {
+        assert.tsType<EndpointDefinitionResponseStatuses<NoParam, NoParam>>().equals<HttpStatus>();
+    });
+
+    it('extracts a single status', () => {
+        const endpoint = defineEndpoint({
+            path: '/health',
+            requests: {
+                [HttpMethod.Get]: {
+                    responses: {
+                        [HttpStatus.Ok]: {
+                            responseData: undefined,
+                        },
+                    },
+                },
+            },
+        });
+
+        assert
+            .tsType<EndpointDefinitionResponseStatuses<typeof endpoint, typeof HttpMethod.Get>>()
+            .equals<typeof HttpStatus.Ok>();
+    });
+
+    it('extracts multiple statuses from an endpoint definition method', () => {
+        const endpoint = defineEndpoint({
+            path: '/items/:itemId',
+            requests: {
+                [HttpMethod.Get]: {
+                    responses: {
+                        [HttpStatus.Ok]: {
+                            responseData: undefined,
+                        },
+                        [HttpStatus.NoContent]: {
+                            responseData: undefined,
+                        },
+                    },
+                },
+            },
+        });
+
+        assert
+            .tsType<EndpointDefinitionResponseStatuses<typeof endpoint, typeof HttpMethod.Get>>()
+            .equals<typeof HttpStatus.Ok | typeof HttpStatus.NoContent>();
+    });
+
+    it('extracts all definable methods from the generic endpoint definition', () => {
+        assert
+            .tsType<EndpointDefinitionResponseStatuses<EndpointDefinition, DefinableHttpMethod>>()
+            .equals<HttpStatus>();
+    });
+});
 
 describe('ExtractEndpointMethodDefinition', () => {
     it('falls back to plain definition', () => {

@@ -89,6 +89,43 @@ export type EndpointDefinitionWithRequiredCustomProps<CustomProps extends Unknow
 };
 
 /**
+ * Extracts the allowed methods for the given endpoint definition.
+ *
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
+export type EndpointDefinitionMethods<Endpoint extends EndpointDefinition | NoParam> =
+    Endpoint extends EndpointDefinition
+        ? Extract<keyof NoInfer<Endpoint>['requests'], DefinableHttpMethod>
+        : DefinableHttpMethod;
+
+/**
+ * Extracts the defined statuses for the given endpoint definition's method.
+ *
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
+export type EndpointDefinitionResponseStatuses<
+    Endpoint extends EndpointDefinition | NoParam,
+    Method extends DefinableHttpMethod | NoParam,
+> = EndpointMethodDefinitionResponseStatuses<ExtractEndpointMethodDefinition<Endpoint, Method>>;
+
+/**
+ * Extracts the defined statuses for the given endpoint method definition.
+ *
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
+export type EndpointMethodDefinitionResponseStatuses<
+    EndpointMethod extends EndpointMethodDefinition | NoParam,
+> = EndpointMethod extends EndpointMethodDefinition
+    ? Extract<keyof EndpointMethod['responses'], HttpStatus>
+    : HttpStatus;
+
+/**
  * Extract an Endpoint definition's method definition.
  *
  * @category Internal

@@ -1,8 +1,7 @@
-import {assert, assertWrap, check} from '@augment-vir/assert';
+import {assert, check} from '@augment-vir/assert';
 import {
     type AnyObject,
     mergeDefinedProperties,
-    omitObjectKeys,
     type Overwrite,
     type PartialWithUndefined,
 } from '@augment-vir/common';
@@ -10,12 +9,11 @@ import {describe} from '@augment-vir/test';
 import {
     type ClientWebSocket,
     type CommonWebSocket,
-    type DefinableHttpMethod,
     type EndpointDefinition,
+    type EndpointDefinitionMethods,
     type EndpointFetchParams,
     finalizeClientWebSocket,
     type NoParam,
-    restVirApiNameHeader,
     RestVirClient,
     type WebSocketConnectParamObject,
     type WebSocketConnectParams,
@@ -23,7 +21,6 @@ import {
 } from '@rest-vir/api';
 import fastify, {type FastifyInstance} from 'fastify';
 import {type InjectOptions} from 'light-my-request';
-import {type OutgoingHttpHeaders} from 'node:http';
 import {after} from 'node:test';
 import {buildUrl, parseUrl} from 'url-vir';
 import type WsSocket from 'ws';
@@ -31,61 +28,6 @@ import {type ApiImplementation} from '../../implementation/implement-api.js';
 import {type HandleRouteOptions} from '../handle-request/endpoint-handler.js';
 import {attachApi} from '../run-api/attach-api.js';
 import {type RunApiOptions, type RunApiUserOptions} from '../run-api/run-api-options.js';
-
-/**
- * Options for {@link condenseResponse}.
- *
- * @category Internal
- * @category Package : @rest-vir/host
- * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
- */
-export type CondenseResponseOptions = {
-    /**
-     * Include all headers that fastify and rest-vir automatically append.
-     *
-     * @default false
-     */
-    includeDefaultHeaders: boolean;
-};
-
-/**
- * Condense a response into just the interesting properties for easier testing comparisons.
- *
- * @category Internal
- * @category Package : @rest-vir/host
- * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
- */
-export async function condenseResponse(
-    response: Response,
-    options: PartialWithUndefined<CondenseResponseOptions> = {},
-) {
-    const bodyText = await response.text();
-    const bodyObject = bodyText
-        ? {
-              body: bodyText,
-          }
-        : {};
-
-    const headers: OutgoingHttpHeaders = Object.fromEntries(response.headers.entries());
-
-    return {
-        status: assertWrap.isHttpStatus(response.status),
-        ...bodyObject,
-        headers: options.includeDefaultHeaders
-            ? headers
-            : omitObjectKeys(headers, [
-                  /**
-                   * These headers are automatically set by fastify so we don't care about
-                   * inspecting them in tests.
-                   */
-                  'connection',
-                  'content-length',
-                  'date',
-                  'keep-alive',
-                  restVirApiNameHeader,
-              ]),
-    };
-}
 
 /**
  * Used for each individual endpoint's fetcher in {@link ApiTestSuite}.
@@ -96,7 +38,7 @@ export async function condenseResponse(
  */
 export type FetchTestEndpoint<Api extends Readonly<ApiImplementation>> = <
     const Endpoint extends EndpointDefinition & {path: keyof Api['definition']['endpoints']},
-    const Method extends Extract<keyof NoInfer<Endpoint>['requests'], DefinableHttpMethod>,
+    const Method extends EndpointDefinitionMethods<NoInfer<Endpoint>>,
 >(
     endpoint: Endpoint,
     method: Method,
@@ -277,7 +219,15 @@ export async function testExistingServer<const Api extends Readonly<ApiImplement
                     : {}),
             });
 
-            return new Response(innerResponse.rawPayload as BodyInit, {
+            /**
+             * Handle empty bodies so that `new Response` doesn't crash for statuses that don't
+             * allow bodies.
+             */
+            const bodyInit: BodyInit = (
+                innerResponse.rawPayload.length ? innerResponse.rawPayload : undefined
+            ) as BodyInit;
+
+            return new Response(bodyInit, {
                 status: innerResponse.statusCode,
                 headers: innerResponse.headers as Record<string, string>,
                 statusText: innerResponse.statusMessage,

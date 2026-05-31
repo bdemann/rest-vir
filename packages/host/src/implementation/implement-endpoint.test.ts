@@ -11,10 +11,12 @@ import {
     type EndpointMethodImplementationOutput,
     HttpMethod,
     HttpStatus,
+    type NoParam,
 } from '@rest-vir/api';
 import {defineShape} from 'object-shape-tester';
 import {
     type EndpointImplementation,
+    type EndpointImplementationMethods,
     type EndpointMethodImplementationParams,
     type EndpointMethodImplementations,
 } from './implement-endpoint.js';
@@ -40,11 +42,48 @@ const mockApi = defineApi({
     endpoints: [mockEndpoint],
 });
 
+const multiMethodEndpoint = defineEndpoint({
+    path: '/items/:itemId',
+    requests: {
+        [HttpMethod.Get]: {
+            responses: {
+                [HttpStatus.Ok]: {
+                    responseData: undefined,
+                },
+            },
+        },
+        [HttpMethod.Patch]: {
+            requestData: defineShape({
+                value: '',
+            }),
+            responses: {
+                [HttpStatus.Ok]: {
+                    responseData: undefined,
+                },
+            },
+        },
+        [HttpMethod.Delete]: {
+            responses: {
+                [HttpStatus.NoContent]: {
+                    responseData: undefined,
+                },
+            },
+        },
+    },
+});
+
+const multiMethodApi = defineApi({
+    apiName: 'multi-method-api',
+    endpoints: [multiMethodEndpoint],
+});
+
 type MockContext = {
     database: any;
 };
 
 const implementMockEndpoint = createApiImplementor<MockContext>()(mockApi).implementEndpoint;
+const implementMultiMethodEndpoint =
+    createApiImplementor<MockContext>()(multiMethodApi).implementEndpoint;
 
 describe('implementEndpoint', () => {
     it('implements an endpoint', () => {
@@ -200,6 +239,66 @@ describe('EndpointImplementation', () => {
             .equals<Readonly<EndpointMethodImplementations<typeof mockEndpoint, MockContext>>>();
         assert.tsType(testAssignment.definition.path).equals<(typeof mockEndpoint)['path']>();
         assert.tsType(testAssignment.definition).equals<typeof mockEndpoint>();
+    });
+});
+
+describe('EndpointImplementationMethods', () => {
+    it('falls back to all definable methods for NoParam', () => {
+        assert.tsType<EndpointImplementationMethods<NoParam>>().equals<DefinableHttpMethod>();
+    });
+
+    it('extracts a single method from an endpoint implementation', () => {
+        const implementation = implementMockEndpoint(mockEndpoint, {
+            [HttpMethod.Get]() {
+                return {
+                    [HttpStatus.Ok]: {
+                        responseData: {
+                            hello: 'hi',
+                        },
+                    },
+                };
+            },
+        });
+
+        assert
+            .tsType<EndpointImplementationMethods<typeof implementation>>()
+            .equals<typeof HttpMethod.Get>();
+    });
+
+    it('extracts multiple methods from an endpoint implementation', () => {
+        const implementation = implementMultiMethodEndpoint(multiMethodEndpoint, {
+            [HttpMethod.Get]() {
+                return {
+                    [HttpStatus.Ok]: {
+                        responseData: undefined,
+                    },
+                };
+            },
+            [HttpMethod.Patch]() {
+                return {
+                    [HttpStatus.Ok]: {
+                        responseData: undefined,
+                    },
+                };
+            },
+            [HttpMethod.Delete]() {
+                return {
+                    [HttpStatus.NoContent]: {
+                        responseData: undefined,
+                    },
+                };
+            },
+        });
+
+        assert
+            .tsType<EndpointImplementationMethods<typeof implementation>>()
+            .equals<typeof HttpMethod.Get | typeof HttpMethod.Patch | typeof HttpMethod.Delete>();
+    });
+
+    it('extracts all definable methods from the generic endpoint implementation', () => {
+        assert
+            .tsType<EndpointImplementationMethods<EndpointImplementation>>()
+            .equals<DefinableHttpMethod>();
     });
 });
 

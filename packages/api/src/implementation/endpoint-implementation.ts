@@ -11,7 +11,7 @@ import {
     type DefaultOutgoingResponseHeadersType,
     type DefinableHttpMethod,
     type EndpointDefinition,
-    type EndpointMethodDefinition,
+    type EndpointDefinitionResponseStatuses,
     type EndpointRequestType,
     type EndpointResponseOutgoingHeadersType,
     type EndpointResponseType,
@@ -82,10 +82,10 @@ export type EndpointMethodDefinedStatusOutputs<
 > = Endpoint extends EndpointDefinition
     ? Method extends DefinableHttpMethod
         ? {
-              [Status in keyof Extract<
-                  Endpoint['requests'][Method],
-                  EndpointMethodDefinition
-              >['responses']]: Status extends HttpStatus
+              [Status in EndpointDefinitionResponseStatuses<
+                  Endpoint,
+                  Method
+              >]: Status extends HttpStatus
                   ? EndpointImplementationStatusOutput<Endpoint, Method, Status>
                   : never;
           }

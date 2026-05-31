@@ -2,9 +2,13 @@ import {assert, waitUntil} from '@augment-vir/assert';
 import {HttpMethod, HttpStatus} from '@augment-vir/common';
 import {runShellCommand} from '@augment-vir/node';
 import {describe, it} from '@augment-vir/test';
-import {findDevServerPort, restVirApiNameHeader, RestVirClient} from '@rest-vir/api';
+import {
+    condenseResponse,
+    findDevServerPort,
+    readResponseHeaders,
+    RestVirClient,
+} from '@rest-vir/api';
 import {buildUrl} from 'url-vir';
-import {condenseResponse} from '../testing/test-api.js';
 import {
     arrayOriginEndpoint,
     asyncRejectionEndpoint,
@@ -339,288 +343,330 @@ describe(startApiServer.name, () => {
             assert.isAtLeast(await plainTime, await longRunningTime);
         });
         it('handles function CORS requirements', async ({fetchEndpoint}) => {
+            const invalidOriginResponse = createMutableResponse(
+                await fetchEndpoint(functionOriginEndpoint.path, {
+                    method: HttpMethod.Get,
+                    headers: {
+                        origin: 'https://electrovir.com',
+                    },
+                }),
+            );
+            condenseResponse(invalidOriginResponse);
             assert.deepEquals(
-                await condenseResponse(
-                    await fetchEndpoint(functionOriginEndpoint.path, {
-                        method: HttpMethod.Get,
-                        headers: {
-                            origin: 'https://electrovir.com',
-                        },
-                    }),
-                ),
                 {
-                    status: HttpStatus.Forbidden,
+                    headers: readResponseHeaders(invalidOriginResponse.headers),
+                    status: invalidOriginResponse.status,
+                },
+                {
                     headers: {},
+                    status: HttpStatus.Forbidden,
                 },
                 'blocks an invalid origin with functions',
             );
-            assert.deepEquals(
-                await condenseResponse(
-                    await fetchEndpoint(functionOriginEndpoint.path, {
-                        method: HttpMethod.Get,
-                        headers: {
-                            origin: 'https://example.com',
-                        },
-                    }),
-                ),
-                {
-                    status: HttpStatus.Ok,
+            const validOriginResponse = createMutableResponse(
+                await fetchEndpoint(functionOriginEndpoint.path, {
+                    method: HttpMethod.Get,
                     headers: {
-                        'access-control-allow-credentials': 'true',
-                        'access-control-allow-origin': 'https://example.com',
-                        'access-control-expose-headers': restVirApiNameHeader,
-                        vary: 'Origin',
+                        origin: 'https://example.com',
                     },
+                }),
+            );
+            condenseResponse(validOriginResponse);
+            assert.deepEquals(
+                {
+                    headers: readResponseHeaders(validOriginResponse.headers),
+                    status: validOriginResponse.status,
+                },
+                {
+                    headers: {},
+                    status: HttpStatus.Ok,
                 },
                 'accepts a valid origin with functions',
             );
+            const invalidOptionsOriginResponse = createMutableResponse(
+                await fetchEndpoint(functionOriginEndpoint.path, {
+                    method: HttpMethod.Options,
+                    headers: {
+                        origin: 'https://electrovir.com',
+                        'access-control-request-method': HttpMethod.Get,
+                    },
+                }),
+            );
+            condenseResponse(invalidOptionsOriginResponse);
             assert.deepEquals(
-                await condenseResponse(
-                    await fetchEndpoint(functionOriginEndpoint.path, {
-                        method: HttpMethod.Options,
-                        headers: {
-                            origin: 'https://electrovir.com',
-                            'access-control-request-method': HttpMethod.Get,
-                        },
-                    }),
-                ),
                 {
-                    status: HttpStatus.NoContent,
+                    headers: readResponseHeaders(invalidOptionsOriginResponse.headers),
+                    status: invalidOptionsOriginResponse.status,
+                },
+                {
                     headers: {},
+                    status: HttpStatus.NoContent,
                 },
                 'blocks an invalid OPTIONS origin with functions',
             );
-            assert.deepEquals(
-                await condenseResponse(
-                    await fetchEndpoint(functionOriginEndpoint.path, {
-                        method: HttpMethod.Options,
-                        headers: {
-                            origin: 'https://example.com',
-                            'access-control-request-method': HttpMethod.Get,
-                        },
-                    }),
-                ),
-                {
-                    status: HttpStatus.NoContent,
+            const validOptionsOriginResponse = createMutableResponse(
+                await fetchEndpoint(functionOriginEndpoint.path, {
+                    method: HttpMethod.Options,
                     headers: {
-                        'access-control-allow-credentials': 'true',
-                        'access-control-allow-headers': 'Cookie,Authorization,Content-Type',
-                        'access-control-expose-headers': restVirApiNameHeader,
-                        'access-control-allow-methods': 'GET,OPTIONS',
-                        'access-control-allow-origin': 'https://example.com',
-                        'access-control-max-age': '3600',
-                        vary: 'Origin',
+                        origin: 'https://example.com',
+                        'access-control-request-method': HttpMethod.Get,
                     },
+                }),
+            );
+            condenseResponse(validOptionsOriginResponse);
+            assert.deepEquals(
+                {
+                    headers: readResponseHeaders(validOptionsOriginResponse.headers),
+                    status: validOptionsOriginResponse.status,
+                },
+                {
+                    headers: {
+                        'access-control-allow-headers': 'Cookie,Authorization,Content-Type',
+                        'access-control-allow-methods': 'GET,OPTIONS',
+                        'access-control-max-age': '3600',
+                    },
+                    status: HttpStatus.NoContent,
                 },
                 'accepts a valid OPTIONS origin with functions',
             );
         });
         it('handles array CORS requirements', async ({fetchEndpoint}) => {
+            const invalidOriginResponse = createMutableResponse(
+                await fetchEndpoint(arrayOriginEndpoint.path, {
+                    method: HttpMethod.Get,
+                    headers: {
+                        origin: 'https://wikipedia.org',
+                    },
+                }),
+            );
+            condenseResponse(invalidOriginResponse);
             assert.deepEquals(
-                await condenseResponse(
-                    await fetchEndpoint(arrayOriginEndpoint.path, {
-                        method: HttpMethod.Get,
-                        headers: {
-                            origin: 'https://wikipedia.org',
-                        },
-                    }),
-                ),
                 {
-                    status: HttpStatus.Forbidden,
+                    headers: readResponseHeaders(invalidOriginResponse.headers),
+                    status: invalidOriginResponse.status,
+                },
+                {
                     headers: {},
+                    status: HttpStatus.Forbidden,
                 },
                 'blocks an invalid origin with an array',
             );
-            assert.deepEquals(
-                await condenseResponse(
-                    await fetchEndpoint(arrayOriginEndpoint.path, {
-                        method: HttpMethod.Get,
-                        headers: {
-                            origin: 'https://example.com',
-                        },
-                    }),
-                ),
-                {
-                    status: HttpStatus.Ok,
+            const validOriginResponse = createMutableResponse(
+                await fetchEndpoint(arrayOriginEndpoint.path, {
+                    method: HttpMethod.Get,
                     headers: {
-                        'access-control-allow-credentials': 'true',
-                        'access-control-allow-origin': 'https://example.com',
-                        'access-control-expose-headers': restVirApiNameHeader,
-                        vary: 'Origin',
+                        origin: 'https://example.com',
                     },
+                }),
+            );
+            condenseResponse(validOriginResponse);
+            assert.deepEquals(
+                {
+                    headers: readResponseHeaders(validOriginResponse.headers),
+                    status: validOriginResponse.status,
+                },
+                {
+                    headers: {},
+                    status: HttpStatus.Ok,
                 },
                 'accepts a valid origin with an array',
             );
+            const invalidOptionsOriginResponse = createMutableResponse(
+                await fetchEndpoint(arrayOriginEndpoint.path, {
+                    method: HttpMethod.Options,
+                    headers: {
+                        origin: 'https://wikipedia.org',
+                        'access-control-request-method': HttpMethod.Get,
+                    },
+                }),
+            );
+            condenseResponse(invalidOptionsOriginResponse);
             assert.deepEquals(
-                await condenseResponse(
-                    await fetchEndpoint(arrayOriginEndpoint.path, {
-                        method: HttpMethod.Options,
-                        headers: {
-                            origin: 'https://wikipedia.org',
-                            'access-control-request-method': HttpMethod.Get,
-                        },
-                    }),
-                ),
                 {
-                    status: HttpStatus.NoContent,
+                    headers: readResponseHeaders(invalidOptionsOriginResponse.headers),
+                    status: invalidOptionsOriginResponse.status,
+                },
+                {
                     headers: {},
+                    status: HttpStatus.NoContent,
                 },
                 'blocks an invalid OPTIONS origin with an array',
             );
-            assert.deepEquals(
-                await condenseResponse(
-                    await fetchEndpoint(arrayOriginEndpoint.path, {
-                        method: HttpMethod.Options,
-                        headers: {
-                            origin: 'https://example.com',
-                            'access-control-request-method': HttpMethod.Get,
-                        },
-                    }),
-                ),
-                {
-                    status: HttpStatus.NoContent,
+            const validOptionsOriginResponse = createMutableResponse(
+                await fetchEndpoint(arrayOriginEndpoint.path, {
+                    method: HttpMethod.Options,
                     headers: {
-                        'access-control-allow-credentials': 'true',
-                        'access-control-allow-headers': 'Cookie,Authorization,Content-Type',
-                        'access-control-expose-headers': restVirApiNameHeader,
-                        'access-control-allow-methods': 'GET,OPTIONS',
-                        'access-control-allow-origin': 'https://example.com',
-                        'access-control-max-age': '3600',
-                        vary: 'Origin',
+                        origin: 'https://example.com',
+                        'access-control-request-method': HttpMethod.Get,
                     },
+                }),
+            );
+            condenseResponse(validOptionsOriginResponse);
+            assert.deepEquals(
+                {
+                    headers: readResponseHeaders(validOptionsOriginResponse.headers),
+                    status: validOptionsOriginResponse.status,
+                },
+                {
+                    headers: {
+                        'access-control-allow-headers': 'Cookie,Authorization,Content-Type',
+                        'access-control-allow-methods': 'GET,OPTIONS',
+                        'access-control-max-age': '3600',
+                    },
+                    status: HttpStatus.NoContent,
                 },
                 'accepts a valid OPTIONS origin with an array',
             );
         });
         it("accepts an api's AnyOrigin", async ({fetchEndpoint}) => {
+            const getResponse = createMutableResponse(
+                await fetchEndpoint(healthEndpoint.path, {
+                    method: HttpMethod.Get,
+                }),
+            );
+            condenseResponse(getResponse);
             assert.deepEquals(
-                await condenseResponse(
-                    await fetchEndpoint(healthEndpoint.path, {
-                        method: HttpMethod.Get,
-                    }),
-                ),
                 {
+                    headers: readResponseHeaders(getResponse.headers),
+                    status: getResponse.status,
+                },
+                {
+                    headers: {},
                     status: HttpStatus.Ok,
-                    headers: {
-                        'access-control-allow-origin': '*',
-                        'access-control-expose-headers': restVirApiNameHeader,
-                    },
                 },
                 'accepts a get request without any origin',
             );
+            const optionsResponse = createMutableResponse(
+                await fetchEndpoint(healthEndpoint.path, {
+                    method: HttpMethod.Options,
+                }),
+            );
+            condenseResponse(optionsResponse);
             assert.deepEquals(
-                await condenseResponse(
-                    await fetchEndpoint(healthEndpoint.path, {
-                        method: HttpMethod.Options,
-                    }),
-                ),
                 {
-                    status: HttpStatus.NoContent,
+                    headers: readResponseHeaders(optionsResponse.headers),
+                    status: optionsResponse.status,
+                },
+                {
                     headers: {
                         'access-control-allow-headers': 'Cookie,Authorization,Content-Type',
-                        'access-control-expose-headers': restVirApiNameHeader,
                         'access-control-allow-methods': 'GET,OPTIONS',
-                        'access-control-allow-origin': '*',
                         'access-control-max-age': '3600',
                     },
+                    status: HttpStatus.NoContent,
                 },
                 'accepts an options request without any origin',
             );
         });
         it('generates an error response', async ({fetchEndpoint}) => {
+            const response = createMutableResponse(
+                await fetchEndpoint(returnsResponseErrorEndpoint.path, {
+                    method: HttpMethod.Get,
+                }),
+            );
+            condenseResponse(response);
+            const responseBody = await response.text();
             assert.deepEquals(
-                await condenseResponse(
-                    await fetchEndpoint(returnsResponseErrorEndpoint.path, {
-                        method: HttpMethod.Get,
-                    }),
-                ),
                 {
-                    status: HttpStatus.NotAcceptable,
+                    body: responseBody,
+                    headers: readResponseHeaders(response.headers),
+                    status: response.status,
+                },
+                {
                     /** String `responseData` is JSON-encoded on the wire — quotes are expected. */
                     body: '"INTENTIONAL ERROR"',
-                    headers: {
-                        'access-control-allow-origin': '*',
-                        'content-type': 'application/json; charset=utf-8',
-                        'access-control-expose-headers': restVirApiNameHeader,
-                    },
+                    headers: {},
+                    status: HttpStatus.NotAcceptable,
                 },
             );
         });
         it('handles a context rejection', async ({fetchEndpoint}) => {
-            assert.deepEquals(
-                await condenseResponse(
-                    await fetchEndpoint(emptyEndpoint.path, {
-                        method: HttpMethod.Get,
-                        headers: {
-                            authorization: 'reject',
-                        },
-                    }),
-                ),
-                {
-                    status: HttpStatus.Unauthorized,
+            const response = createMutableResponse(
+                await fetchEndpoint(emptyEndpoint.path, {
+                    method: HttpMethod.Get,
                     headers: {
-                        'access-control-allow-origin': '*',
-                        'access-control-expose-headers': restVirApiNameHeader,
+                        authorization: 'reject',
                     },
+                }),
+            );
+            condenseResponse(response);
+            assert.deepEquals(
+                {
+                    headers: readResponseHeaders(response.headers),
+                    status: response.status,
+                },
+                {
+                    headers: {},
+                    status: HttpStatus.Unauthorized,
                 },
             );
         });
         it('handles failed context generation', async ({fetchEndpoint}) => {
-            assert.deepEquals(
-                await condenseResponse(
-                    await fetchEndpoint(emptyEndpoint.path, {
-                        method: HttpMethod.Get,
-                        headers: {
-                            authorization: 'error',
-                        },
-                    }),
-                ),
-                {
-                    status: HttpStatus.InternalServerError,
+            const response = createMutableResponse(
+                await fetchEndpoint(emptyEndpoint.path, {
+                    method: HttpMethod.Get,
                     headers: {
-                        'access-control-allow-origin': '*',
-                        'access-control-expose-headers': restVirApiNameHeader,
+                        authorization: 'error',
                     },
+                }),
+            );
+            condenseResponse(response);
+            assert.deepEquals(
+                {
+                    headers: readResponseHeaders(response.headers),
+                    status: response.status,
+                },
+                {
+                    headers: {},
+                    status: HttpStatus.InternalServerError,
                 },
             );
         });
         it('rejects unexpected request body', async ({fetchEndpoint}) => {
-            assert.deepEquals(
-                await condenseResponse(
-                    await fetchEndpoint(plainEndpoint.path, {
-                        method: HttpMethod.Post,
-                        body: JSON.stringify({
-                            somethingHere: 'hi',
-                        }),
-                        headers: {
-                            'content-type': 'application/json',
-                        },
+            const response = createMutableResponse(
+                await fetchEndpoint(plainEndpoint.path, {
+                    method: HttpMethod.Post,
+                    body: JSON.stringify({
+                        somethingHere: 'hi',
                     }),
-                ),
-                {
-                    status: HttpStatus.BadRequest,
-                    body: 'Invalid body.',
                     headers: {
-                        'access-control-allow-origin': '*',
-                        'content-type': 'text/plain; charset=utf-8',
-                        'access-control-expose-headers': restVirApiNameHeader,
+                        'content-type': 'application/json',
                     },
+                }),
+            );
+            condenseResponse(response);
+            const responseBody = await response.text();
+            assert.deepEquals(
+                {
+                    body: responseBody,
+                    headers: readResponseHeaders(response.headers),
+                    status: response.status,
+                },
+                {
+                    body: 'Invalid body.',
+                    headers: {},
+                    status: HttpStatus.BadRequest,
                 },
             );
         });
         it('404s on missing endpoint', async ({fetchEndpoint}) => {
+            const response = createMutableResponse(
+                await fetchEndpoint('/missing', {
+                    method: HttpMethod.Get,
+                }),
+            );
+            condenseResponse(response);
+            const responseBody = await response.text();
             assert.deepEquals(
-                await condenseResponse(
-                    await fetchEndpoint('/missing', {
-                        method: HttpMethod.Get,
-                    }),
-                ),
                 {
-                    status: 404,
+                    body: responseBody,
+                    headers: readResponseHeaders(response.headers),
+                    status: response.status,
+                },
+                {
                     body: '{"message":"Route GET:/missing not found","error":"Not Found","statusCode":404}',
-                    headers: {
-                        'content-type': 'application/json; charset=utf-8',
-                    },
+                    headers: {},
+                    status: 404,
                 },
             );
         });
@@ -629,16 +675,20 @@ describe(startApiServer.name, () => {
 
             const output = await client.fetch(emptyEndpoint).GET();
 
-            assert.isTrue('Accepted' in output);
-            if ('Accepted' in output) {
-                assert.deepEquals(await condenseResponse(output.Accepted.response), {
+            assert.isDefined(output.Accepted);
+
+            const response = createMutableResponse(output.Accepted.response);
+            condenseResponse(response);
+            assert.deepEquals(
+                {
+                    headers: readResponseHeaders(response.headers),
+                    status: response.status,
+                },
+                {
+                    headers: {},
                     status: HttpStatus.Accepted,
-                    headers: {
-                        'access-control-allow-origin': '*',
-                        'access-control-expose-headers': restVirApiNameHeader,
-                    },
-                });
-            }
+                },
+            );
         });
     });
 
@@ -661,14 +711,18 @@ describe(startApiServer.name, () => {
         //     assert.isBelow(await plainTime, await longRunningTime);
         // });
         it('runs on multiple threads', async ({fetchEndpoint}) => {
-            const response = await fetchEndpoint(emptyEndpoint.path);
-            assert.deepEquals(await condenseResponse(response), {
-                headers: {
-                    'access-control-allow-origin': '*',
-                    'access-control-expose-headers': restVirApiNameHeader,
+            const response = createMutableResponse(await fetchEndpoint(emptyEndpoint.path));
+            condenseResponse(response);
+            assert.deepEquals(
+                {
+                    headers: readResponseHeaders(response.headers),
+                    status: response.status,
                 },
-                status: HttpStatus.Accepted,
-            });
+                {
+                    headers: {},
+                    status: HttpStatus.Accepted,
+                },
+            );
         });
     });
     describeApiServerScript('locked-port', ({it}) => {
@@ -702,3 +756,7 @@ describe(startApiServer.name, () => {
         await kill();
     });
 });
+
+function createMutableResponse(response: Response): Response {
+    return new Response(response.body, response);
+}

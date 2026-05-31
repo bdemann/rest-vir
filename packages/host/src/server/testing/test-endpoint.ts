@@ -1,13 +1,31 @@
 import {
     defineApi,
-    type DefinableHttpMethod,
     type EndpointDefinition,
+    type EndpointDefinitionMethods,
     type EndpointFetchParams,
 } from '@rest-vir/api';
 import {type CreateHostContext} from '../../implementation/host-context.js';
 import {implementApi} from '../../implementation/implement-api.js';
 import {type EndpointImplementation} from '../../implementation/implement-endpoint.js';
 import {testApi} from './test-api.js';
+
+export type EndpointFromImplementation<Implementation> =
+    Implementation extends Readonly<{
+        definition: Readonly<infer Endpoint extends EndpointDefinition>;
+    }>
+        ? Endpoint
+        : never;
+
+export type HostContextFromImplementation<Implementation> =
+    Implementation extends Readonly<{
+        implementation: infer Implementations;
+    }>
+        ? Implementations[keyof Implementations] extends (params: infer Params) => unknown
+            ? Params extends {context: infer HostContext}
+                ? HostContext
+                : never
+            : never
+        : never;
 
 /**
  * Test your endpoint with real Request and Response objects.
@@ -30,31 +48,53 @@ import {testApi} from './test-api.js';
  * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
  */
 export async function testEndpoint<
-    const HostContext,
-    const Endpoint extends Readonly<EndpointImplementation<EndpointDefinition, HostContext>>,
-    const Method extends Extract<
-        keyof NoInfer<Endpoint>['definition']['requests'],
-        DefinableHttpMethod
+    const EndpointImplementationToTest extends Readonly<{
+        definition: Readonly<EndpointDefinition>;
+        implementation: Readonly<object>;
+        isEndpoint: true;
+        isWebSocket: false;
+        path: string;
+    }>,
+    const Endpoint extends
+        EndpointDefinition = EndpointFromImplementation<EndpointImplementationToTest>,
+    const Method extends EndpointDefinitionMethods<NoInfer<Endpoint>> = EndpointDefinitionMethods<
+        NoInfer<Endpoint>
     >,
 >(
-    endpoint: Readonly<Endpoint>,
+    endpoint: EndpointImplementationToTest,
     method: Method,
-    createHostContext: CreateHostContext<HostContext>,
-    ...restParams: EndpointFetchParams<NoInfer<Endpoint>['definition'], NoInfer<Method>>
+    createHostContext: CreateHostContext<
+        HostContextFromImplementation<EndpointImplementationToTest>
+    >,
+    ...restParams: EndpointFetchParams<NoInfer<Endpoint>, NoInfer<Method>>
 ) {
+    const endpointDefinition =
+        endpoint.definition satisfies Readonly<EndpointDefinition> as Endpoint;
+    const endpointImplementation = endpoint satisfies Readonly<{
+        definition: Readonly<EndpointDefinition>;
+        implementation: Readonly<object>;
+        path: string;
+    }> as unknown as Readonly<
+        EndpointImplementation<
+            Endpoint,
+            HostContextFromImplementation<EndpointImplementationToTest>
+        >
+    >;
     const apiDefinition = defineApi({
         apiName: `endpoint-test-${endpoint.path}`,
-        endpoints: [endpoint.definition],
+        endpoints: [endpointDefinition],
     });
-    const apiImplementation = implementApi<HostContext>()(apiDefinition, {
+    const apiImplementation = implementApi<
+        HostContextFromImplementation<EndpointImplementationToTest>
+    >()(apiDefinition, {
         createHostContext,
-        endpoints: [endpoint],
+        endpoints: [endpointImplementation],
     });
 
     const {fetchEndpoint, kill} = await testApi(apiImplementation);
 
     try {
-        return await fetchEndpoint(endpoint.definition, method, ...restParams);
+        return await fetchEndpoint(endpointDefinition, method, ...restParams);
     } finally {
         await kill();
     }

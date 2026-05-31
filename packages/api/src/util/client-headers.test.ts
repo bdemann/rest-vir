@@ -7,7 +7,8 @@ import {
     isJsonContentType,
     mergeHeaders,
     readHeaderValue,
-} from './header-util.js';
+    removeClientHeaders,
+} from './client-headers.js';
 
 describe(mergeHeaders.name, () => {
     it('merges multiple plain object headers into a single Headers instance', () => {
@@ -140,6 +141,59 @@ describe(consolidateHeaders.name, () => {
         });
         const result = consolidateHeaders(input);
         assert.strictEquals(result.get('x-existing'), 'value');
+    });
+});
+
+describe(removeClientHeaders.name, () => {
+    it('removes the requested headers from the given Headers instance', () => {
+        const headers = new Headers({
+            authorization: 'Bearer token',
+            'content-type': 'application/json',
+            'x-request-id': 'request-id',
+        });
+
+        removeClientHeaders(headers, [
+            'authorization',
+            'x-request-id',
+        ]);
+
+        assert.isNull(headers.get('authorization'));
+        assert.strictEquals(headers.get('content-type'), 'application/json');
+        assert.isNull(headers.get('x-request-id'));
+    });
+
+    it('removes headers case-insensitively', () => {
+        const headers = new Headers({
+            authorization: 'Bearer token',
+        });
+
+        removeClientHeaders(headers, [
+            'Authorization',
+        ]);
+
+        assert.isNull(headers.get('authorization'));
+    });
+
+    it('ignores headers that are absent', () => {
+        const headers = new Headers({
+            'x-kept': 'value',
+        });
+
+        removeClientHeaders(headers, [
+            'x-missing',
+        ]);
+
+        assert.strictEquals(headers.get('x-kept'), 'value');
+    });
+
+    it('does nothing when no headers are requested for removal', () => {
+        const headers = new Headers({
+            'x-kept': 'value',
+        });
+
+        removeClientHeaders(headers, []);
+
+        assert.strictEquals(headers.get('x-kept'), 'value');
     });
 });
 

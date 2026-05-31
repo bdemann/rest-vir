@@ -7,6 +7,7 @@ import {
     demoFilesEndpoint,
     demoHealthEndpoint,
     demoItemsEndpoint,
+    demoNoContentEndpoint,
     demoRoomWebSocket,
     demoSearchEndpoint,
     demoSecretEndpoint,
@@ -30,7 +31,7 @@ const knownUsers: Readonly<Record<string, string>> = {
 
 const {implementEndpoint, implementWebSocket} = createApiImplementor<ServerContext>()(demoApi);
 
-const healthImplementation = implementEndpoint(demoHealthEndpoint, {
+export const healthImplementation = implementEndpoint(demoHealthEndpoint, {
     [HttpMethod.Get]() {
         return {
             [HttpStatus.Ok]: {
@@ -40,7 +41,17 @@ const healthImplementation = implementEndpoint(demoHealthEndpoint, {
     },
 });
 
-const echoImplementation = implementEndpoint(demoEchoEndpoint, {
+export const noContentImplementation = implementEndpoint(demoNoContentEndpoint, {
+    [HttpMethod.Get]() {
+        return {
+            [HttpStatus.NoContent]: {
+                responseData: undefined,
+            },
+        };
+    },
+});
+
+export const echoImplementation = implementEndpoint(demoEchoEndpoint, {
     [HttpMethod.Post]({requestData}) {
         return {
             [HttpStatus.Accepted]: {
@@ -53,7 +64,7 @@ const echoImplementation = implementEndpoint(demoEchoEndpoint, {
     },
 });
 
-const userImplementation = implementEndpoint(demoUserEndpoint, {
+export const userImplementation = implementEndpoint(demoUserEndpoint, {
     [HttpMethod.Get]({request}) {
         const userId = (request.params as Readonly<{userId: string}>).userId;
         const name = knownUsers[userId];
@@ -77,7 +88,7 @@ const userImplementation = implementEndpoint(demoUserEndpoint, {
     },
 });
 
-const searchImplementation = implementEndpoint(demoSearchEndpoint, {
+export const searchImplementation = implementEndpoint(demoSearchEndpoint, {
     [HttpMethod.Get]({searchParams}) {
         return {
             [HttpStatus.PartialContent]: {
@@ -91,7 +102,7 @@ const searchImplementation = implementEndpoint(demoSearchEndpoint, {
     },
 });
 
-const filesImplementation = implementEndpoint(demoFilesEndpoint, {
+export const filesImplementation = implementEndpoint(demoFilesEndpoint, {
     [HttpMethod.Get]({request}) {
         const wildcard = (request.params as Readonly<{'*': string}>)['*'];
         return {
@@ -104,7 +115,7 @@ const filesImplementation = implementEndpoint(demoFilesEndpoint, {
     },
 });
 
-const uploadImplementation = implementEndpoint(demoUploadEndpoint, {
+export const uploadImplementation = implementEndpoint(demoUploadEndpoint, {
     /**
      * `@fastify/multipart` doesn't populate `request.body`, so the multipart parts are walked via
      * the async iterator the plugin exposes on the request.
@@ -124,7 +135,7 @@ const uploadImplementation = implementEndpoint(demoUploadEndpoint, {
     },
 });
 
-const secretImplementation = implementEndpoint(demoSecretEndpoint, {
+export const secretImplementation = implementEndpoint(demoSecretEndpoint, {
     [HttpMethod.Get]({requestHeaders}) {
         const token = requestHeaders['x-demo-token'];
         return {
@@ -137,7 +148,7 @@ const secretImplementation = implementEndpoint(demoSecretEndpoint, {
     },
 });
 
-const itemsImplementation = implementEndpoint(demoItemsEndpoint, {
+export const itemsImplementation = implementEndpoint(demoItemsEndpoint, {
     [HttpMethod.Put]({request, requestData}) {
         const itemId = (request.params as Readonly<{itemId: string}>).itemId;
         return {
@@ -167,7 +178,7 @@ const itemsImplementation = implementEndpoint(demoItemsEndpoint, {
     },
 });
 
-const teapotImplementation = implementEndpoint(demoTeapotEndpoint, {
+export const teapotImplementation = implementEndpoint(demoTeapotEndpoint, {
     [HttpMethod.Get]() {
         return {
             [HttpStatus.ImATeapot]: {
@@ -223,6 +234,7 @@ export const demoApiImplementation = implementApi<ServerContext>()(demoApi, {
     },
     endpoints: [
         healthImplementation,
+        noContentImplementation,
         echoImplementation,
         userImplementation,
         searchImplementation,

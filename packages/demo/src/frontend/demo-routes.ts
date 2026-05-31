@@ -14,6 +14,7 @@ import {
     demoFilesEndpoint,
     demoHealthEndpoint,
     demoItemsEndpoint,
+    demoNoContentEndpoint,
     demoRoomWebSocket,
     demoSearchEndpoint,
     demoSecretEndpoint,
@@ -58,6 +59,24 @@ const rawDemoFetches: ReadonlyArray<Readonly<DemoFetch>> = [
                 return {
                     responseData: response.Ok.responseData,
                     status: response.Ok.status,
+                };
+            } else {
+                return {
+                    responseData: response.unexpectedError.responseData,
+                    status: response.unexpectedError.status,
+                };
+            }
+        },
+    },
+    {
+        demoName: 'no-content get',
+        endpointPath: demoNoContentEndpoint.path,
+        async callback({client}) {
+            const response = await client.fetch(demoNoContentEndpoint).GET();
+            if (response.NoContent) {
+                return {
+                    responseData: 'no content',
+                    status: response.NoContent.status,
                 };
             } else {
                 return {

@@ -4,6 +4,7 @@ import {
     extractErrorMessage,
     HttpMethod,
     HttpStatus,
+    omitObjectKeys,
     randomInteger,
     stringify,
     wait,
@@ -14,6 +15,7 @@ import {
     defineEndpoint,
     defineWebSocket,
     formDataShape,
+    headersToObject,
     restVirApiNameHeader,
 } from '@rest-vir/api';
 import fastify from 'fastify';
@@ -21,7 +23,7 @@ import {defineShape, exactShape} from 'object-shape-tester';
 import {implementApi} from '../../implementation/implement-api.js';
 import {createApiImplementor} from '../../implementation/implementor.js';
 import {RejectRequestError} from '../../implementation/reject-request.error.js';
-import {condenseResponse, describeApi, testApi, testExistingServer} from './test-api.js';
+import {describeApi, testApi, testExistingServer} from './test-api.js';
 
 function makePort() {
     return (
@@ -210,19 +212,11 @@ describeApi(
 
         it('includes fastify default headers', async () => {
             const response = await fetchEndpoint(healthEndpoint, HttpMethod.Get);
-
-            assert.hasKeys(
-                (
-                    await condenseResponse(response, {
-                        includeDefaultHeaders: true,
-                    })
-                ).headers,
-                [
-                    'connection',
-                    'content-length',
-                    'date',
-                ],
-            );
+            assert.hasKeys(headersToObject(response.headers), [
+                'connection',
+                'content-length',
+                'date',
+            ]);
         });
     },
 );
@@ -239,16 +233,18 @@ describe(testApi.name, () => {
         });
 
         try {
-            assert.deepEquals(
-                await condenseResponse(await fetchEndpoint(healthEndpoint, HttpMethod.Get)),
-                {
-                    headers: {
-                        'access-control-allow-origin': '*',
-                        'access-control-expose-headers': restVirApiNameHeader,
-                    },
-                    status: HttpStatus.Ok,
-                },
-            );
+            const response = await fetchEndpoint(healthEndpoint, HttpMethod.Get);
+
+            assert.strictEquals(response.status, HttpStatus.Ok);
+
+            assert.deepEquals(omitObjectKeys(headersToObject(response.headers), ['date']), {
+                'access-control-allow-origin': '*',
+                'access-control-expose-headers': restVirApiNameHeader,
+                connection: 'keep-alive',
+                'content-length': '0',
+                'keep-alive': 'timeout=72',
+                'rest-vir-api': 'plain api',
+            });
 
             const webSocketMessageReceived = new DeferredPromise<string>();
 
@@ -280,16 +276,17 @@ describe(testApi.name, () => {
         const {fetchEndpoint, connectWebSocket, kill} = await testApi(plainImplementation);
 
         try {
-            assert.deepEquals(
-                await condenseResponse(await fetchEndpoint(healthEndpoint, HttpMethod.Get)),
-                {
-                    headers: {
-                        'access-control-allow-origin': '*',
-                        'access-control-expose-headers': restVirApiNameHeader,
-                    },
-                    status: HttpStatus.Ok,
-                },
-            );
+            const response = await fetchEndpoint(healthEndpoint, HttpMethod.Get);
+
+            assert.strictEquals(response.status, HttpStatus.Ok);
+
+            assert.deepEquals(omitObjectKeys(headersToObject(response.headers), ['date']), {
+                'access-control-allow-origin': '*',
+                'access-control-expose-headers': restVirApiNameHeader,
+                connection: 'keep-alive',
+                'content-length': '0',
+                'rest-vir-api': 'plain api',
+            });
 
             const webSocketMessageReceived = new DeferredPromise<string>();
 
@@ -439,17 +436,17 @@ describe(testExistingServer.name, () => {
         });
 
         try {
-            assert.deepEquals(
-                await condenseResponse(await fetchEndpoint(healthEndpoint, HttpMethod.Get)),
-                {
-                    headers: {
-                        'access-control-allow-origin': '*',
-                        'access-control-expose-headers': restVirApiNameHeader,
-                    },
-                    status: HttpStatus.Ok,
-                },
-                'should work with a simple request',
-            );
+            const response = await fetchEndpoint(healthEndpoint, HttpMethod.Get);
+
+            assert.strictEquals(response.status, HttpStatus.Ok);
+
+            assert.deepEquals(omitObjectKeys(headersToObject(response.headers), ['date']), {
+                'access-control-allow-origin': '*',
+                'access-control-expose-headers': restVirApiNameHeader,
+                connection: 'keep-alive',
+                'content-length': '0',
+                'rest-vir-api': 'plain api',
+            });
 
             assert.isFalse((await fetchEndpoint(internalErrorEndpoint, HttpMethod.Get)).ok);
 

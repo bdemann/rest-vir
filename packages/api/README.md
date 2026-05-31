@@ -117,6 +117,8 @@ For Server-Sent Events or other streaming responses, use `client.fetchStream(end
 
 ## WebSockets
 
+<!-- example-link: src/examples/web-socket.example.ts -->
+
 ```TypeScript
 import {defineApi, defineWebSocket, RestVirClient} from '@rest-vir/api';
 import {defineShape} from 'object-shape-tester';
@@ -209,17 +211,44 @@ The mock host returns a real `RestVirClient`, so application code can use the sa
 
 Use this package for the shared contract and client calls. Use `@rest-vir/host` in the server process to implement the same definition:
 
+<!-- example-link: ../host/src/examples/pair-with-host.example.ts -->
+
 ```TypeScript
-import {HttpMethod, HttpStatus} from '@rest-vir/api';
+import {defineApi, defineEndpoint, HttpMethod, HttpStatus} from '@rest-vir/api';
 import {createApiImplementor, implementApi} from '@rest-vir/host';
-import {healthEndpoint, myApi} from './my-api.js';
+import {defineShape} from 'object-shape-tester';
+
+const healthEndpoint = defineEndpoint({
+    path: '/health',
+    requests: {
+        [HttpMethod.Get]: {
+            responses: {
+                [HttpStatus.Ok]: {
+                    responseData: defineShape({
+                        status: '',
+                    }),
+                },
+            },
+        },
+    },
+});
+
+const myApi = defineApi({
+    apiName: 'my-api',
+    endpoints: [
+        healthEndpoint,
+    ],
+    webSockets: [],
+});
 
 const implementor = createApiImplementor<undefined>()(myApi);
 
 export const myApiImplementation = implementApi<undefined>()(myApi, {
-    createHostContext: () => ({
-        context: undefined,
-    }),
+    createHostContext() {
+        return {
+            context: undefined,
+        };
+    },
     endpoints: [
         implementor.implementEndpoint(healthEndpoint, {
             [HttpMethod.Get]() {

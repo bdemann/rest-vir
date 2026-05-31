@@ -24,6 +24,20 @@ export const demoHealthEndpoint = defineEndpoint({
     },
 });
 
+/** No-body success endpoint: GET returns 204 NoContent with no response data. */
+export const demoNoContentEndpoint = defineEndpoint({
+    path: '/no-content',
+    requests: {
+        [HttpMethod.Get]: {
+            responses: {
+                [HttpStatus.NoContent]: {
+                    responseData: undefined,
+                },
+            },
+        },
+    },
+});
+
 /** POST with a request body shape that the server echoes back. Returns 202 Accepted. */
 export const demoEchoEndpoint = defineEndpoint({
     path: '/echo',
@@ -237,6 +251,7 @@ export const demoApi = defineApi({
     apiName: 'rest-vir-demo',
     endpoints: [
         demoHealthEndpoint,
+        demoNoContentEndpoint,
         demoEchoEndpoint,
         demoUserEndpoint,
         demoSearchEndpoint,

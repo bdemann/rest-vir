@@ -32,7 +32,7 @@ import {defineApi, defineEndpoint, HttpMethod, HttpStatus} from '@rest-vir/api';
 import {createApiImplementor, implementApi, startApiServer} from '@rest-vir/host';
 import {defineShape} from 'object-shape-tester';
 
-const healthEndpoint = defineEndpoint({
+export const healthEndpoint = defineEndpoint({
     path: '/health',
     requests: {
         [HttpMethod.Get]: {
@@ -57,7 +57,7 @@ const myApi = defineApi({
 
 const {implementEndpoint} = createApiImplementor<undefined>()(myApi);
 
-const healthImplementation = implementEndpoint(healthEndpoint, {
+export const healthImplementation = implementEndpoint(healthEndpoint, {
     [HttpMethod.Get]() {
         return {
             [HttpStatus.Ok]: {
@@ -69,19 +69,16 @@ const healthImplementation = implementEndpoint(healthEndpoint, {
     },
 });
 
-const apiImplementation = implementApi<undefined>()(myApi, {
+export const apiImplementation = implementApi<undefined>()(myApi, {
     createHostContext: () => ({
         context: undefined,
     }),
-    endpoints: [
-        healthImplementation,
-    ],
+    endpoints: [healthImplementation],
 });
 
 const {kill} = await startApiServer(apiImplementation, {
-    externalOrigin: 'http://localhost:3000',
     port: 3000,
-    workerCount: 1,
+    externalOrigin: 'http://localhost:3000',
 });
 
 // later, to shut down:
@@ -94,12 +91,55 @@ await kill();
 
 `createHostContext` runs before endpoint and WebSocket handlers. Return `{context}` to pass typed context into every implementation callback.
 
+<!-- example-link: src/examples/host-context.example.ts -->
+
 ```TypeScript
+import {defineApi, defineEndpoint, HttpMethod, HttpStatus} from '@rest-vir/api';
+import {createApiImplementor, implementApi} from '@rest-vir/host';
+import {defineShape} from 'object-shape-tester';
+
+const healthEndpoint = defineEndpoint({
+    path: '/health',
+    requests: {
+        [HttpMethod.Get]: {
+            responses: {
+                [HttpStatus.Ok]: {
+                    responseData: defineShape({
+                        requestId: '',
+                    }),
+                },
+            },
+        },
+    },
+});
+
+const myApi = defineApi({
+    apiName: 'my-api',
+    endpoints: [
+        healthEndpoint,
+    ],
+    webSockets: [],
+});
+
 type HostContext = {
     requestId: string;
 };
 
-const apiImplementation = implementApi<HostContext>()(myApi, {
+const {implementEndpoint} = createApiImplementor<HostContext>()(myApi);
+
+const healthImplementation = implementEndpoint(healthEndpoint, {
+    [HttpMethod.Get]({context}) {
+        return {
+            [HttpStatus.Ok]: {
+                responseData: {
+                    requestId: context.requestId,
+                },
+            },
+        };
+    },
+});
+
+export const apiImplementation = implementApi<HostContext>()(myApi, {
     createHostContext() {
         return {
             context: {
@@ -116,6 +156,8 @@ const apiImplementation = implementApi<HostContext>()(myApi, {
 `createHostContext` can also reject a request by returning `{reject}` with a status code, response data, and optional headers.
 
 ## WebSocket Implementations
+
+<!-- example-link: src/examples/web-socket-implementation.example.ts -->
 
 ```TypeScript
 import {defineApi, defineWebSocket} from '@rest-vir/api';
@@ -151,9 +193,11 @@ const echoImplementation = implementor.implementWebSocket(echoWebSocket, {
 });
 
 export const apiImplementation = implementApi<undefined>()(api, {
-    createHostContext: () => ({
-        context: undefined,
-    }),
+    createHostContext() {
+        return {
+            context: undefined,
+        };
+    },
     webSockets: [
         echoImplementation,
     ],
@@ -164,10 +208,12 @@ WebSocket listeners may implement `open`, `message`, and `close`. Incoming clien
 
 ## Attach To An Existing Fastify Server
 
+<!-- example-link: src/examples/attach-api.example.ts -->
+
 ```TypeScript
 import {attachApi} from '@rest-vir/host';
 import fastify from 'fastify';
-import {apiImplementation} from './api-implementation.js';
+import {apiImplementation} from './basic-api-implementation.example.js';
 
 const server = fastify();
 
@@ -215,10 +261,12 @@ Per-route requirements override the API-level requirement.
 
 Use `testApi` for integration tests without manually managing a server:
 
+<!-- example-link: src/examples/test-api.example.ts -->
+
 ```TypeScript
 import {HttpMethod} from '@rest-vir/api';
 import {condenseResponse, testApi} from '@rest-vir/host';
-import {apiImplementation, healthEndpoint} from './api-implementation.js';
+import {apiImplementation, healthEndpoint} from './basic-api-implementation.example.js';
 
 const {fetchEndpoint, kill} = await testApi(apiImplementation);
 
@@ -229,4 +277,38 @@ console.info(await condenseResponse(response));
 await kill();
 ```
 
-`testApi` uses Fastify request injection by default, so it does not need a real port. Pass a `port` option when you need full network behavior. `describeApi`, `testEndpoint`, and `testWebSocket` are also exported for focused tests.
+`describeEndpoint` wraps `testEndpoint` in table-driven tests:
+
+<!-- example-link: src/examples/describe-endpoint.example.ts -->
+
+```TypeScript
+import {HttpStatus} from '@rest-vir/api';
+import {describeEndpoint} from '@rest-vir/host';
+import {healthImplementation} from './basic-api-implementation.example.js';
+
+function createHostContext() {
+    return {
+        context: undefined,
+    };
+}
+
+describeEndpoint(healthImplementation, ({endpointCases}) => {
+    endpointCases.GET({createHostContext}, [
+        {
+            it: 'responds with ok',
+            input: {},
+            expect: {
+                response: {
+                    [HttpStatus.Ok]: {
+                        body: {
+                            status: 'ok',
+                        },
+                    },
+                },
+            },
+        },
+    ]);
+});
+```
+
+`testApi` uses Fastify request injection by default, so it does not need a real port. Pass a `port` option when you need full network behavior. `describeApi`, `describeEndpoint`, `testEndpoint`, and `testWebSocket` are also exported for focused tests.

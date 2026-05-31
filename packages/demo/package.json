@@ -21,7 +21,7 @@
         "start": "runstorm --colors green,blue --names backend,frontend \"npm run start:backend\" \"npm run start:frontend\"",
         "start:backend": "tsx --watch src/server/demo-server.script.ts",
         "start:frontend": "virmator frontend",
-        "test": "exit 0",
+        "test": "virmator test node",
         "test:coverage": "npm test",
         "test:docs": "exit 0"
     },
@@ -37,6 +37,7 @@
         "vira": "^31.18.1"
     },
     "devDependencies": {
+        "@augment-vir/test": "^31.71.0",
         "typescript": "^5.9.3",
         "vite": "^8.0.13"
     },

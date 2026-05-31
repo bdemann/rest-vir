@@ -1,5 +1,5 @@
 import {defineApi, defineEndpoint, HttpMethod, HttpStatus} from '@rest-vir/api';
-import {createApiImplementor, implementApi, startApiServer} from '@rest-vir/host';
+import {createApiImplementor, implementApi} from '@rest-vir/host';
 import {defineShape} from 'object-shape-tester';
 
 export const healthEndpoint = defineEndpoint({
@@ -40,16 +40,12 @@ export const healthImplementation = implementEndpoint(healthEndpoint, {
 });
 
 export const apiImplementation = implementApi<undefined>()(myApi, {
-    createHostContext: () => ({
-        context: undefined,
-    }),
-    endpoints: [healthImplementation],
+    createHostContext() {
+        return {
+            context: undefined,
+        };
+    },
+    endpoints: [
+        healthImplementation,
+    ],
 });
-
-const {kill} = await startApiServer(apiImplementation, {
-    port: 3000,
-    externalOrigin: 'http://localhost:3000',
-});
-
-// later, to shut down:
-await kill();

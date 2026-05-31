@@ -10,20 +10,30 @@ import {
     type usersEndpoint,
 } from '@rest-vir/api/src/api/api.mock.js';
 import {defineShape} from 'object-shape-tester';
+import {type RequireExactlyOne} from 'type-fest';
 import {
     defineEndpoint,
     type DefaultErrorResponseType,
     type DefaultResponseHeadersType,
+    type EndpointResponseType,
 } from '../api/endpoint.js';
 import type {
     DefinedEndpointFetchOutputs,
     DefinedEndpointFetchStreamOutputs,
     EndpointFetchOutput,
     EndpointFetchStreamOutput,
+    HttpStatusByKey,
     ResolveShapeType,
     UnknownFetchOutput,
 } from './endpoint-response.js';
-import {httpStatusToKey, readResponseHeaders} from './endpoint-response.js';
+import {
+    condenseResponse,
+    createEndpointResponseOutput,
+    httpStatusToKey,
+    readResponseBodyAsJsonOrText,
+    readResponseHeaders,
+} from './endpoint-response.js';
+import {createMockEndpointResponse, createMockResponse} from './mock-fetch.js';
 
 const authLoginEndpoint = defineEndpoint({
     path: '/auth/login',
@@ -46,7 +56,7 @@ const authLoginEndpoint = defineEndpoint({
                         expiresAt: '',
                     }),
                 },
-                [HttpStatus.Unauthorized]: {
+                [HttpStatus.BadRequest]: {
                     responseData: defineShape({
                         error: '',
                         remainingAttempts: 0,
@@ -112,17 +122,42 @@ describe('ResolveShapeType', () => {
 });
 
 describe('EndpointFetchOutput', () => {
+    it('has fallback value', () => {
+        const value = {} as any as EndpointFetchOutput;
+
+        value.Accepted;
+
+        assert.tsType(value).equals<
+            RequireExactlyOne<
+                {
+                    [Status in HttpStatus as HttpStatusByKey<Status>]: {
+                        status: Status;
+                        responseData: any;
+                        headers: DefaultResponseHeadersType;
+                    } & {
+                        response?: Response | undefined;
+                    };
+                } & {
+                    unexpectedError: UnknownFetchOutput;
+                }
+            >
+        >();
+    });
+
     it('handles single ok response status', () => {
         const result = {} as EndpointFetchOutput<typeof usersEndpoint, typeof HttpMethod.Get>;
 
         if (result.Ok) {
-            assert.tsType(result.Ok).matches<{
-                responseData: {
-                    users: {id: string; name: string}[];
-                };
-                headers: Record<string, string>;
-                response: Response;
-            }>();
+            assert.tsType(result.Ok).matches<
+                {
+                    responseData: {
+                        users: {id: string; name: string}[];
+                    };
+                    headers: Record<string, string>;
+                } & {
+                    response?: Response | undefined;
+                }
+            >();
         }
     });
 
@@ -133,11 +168,12 @@ describe('EndpointFetchOutput', () => {
         >;
 
         if (result.Created) {
-            assert.tsType(result.Created).matches<{
-                responseData: {id: string};
-                headers: Record<string, string>;
-                response: Response;
-            }>();
+            assert.tsType(result.Created).matches<
+                {
+                    responseData: {id: string};
+                    headers: Record<string, string>;
+                } & {response?: Response | undefined}
+            >();
         } else if (result.BadRequest) {
             assert
                 .tsType(result.BadRequest.responseData)
@@ -149,11 +185,12 @@ describe('EndpointFetchOutput', () => {
         const result = {} as EndpointFetchOutput<typeof itemByIdEndpoint, typeof HttpMethod.Get>;
 
         if (result.Ok) {
-            assert.tsType(result.Ok).matches<{
-                responseData: {id: string; title: string; count: number};
-                headers: Record<string, string>;
-                response: Response;
-            }>();
+            assert.tsType(result.Ok).matches<
+                {
+                    responseData: {id: string; title: string; count: number};
+                    headers: Record<string, string>;
+                } & {response?: Response | undefined}
+            >();
         } else if (result.NotFound) {
             assert.tsType(result.NotFound.responseData).equals<string | undefined>();
         }
@@ -163,11 +200,12 @@ describe('EndpointFetchOutput', () => {
         const result = {} as EndpointFetchOutput<typeof partnerApiEndpoint, typeof HttpMethod.Post>;
 
         if (result.unexpectedError) {
-            assert.tsType(result.unexpectedError).matches<{
-                responseData: unknown;
-                headers: Record<string, string>;
-                response: Response;
-            }>();
+            assert.tsType(result.unexpectedError).matches<
+                {
+                    responseData: unknown;
+                    headers: Record<string, string>;
+                } & {response?: Response | undefined}
+            >();
         }
     });
 
@@ -183,11 +221,12 @@ describe('EndpointFetchOutput', () => {
         const result = {} as EndpointFetchOutput<typeof itemByIdEndpoint, typeof HttpMethod.Delete>;
 
         if (result.NoContent) {
-            assert.tsType(result.NoContent).matches<{
-                responseData: undefined;
-                headers: Record<string, string>;
-                response: Response;
-            }>();
+            assert.tsType(result.NoContent).matches<
+                {
+                    responseData: undefined;
+                    headers: Record<string, string>;
+                } & {response?: Response | undefined}
+            >();
         }
     });
 
@@ -203,9 +242,9 @@ describe('EndpointFetchOutput', () => {
             assert.tsType(data.token).equals<string>();
             assert.tsType(data.refreshToken).equals<string>();
             assert.tsType(data.expiresAt).equals<string>();
-        } else if (result.Unauthorized) {
+        } else if (result.BadRequest) {
             assert
-                .tsType(result.Unauthorized.responseData)
+                .tsType(result.BadRequest.responseData)
                 .equals<{error: string; remainingAttempts: number} | string | undefined>();
         }
     });
@@ -230,11 +269,12 @@ describe('EndpointFetchOutput', () => {
         const result = {} as EndpointFetchOutput<typeof itemByIdEndpoint, typeof HttpMethod.Put>;
 
         if (result.Ok) {
-            assert.tsType(result.Ok).matches<{
-                responseData: {id: string; title: string; count: number};
-                headers: Record<string, string>;
-                response: Response;
-            }>();
+            assert.tsType(result.Ok).matches<
+                {
+                    responseData: {id: string; title: string; count: number};
+                    headers: Record<string, string>;
+                } & {response?: Response | undefined}
+            >();
         }
     });
 
@@ -257,7 +297,7 @@ describe('EndpointFetchOutput', () => {
         type AuthResult = EndpointFetchOutput<typeof authLoginEndpoint, typeof HttpMethod.Post>;
 
         assert
-            .tsType<NonNullable<AuthResult['Unauthorized']>['responseData']>()
+            .tsType<NonNullable<AuthResult['BadRequest']>['responseData']>()
             .equals<{error: string; remainingAttempts: number} | string | undefined>();
 
         type ItemResult = EndpointFetchOutput<typeof itemByIdEndpoint, typeof HttpMethod.Get>;
@@ -314,6 +354,242 @@ describe('UnknownFetchOutput', () => {
 
     it('uses DefaultResponseHeadersType for its headers', () => {
         assert.tsType<UnknownFetchOutput['headers']>().equals<DefaultResponseHeadersType>();
+    });
+});
+
+describe(createEndpointResponseOutput.name, () => {
+    it('creates declared output for defined statuses', async () => {
+        const mockResponseData: EndpointResponseType<
+            typeof authLoginEndpoint,
+            typeof HttpMethod.Post,
+            typeof HttpStatus.Ok
+        > = {
+            expiresAt: '',
+            refreshToken: '',
+            token: '',
+            user: {
+                displayName: '',
+                emailAddress: '',
+                id: '',
+            },
+        };
+
+        const result = await createEndpointResponseOutput({
+            endpoint: authLoginEndpoint,
+            method: HttpMethod.Post,
+            shouldCondenseResponse: false,
+            includeResponse: false,
+            response: createMockEndpointResponse(
+                authLoginEndpoint,
+                HttpMethod.Post,
+                HttpStatus.Ok,
+                {
+                    headers: {
+                        'x-source': 'test',
+                    },
+                    body: mockResponseData,
+                },
+            ),
+        });
+
+        assert.deepEquals(result, {
+            Ok: {
+                headers: {
+                    'content-type': 'application/json',
+                    'x-source': 'test',
+                },
+                responseData: mockResponseData,
+                status: HttpStatus.Ok,
+            },
+        });
+    });
+
+    it('condenses declared response outputs', async () => {
+        const responseData: EndpointResponseType<
+            typeof authLoginEndpoint,
+            typeof HttpMethod.Post,
+            typeof HttpStatus.Ok
+        > = {
+            expiresAt: '',
+            refreshToken: '',
+            token: '',
+            user: {
+                displayName: '',
+                emailAddress: '',
+                id: '',
+            },
+        };
+        const result = await createEndpointResponseOutput({
+            endpoint: authLoginEndpoint,
+            method: HttpMethod.Post,
+            shouldCondenseResponse: true,
+            includeResponse: false,
+            response: createMockEndpointResponse(
+                authLoginEndpoint,
+                HttpMethod.Post,
+                HttpStatus.Ok,
+                {
+                    headers: {
+                        'access-control-allow-origin': '*',
+                        'x-source': 'test',
+                    },
+                    body: responseData,
+                },
+            ),
+        });
+
+        assert.deepEquals(result, {
+            Ok: {
+                headers: {
+                    'x-source': 'test',
+                },
+                responseData,
+                status: HttpStatus.Ok,
+            },
+        });
+    });
+
+    it('creates unexpected error output for undefined error statuses', async () => {
+        const result = await createEndpointResponseOutput({
+            endpoint: authLoginEndpoint,
+            method: HttpMethod.Post,
+            shouldCondenseResponse: false,
+            response: createMockResponse({
+                body: 'not allowed',
+                status: HttpStatus.Unauthorized,
+            }),
+            includeResponse: false,
+            handleDeclaredResponseStatusOverride() {
+                throw new Error('This callback should not run.');
+            },
+        });
+
+        assert.deepEquals(result, {
+            unexpectedError: {
+                headers: {
+                    'content-type': 'text/plain',
+                },
+                responseData: 'not allowed',
+                status: HttpStatus.Unauthorized,
+            },
+        });
+    });
+
+    it('condenses unexpected error responses', async () => {
+        const response = createMockResponse({
+            body: 'not allowed',
+            headers: {
+                'access-control-allow-origin': '*',
+                'x-source': 'test',
+            },
+            status: HttpStatus.Unauthorized,
+        });
+        const result = await createEndpointResponseOutput({
+            endpoint: authLoginEndpoint,
+            method: HttpMethod.Post,
+            shouldCondenseResponse: true,
+            response,
+            includeResponse: false,
+        });
+
+        assert.deepEquals(result, {
+            unexpectedError: {
+                headers: {
+                    'x-source': 'test',
+                },
+                responseData: 'not allowed',
+                status: HttpStatus.Unauthorized,
+            },
+        });
+    });
+
+    it('can include the full response', async () => {
+        const responseData = {
+            expiresAt: '',
+            refreshToken: '',
+            token: '',
+            user: {
+                displayName: '',
+                emailAddress: '',
+                id: '',
+            },
+        };
+
+        const response = createMockEndpointResponse(
+            authLoginEndpoint,
+            HttpMethod.Post,
+            HttpStatus.Ok,
+            {
+                body: responseData,
+            },
+        );
+        const result = await createEndpointResponseOutput({
+            endpoint: authLoginEndpoint,
+            method: HttpMethod.Post,
+            response,
+            shouldCondenseResponse: false,
+            includeResponse: true,
+        });
+
+        assert.deepEquals(result, {
+            Ok: {
+                headers: {
+                    'content-type': 'application/json',
+                },
+                response,
+                responseData,
+                status: HttpStatus.Ok,
+            },
+        });
+    });
+
+    it('throws for undefined successful statuses', async () => {
+        await assert.throws(
+            async () =>
+                await createEndpointResponseOutput({
+                    endpoint: authLoginEndpoint,
+                    method: HttpMethod.Post,
+                    response: createMockResponse({
+                        status: HttpStatus.Created,
+                    }),
+                    shouldCondenseResponse: false,
+                    includeResponse: false,
+                    handleDeclaredResponseStatusOverride() {
+                        throw new Error('This callback should not run.');
+                    },
+                }),
+            {
+                matchMessage: `Received unexpected successful response status from endpoint '${authLoginEndpoint.path}': ${HttpStatus.Created}`,
+            },
+        );
+    });
+});
+
+describe(condenseResponse.name, () => {
+    it('removes noisy response headers', () => {
+        const response = createMockResponse({
+            body: {
+                value: 'kept',
+            },
+            headers: {
+                'access-control-allow-credentials': 'true',
+                'access-control-allow-origin': '*',
+                'access-control-expose-headers': 'rest-vir-api',
+                connection: 'keep-alive',
+                'content-length': '16',
+                date: 'Mon, 01 Jun 2026 00:00:00 GMT',
+                'keep-alive': 'timeout=72',
+                'rest-vir-api': 'api',
+                vary: 'origin',
+                'x-source': 'test',
+            },
+        });
+
+        condenseResponse(response);
+
+        assert.deepEquals(readResponseHeaders(response.headers), {
+            'x-source': 'test',
+        });
     });
 });
 
@@ -492,6 +768,200 @@ describe(readResponseHeaders.name, () => {
             ]),
             expect: {
                 'x-multi': 'first, second',
+            },
+        },
+    ]);
+});
+
+describe(readResponseBodyAsJsonOrText.name, () => {
+    it('does not consume the original response body (uses clone)', async () => {
+        const response = new Response(
+            JSON.stringify({
+                n: 1,
+            }),
+        );
+
+        await readResponseBodyAsJsonOrText(response, {
+            'content-type': 'application/json',
+        });
+
+        /** Original is still readable because the helper clones before reading. */
+        assert.deepEquals(await response.json(), {
+            n: 1,
+        });
+    });
+
+    itCases(readResponseBodyAsJsonOrText, [
+        {
+            it: 'parses a JSON object body when content-type is application/json',
+            inputs: [
+                new Response(
+                    JSON.stringify({
+                        hello: 'world',
+                    }),
+                ),
+                {
+                    'content-type': 'application/json',
+                },
+            ],
+            expect: {
+                hello: 'world',
+            },
+        },
+        {
+            it: 'parses a JSON-encoded string when content-type is application/json',
+            inputs: [
+                new Response(JSON.stringify('hi')),
+                {
+                    'content-type': 'application/json',
+                },
+            ],
+            expect: 'hi',
+        },
+        {
+            it: 'parses a JSON-encoded number when content-type is application/json',
+            inputs: [
+                new Response(JSON.stringify(42)),
+                {
+                    'content-type': 'application/json',
+                },
+            ],
+            expect: 42,
+        },
+        {
+            it: 'preserves a JSON-encoded zero instead of falling back to raw text',
+            inputs: [
+                new Response(JSON.stringify(0)),
+                {
+                    'content-type': 'application/json',
+                },
+            ],
+            expect: 0,
+        },
+        {
+            it: 'preserves a JSON-encoded false instead of falling back to raw text',
+            inputs: [
+                new Response(JSON.stringify(false)),
+                {
+                    'content-type': 'application/json',
+                },
+            ],
+            expect: false,
+        },
+        {
+            it: 'preserves a JSON-encoded null instead of falling back to raw text',
+            inputs: [
+                new Response(JSON.stringify(null)),
+                {
+                    'content-type': 'application/json',
+                },
+            ],
+            expect: null,
+        },
+        {
+            it: 'parses when content-type advertises a JSON variant like application/vnd.api+json',
+            inputs: [
+                new Response(
+                    JSON.stringify({
+                        type: 'thing',
+                    }),
+                ),
+                {
+                    'content-type': 'application/vnd.api+json; charset=utf-8',
+                },
+            ],
+            expect: {
+                type: 'thing',
+            },
+        },
+        {
+            it: 'parses JSON content types case-insensitively',
+            inputs: [
+                new Response(
+                    JSON.stringify({
+                        type: 'thing',
+                    }),
+                ),
+                {
+                    'content-type': 'Application/JSON; charset=utf-8',
+                },
+            ],
+            expect: {
+                type: 'thing',
+            },
+        },
+        {
+            it: 'returns raw text when content-type is not JSON',
+            inputs: [
+                new Response('plain text body'),
+                {
+                    'content-type': 'text/plain',
+                },
+            ],
+            expect: 'plain text body',
+        },
+        {
+            it: 'returns raw text when content-type header is missing',
+            inputs: [
+                new Response('no header'),
+                {},
+            ],
+            expect: 'no header',
+        },
+        {
+            it: 'returns undefined for an empty body',
+            inputs: [
+                new Response(''),
+                {
+                    'content-type': 'application/json',
+                },
+            ],
+            expect: undefined,
+        },
+        {
+            it: 'returns undefined for a null body',
+            inputs: [
+                new Response(null),
+                {
+                    'content-type': 'application/json',
+                },
+            ],
+            expect: undefined,
+        },
+        {
+            it: 'falls back to the raw text when JSON parsing fails on a JSON content-type',
+            inputs: [
+                new Response('not really { json'),
+                {
+                    'content-type': 'application/json',
+                },
+            ],
+            expect: 'not really { json',
+        },
+        {
+            it: 'does not parse JSON-looking text when content-type is not JSON',
+            inputs: [
+                new Response('{"x":1}'),
+                {
+                    'content-type': 'text/plain',
+                },
+            ],
+            expect: '{"x":1}',
+        },
+        {
+            it: 'parses a JSON content-type with charset parameter',
+            inputs: [
+                new Response(
+                    JSON.stringify({
+                        a: 1,
+                    }),
+                ),
+                {
+                    'content-type': 'application/json; charset=utf-8',
+                },
+            ],
+            expect: {
+                a: 1,
             },
         },
     ]);

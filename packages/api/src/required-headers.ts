@@ -1,7 +1,7 @@
 import {assert} from '@augment-vir/assert';
 import {mapObject, stringify} from '@augment-vir/common';
 import {assertValidShape, type Shape} from 'object-shape-tester';
-import {readHeaderValue} from './util/header-util.js';
+import {readHeaderValue} from './util/client-headers.js';
 
 export function extractRequiredHeaders(
     path: PropertyKey,

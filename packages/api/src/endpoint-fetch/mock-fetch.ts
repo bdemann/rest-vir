@@ -1,4 +1,4 @@
-import {assertWrap, check} from '@augment-vir/assert';
+import {check} from '@augment-vir/assert';
 import {
     copyThroughJson,
     HttpStatus,
@@ -11,11 +11,19 @@ import {
     type BaseRequiredResponseHeaders,
     type DefinableHttpMethod,
     type EndpointDefinition,
+    type EndpointDefinitionMethods,
+    type EndpointDefinitionResponseStatuses,
     type EndpointMethodDefinition,
     type EndpointResponseHeadersType,
     type ResponseStatusDefinition,
 } from '../api/endpoint.js';
-import {headersToObject, mergeHeaders, readHeaderValue} from '../util/header-util.js';
+import {
+    headersToObject,
+    mergeHeaders,
+    readHeaderValue,
+    type AllowedHeaders,
+} from '../util/client-headers.js';
+import {extractHttpStatus} from '../util/http-status.js';
 
 /**
  * Options for {@link createMockEndpointResponse} and {@link createMockEndpointFetch}.
@@ -59,11 +67,8 @@ export type MockEndpointResponseOptions<
  */
 export function createMockEndpointResponse<
     const Endpoint extends EndpointDefinition,
-    const Method extends keyof NoInfer<Endpoint>['requests'],
-    const Status extends keyof Extract<
-        NoInfer<Endpoint>['requests'][NoInfer<Method>],
-        EndpointMethodDefinition
-    >['responses'],
+    const Method extends EndpointDefinitionMethods<NoInfer<Endpoint>>,
+    const Status extends EndpointDefinitionResponseStatuses<NoInfer<Endpoint>, NoInfer<Method>>,
 >(
     endpoint: Endpoint,
     method: Method,
@@ -78,11 +83,7 @@ export function createMockEndpointResponse<
 ) {
     return createMockResponse({
         ...params,
-        status: assertWrap.isEnumValue(
-            status,
-            HttpStatus,
-            `Received invalid status: '${String(status)}'`,
-        ),
+        status: extractHttpStatus(status),
     });
 }
 
@@ -98,7 +99,7 @@ export type MockResponseParams = Overwrite<
     PartialWithUndefined<{
         status: HttpStatus;
         url: string | URL;
-        headers: HeadersInit;
+        headers: AllowedHeaders;
         body: unknown;
     }>
 >;
@@ -297,11 +298,8 @@ export function createMockResponse(params: Readonly<MockResponseParams> = {}): R
  */
 export function createMockEndpointFetch<
     const Endpoint extends EndpointDefinition,
-    const Method extends keyof NoInfer<Endpoint>['requests'],
-    const Status extends keyof Extract<
-        NoInfer<Endpoint>['requests'][NoInfer<Method>],
-        EndpointMethodDefinition
-    >['responses'],
+    const Method extends EndpointDefinitionMethods<NoInfer<Endpoint>>,
+    const Status extends EndpointDefinitionResponseStatuses<NoInfer<Endpoint>, NoInfer<Method>>,
 >(
     endpoint: Endpoint,
     method: Method,
@@ -319,11 +317,7 @@ export function createMockEndpointFetch<
 ): typeof globalThis.fetch {
     return createMockFetch({
         ...params,
-        status: assertWrap.isEnumValue(
-            status,
-            HttpStatus,
-            `Received invalid status: '${String(status)}'`,
-        ),
+        status: extractHttpStatus(status),
     });
 }
 

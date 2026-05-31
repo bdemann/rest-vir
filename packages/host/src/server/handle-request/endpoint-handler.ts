@@ -6,7 +6,7 @@ import {type OutgoingHttpHeaders} from 'node:http';
 import {type EndpointImplementation} from '../../implementation/implement-endpoint.js';
 import {type WebSocketImplementation} from '../../implementation/implement-websocket.js';
 import {type ServerRequest, type ServerResponse} from '../../implementation/raw-route-data.js';
-import {setRawResponseHeaders, setResponseHeaders} from '../util/headers.js';
+import {setRawServerResponseHeaders, setServerResponseHeaders} from '../util/server-headers.js';
 
 /**
  * Options for `handleRoute`.
@@ -90,12 +90,12 @@ export function handleHandlerOutputWithoutSending(
     response: ServerResponse,
 ): undefined | HandledOutput {
     if (result?.headers) {
-        setResponseHeaders(response, result.headers);
+        setServerResponseHeaders(response, result.headers);
         /**
          * Also set headers on the raw Node response so they survive `response.hijack()`. Fastify
          * headers set via `response.header()` are lost when the response is hijacked.
          */
-        setRawResponseHeaders(response.raw, result.headers);
+        setRawServerResponseHeaders(response.raw, result.headers);
     }
 
     if (result?.statusCode) {
@@ -122,12 +122,12 @@ export function handleHandlerOutput(
     response: ServerResponse,
 ): undefined | FastifyReply {
     if (result?.headers) {
-        setResponseHeaders(response, result.headers);
+        setServerResponseHeaders(response, result.headers);
         /**
          * Also set headers on the raw Node response so they survive `response.hijack()`. Fastify
          * headers set via `response.header()` are lost when the response is hijacked.
          */
-        setRawResponseHeaders(response.raw, result.headers);
+        setRawServerResponseHeaders(response.raw, result.headers);
     }
 
     if (result?.statusCode) {

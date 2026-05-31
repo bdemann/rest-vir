@@ -61,3 +61,15 @@ export type EndpointImplementation<
     Endpoint extends Readonly<EndpointDefinition> | NoParam = NoParam,
     HostContext = unknown,
 > = EndpointImplementationBase<Endpoint, HostContext, HostEndpointParamsExtras>;
+
+/**
+ * Extracts the allowed methods for the given endpoint implementation.
+ *
+ * @category Internal
+ * @category Package : @rest-vir/host
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
+export type EndpointImplementationMethods<Endpoint extends EndpointImplementation | NoParam> =
+    Endpoint extends EndpointImplementation
+        ? Extract<keyof NoInfer<Endpoint>['definition']['requests'], DefinableHttpMethod>
+        : DefinableHttpMethod;

@@ -1,8 +1,9 @@
 import {assert, assertWrap, check} from '@augment-vir/assert';
-import {ensureErrorAndPrependMessage, filterMap, isErrorHttpStatus} from '@augment-vir/common';
+import {ensureErrorAndPrependMessage, isErrorHttpStatus} from '@augment-vir/common';
 import {
     type ApiDefinition,
     definableHttpMethods,
+    extractHttpStatus,
     HttpMethod,
     HttpStatus,
     isJsonContentType,
@@ -117,23 +118,16 @@ export async function handleEndpointRequest(
          * ordering for numeric-string keys depends on V8, so don't rely on `[0]`. Instead, find the
          * single entry whose key parses to a valid `HttpStatus` and reject ambiguous results.
          */
-        const statusEntries = filterMap(
-            Object.entries(endpointResult),
+        const statusEntries = Object.entries(endpointResult).map(
             ([
                 rawStatusCode,
                 statusResponse,
             ]) => {
-                const statusCode = Number(rawStatusCode);
-                if (check.isEnumValue(statusCode, HttpStatus)) {
-                    return {
-                        statusCode,
-                        statusResponse,
-                    };
-                } else {
-                    return undefined;
-                }
+                return {
+                    statusCode: extractHttpStatus(rawStatusCode),
+                    statusResponse,
+                };
             },
-            check.isTruthy,
         );
 
         if (statusEntries.length !== 1 || !statusEntries[0]) {

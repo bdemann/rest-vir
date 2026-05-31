@@ -40,6 +40,8 @@ The normal setup is:
 
 ### Shared API Definition
 
+<!-- example-link: packages/host/src/examples/root-api-definition.example.ts -->
+
 ```TypeScript
 import {defineApi, defineEndpoint, defineWebSocket, HttpMethod, HttpStatus} from '@rest-vir/api';
 import {defineShape} from 'object-shape-tester';
@@ -108,10 +110,17 @@ export const myApi = defineApi({
 
 ### Server Implementation
 
+<!-- example-link: packages/host/src/examples/root-server-implementation.example.ts -->
+
 ```TypeScript
 import {AnyOrigin, HttpMethod, HttpStatus} from '@rest-vir/api';
 import {createApiImplementor, implementApi, startApiServer} from '@rest-vir/host';
-import {createUserEndpoint, healthEndpoint, myApi, notificationsWebSocket} from './my-api.js';
+import {
+    createUserEndpoint,
+    healthEndpoint,
+    myApi,
+    notificationsWebSocket,
+} from './root-api-definition.example.js';
 
 type HostContext = {
     requestId: string;
@@ -132,7 +141,7 @@ const healthImplementation = implementor.implementEndpoint(healthEndpoint, {
 });
 
 const createUserImplementation = implementor.implementEndpoint(createUserEndpoint, {
-    async [HttpMethod.Post]({requestData}) {
+    [HttpMethod.Post]({requestData}) {
         const user = {
             id: crypto.randomUUID(),
             name: requestData.name,
@@ -179,17 +188,19 @@ const {kill} = await startApiServer(myApiImplementation, {
     workerCount: 1,
 });
 
-// await kill();
+await kill();
 ```
 
 `clientOriginRequirement: AnyOrigin` is convenient for local development. Restrict it in production with an exact origin string, a `RegExp`, or an origin-check callback.
 
 You can also attach to an existing Fastify server:
 
+<!-- example-link: packages/host/src/examples/root-attach-existing-server.example.ts -->
+
 ```TypeScript
 import {attachApi} from '@rest-vir/host';
 import fastify from 'fastify';
-import {myApiImplementation} from './my-api-implementation.js';
+import {myApiImplementation} from './root-api-implementation.example.js';
 
 const server = fastify();
 
@@ -204,9 +215,16 @@ await server.listen({
 
 ### Typed Client
 
+<!-- example-link: packages/host/src/examples/root-typed-client.example.ts -->
+
 ```TypeScript
 import {RestVirClient} from '@rest-vir/api';
-import {createUserEndpoint, healthEndpoint, myApi, notificationsWebSocket} from './my-api.js';
+import {
+    createUserEndpoint,
+    healthEndpoint,
+    myApi,
+    notificationsWebSocket,
+} from './root-api-definition.example.js';
 
 const client = new RestVirClient(myApi, 'https://api.example.com');
 

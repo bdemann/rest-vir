@@ -1,10 +1,5 @@
-import {assertWrap, check} from '@augment-vir/assert';
-import {
-    ensureErrorAndPrependMessage,
-    extractErrorMessage,
-    filterMap,
-    HttpStatus,
-} from '@augment-vir/common';
+import {assertWrap} from '@augment-vir/assert';
+import {ensureErrorAndPrependMessage, extractErrorMessage, HttpStatus} from '@augment-vir/common';
 import {parseUrl} from 'url-vir';
 import {type ApiDefinition} from '../api/api.js';
 import {
@@ -13,12 +8,13 @@ import {
     type DefaultResponseHeadersType,
     type EndpointDefinition,
 } from '../api/endpoint.js';
-import {readResponseBodyAsJsonOrText} from '../client.js';
 import {type ClientFetch} from '../endpoint-fetch/endpoint-params.js';
+import {readResponseBodyAsJsonOrText} from '../endpoint-fetch/endpoint-response.js';
 import {createMockResponse} from '../endpoint-fetch/mock-fetch.js';
 import {type EndpointMethodImplementationOutput} from '../implementation/endpoint-implementation.js';
 import {extractSearchParams} from '../search-params.js';
-import {consolidateHeaders, headersToObject} from '../util/header-util.js';
+import {consolidateHeaders, headersToObject} from '../util/client-headers.js';
+import {extractHttpStatus} from '../util/http-status.js';
 import {type MockEndpointMethodImplementations} from './mock-endpoint-implementation.js';
 import {type MockCreateHostContext} from './mock-host-context.js';
 import {resolveMockHostContext} from './mock-host-resolve-context.js';
@@ -205,24 +201,16 @@ function buildMockResponseFromResult(
      * Find the single entry whose key parses to a valid `HttpStatus`. Don't rely on
      * `Object.entries[0]` ordering for numeric-string keys (it varies by V8 internals).
      */
-    const statusEntries = filterMap(
-        entries,
+    const statusEntries = entries.map(
         ([
             rawStatusKey,
             value,
         ]) => {
-            const rawNumberStatusKey = Number(rawStatusKey);
-
-            if (!check.isEnumValue(rawNumberStatusKey, HttpStatus)) {
-                return undefined;
-            }
-
             return {
-                status: rawNumberStatusKey,
+                status: extractHttpStatus(rawStatusKey),
                 value,
             };
         },
-        check.isTruthy,
     );
 
     if (statusEntries.length !== 1 || !statusEntries[0]) {

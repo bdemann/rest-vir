@@ -10,7 +10,7 @@ import {type ServerResponse} from '../../implementation/raw-route-data.js';
  * @category Package : @rest-vir/host
  * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
  */
-export function setResponseHeaders(
+export function setServerResponseHeaders(
     response: /**
      * This is a subset of the fastify response type, but without a return type that makes ESLint think
      * that these methods are async (by default it returns the original Fastify reply object which
@@ -43,7 +43,7 @@ export function setResponseHeaders(
  * @category Package : @rest-vir/host
  * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
  */
-export function setRawResponseHeaders(
+export function setRawServerResponseHeaders(
     rawResponse: Readonly<Pick<NodeServerResponse, 'setHeader' | 'removeHeader'>>,
     headers: Readonly<OutgoingHttpHeaders>,
 ): void {

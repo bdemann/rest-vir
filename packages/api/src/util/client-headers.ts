@@ -87,6 +87,12 @@ export function consolidateHeaders(headers: AllowedHeaders): Headers {
     return newHeaders;
 }
 
+export function removeClientHeaders(headers: Headers, headersToRemove: string[]) {
+    headersToRemove.forEach((headerToRemove) => {
+        headers.delete(headerToRemove);
+    });
+}
+
 /**
  * Consolidate the headers input of whatever valid headers container into an object of header
  * values.

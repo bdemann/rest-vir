@@ -1,14 +1,14 @@
 import {assert} from '@augment-vir/assert';
 import {describe, it} from '@augment-vir/test';
-import {setRawResponseHeaders, setResponseHeaders} from './headers.js';
+import {setRawServerResponseHeaders, setServerResponseHeaders} from './server-headers.js';
 
-describe(setResponseHeaders.name, () => {
+describe(setServerResponseHeaders.name, () => {
     it('removes headers', () => {
         const headers: Record<string, string> = {
             'pre-existing': 'exists',
         };
 
-        setResponseHeaders(
+        setServerResponseHeaders(
             {
                 header(key, value) {
                     headers[key] = value;
@@ -31,13 +31,13 @@ describe(setResponseHeaders.name, () => {
     });
 });
 
-describe(setRawResponseHeaders.name, () => {
+describe(setRawServerResponseHeaders.name, () => {
     it('sets and removes headers on the raw response', () => {
         const headers: Record<string, string | number | readonly string[]> = {
             'pre-existing': 'exists',
         };
 
-        setRawResponseHeaders(
+        setRawServerResponseHeaders(
             {
                 setHeader(key, value) {
                     headers[key] = value;
