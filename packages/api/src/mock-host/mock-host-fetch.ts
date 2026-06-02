@@ -5,7 +5,6 @@ import {type ApiDefinition} from '../api/api.js';
 import {
     extractEndpointMethodDefinition,
     extractHttpMethod,
-    type DefaultResponseHeadersType,
     type EndpointDefinition,
 } from '../api/endpoint.js';
 import {type ClientFetch} from '../endpoint-fetch/endpoint-params.js';

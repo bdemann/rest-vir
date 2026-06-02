@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 
+import {check} from '@augment-vir/assert';
 import {
     getObjectTypedEntries,
     HttpStatus,
@@ -10,6 +11,7 @@ import {
     type ErrorHttpStatus,
     type ExtractKeysWithMatchingValues,
     type MaybePromise,
+    type Values,
 } from '@augment-vir/common';
 import {assertValidShape, type Shape} from 'object-shape-tester';
 import {type IsEqual, type RequireExactlyOne} from 'type-fest';
@@ -105,6 +107,19 @@ export type HandleDeclaredResponseStatusOverrideParams = {
     response: Response;
     responseDefinition: ResponseStatusDefinition;
 };
+
+/** Extracts a fetch result no matter what status it came in under. */
+export function extractEndpointResult<Output extends Readonly<EndpointFetchOutput>>(
+    fetchResult: Output,
+): NonNullable<Values<Output>> {
+    const entries = Object.entries(fetchResult);
+
+    if (!check.isLengthAtLeast(entries, 1)) {
+        throw new Error('No fetch result contents.');
+    }
+
+    return entries[0][1];
+}
 
 export type HandleDeclaredResponseStatusOverride = BivariantFunction<
     [Readonly<HandleDeclaredResponseStatusOverrideParams>],

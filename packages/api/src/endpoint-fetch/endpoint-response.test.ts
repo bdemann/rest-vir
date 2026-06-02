@@ -11,12 +11,14 @@ import {
 } from '@rest-vir/api/src/api/api.mock.js';
 import {defineShape} from 'object-shape-tester';
 import {type RequireExactlyOne} from 'type-fest';
+import {defineApi} from '../api/api.js';
 import {
     defineEndpoint,
     type DefaultErrorResponseType,
     type DefaultResponseHeadersType,
     type EndpointResponseType,
 } from '../api/endpoint.js';
+import {RestVirClient} from '../client.js';
 import type {
     DefinedEndpointFetchOutputs,
     DefinedEndpointFetchStreamOutputs,
@@ -29,6 +31,7 @@ import type {
 import {
     condenseResponse,
     createEndpointResponseOutput,
+    extractEndpointResult,
     httpStatusToKey,
     readResponseBodyAsJsonOrText,
     readResponseHeaders,
@@ -321,6 +324,14 @@ describe('EndpointFetchOutput', () => {
         type Result = EndpointFetchOutput<typeof usersCreateEndpoint, typeof HttpMethod.Post>;
 
         assert.tsType<NonNullable<Result['Created']>['responseData']>().equals<{id: string}>();
+    });
+
+    it('allows typed instances to be assigned to the generic instance', () => {
+        const specific = {} as EndpointFetchOutput<
+            typeof usersCreateEndpoint,
+            typeof HttpMethod.Post
+        >;
+        const generic: EndpointFetchOutput = specific;
     });
 
     it('exposes undefined error statuses with unknown response data', () => {
@@ -793,10 +804,10 @@ describe(readResponseBodyAsJsonOrText.name, () => {
         {
             it: 'parses a JSON object body',
             input: new Response(
-                    JSON.stringify({
-                        hello: 'world',
-                    }),
-                ),
+                JSON.stringify({
+                    hello: 'world',
+                }),
+            ),
             expect: {
                 hello: 'world',
             },
@@ -829,10 +840,10 @@ describe(readResponseBodyAsJsonOrText.name, () => {
         {
             it: 'parses a JSON object body without checking content-type',
             input: new Response(
-                    JSON.stringify({
-                        type: 'thing',
-                    }),
-                ),
+                JSON.stringify({
+                    type: 'thing',
+                }),
+            ),
             expect: {
                 type: 'thing',
             },
@@ -840,10 +851,10 @@ describe(readResponseBodyAsJsonOrText.name, () => {
         {
             it: 'parses another JSON object body without checking content-type',
             input: new Response(
-                    JSON.stringify({
-                        type: 'thing',
-                    }),
-                ),
+                JSON.stringify({
+                    type: 'thing',
+                }),
+            ),
             expect: {
                 type: 'thing',
             },
@@ -890,13 +901,133 @@ describe(readResponseBodyAsJsonOrText.name, () => {
         {
             it: 'parses a JSON object body that would normally include charset metadata',
             input: new Response(
-                    JSON.stringify({
-                        a: 1,
-                    }),
-                ),
+                JSON.stringify({
+                    a: 1,
+                }),
+            ),
             expect: {
                 a: 1,
             },
         },
     ]);
+});
+
+describe(extractEndpointResult.name, () => {
+    const loginApi = defineApi({
+        apiName: 'login-api',
+        endpoints: [authLoginEndpoint],
+    });
+
+    const validCredentials = {
+        email: 'a@b.c',
+        password: 'pw',
+    };
+
+    const okBody = {
+        user: {
+            id: 'u-1',
+            emailAddress: 'a@b.c',
+            displayName: 'A',
+        },
+        token: 't',
+        refreshToken: 'r',
+        expiresAt: '2099-01-01',
+    };
+
+    it('returns the defined Ok branch when the response is a successful 200', async () => {
+        const client = new RestVirClient(loginApi, '', () =>
+            createMockResponse({
+                status: HttpStatus.Ok,
+                body: okBody,
+            }),
+        );
+
+        const output = (await client.fetch(authLoginEndpoint).POST({
+            requestData: validCredentials,
+        })) satisfies EndpointFetchOutput as EndpointFetchOutput;
+        const extracted = extractEndpointResult(output);
+
+        assert.tsType(extracted.status).equals<HttpStatus>();
+        assert.tsType(extracted.responseData).equals<any>();
+        assert.strictEquals(extracted.status, HttpStatus.Ok);
+        assert.deepEquals(extracted.responseData, okBody);
+    });
+
+    it('handles a generic response', async () => {
+        const client = new RestVirClient(loginApi, '', () =>
+            createMockResponse({
+                status: HttpStatus.Ok,
+                body: okBody,
+            }),
+        );
+
+        const output = await client.fetch(authLoginEndpoint).POST({
+            requestData: validCredentials,
+        });
+        const extracted = extractEndpointResult(output);
+
+        assert.tsType(extracted.status).equals<HttpStatus>();
+        assert
+            .tsType(extracted.responseData)
+            .equals<
+                | DefaultErrorResponseType
+                | EndpointResponseType<
+                      typeof authLoginEndpoint,
+                      typeof HttpMethod.Post,
+                      typeof HttpStatus.Ok
+                  >
+                | EndpointResponseType<
+                      typeof authLoginEndpoint,
+                      typeof HttpMethod.Post,
+                      typeof HttpStatus.BadRequest
+                  >
+            >();
+        assert.strictEquals(extracted.status, HttpStatus.Ok);
+        assert.deepEquals(extracted.responseData, okBody);
+    });
+
+    it('returns the defined BadRequest branch when the response is a declared 400', async () => {
+        const badRequestBody = {
+            error: 'bad credentials',
+            remainingAttempts: 2,
+        };
+
+        const client = new RestVirClient(loginApi, '', () =>
+            createMockResponse({
+                status: HttpStatus.BadRequest,
+                body: badRequestBody,
+            }),
+        );
+
+        const output = await client.fetch(authLoginEndpoint).POST({
+            requestData: validCredentials,
+        });
+        const extracted = extractEndpointResult(output);
+
+        assert.strictEquals(extracted.status, HttpStatus.BadRequest);
+        assert.deepEquals(extracted.responseData, badRequestBody);
+    });
+
+    it('returns the unexpectedError branch when the response is an undeclared error status', async () => {
+        const client = new RestVirClient(loginApi, '', () =>
+            createMockResponse({
+                status: HttpStatus.InternalServerError,
+                body: 'boom',
+            }),
+        );
+
+        const output = await client.fetch(authLoginEndpoint).POST({
+            requestData: validCredentials,
+        });
+        const extracted = extractEndpointResult(output);
+
+        assert.strictEquals(extracted.status, HttpStatus.InternalServerError);
+        assert.strictEquals(extracted.responseData, 'boom');
+    });
+
+    it('throws when the fetch result is empty', () => {
+        assert.throws(() => extractEndpointResult({} as EndpointFetchOutput), {
+            matchMessage: 'No fetch result contents.',
+        });
+    });
 });

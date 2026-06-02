@@ -9,6 +9,10 @@ export default [
     {
         ignores: [
             /** Add file globs that should be ignored. */
+            './packages/large-api-mock/src/endpoints/',
+            './packages/large-api-mock/src/web-sockets/',
+            './packages/large-api-mock/src/large-api.mock.ts',
+            './packages/large-api-mock/src/implement-large-api.mock.ts',
         ],
     },
     {

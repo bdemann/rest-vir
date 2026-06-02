@@ -134,7 +134,7 @@ export class RestVirClient<const ClientApi extends ApiDefinition> {
 
     /**
      * Validate that the endpoint is registered, build its request init, send the request, and shape
-     * the response into the status-keyed output. The body of {@link RestVirClient.fetch} and
+     * the response into the status-keyed output. The body of `RestVirClient.fetch` and
      * {@link RestVirClient.fetchStream}; their only divergent step is how they read `responseData`
      * out of the response.
      */
