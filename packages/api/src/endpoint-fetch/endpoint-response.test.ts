@@ -16,9 +16,12 @@ import {
     defineEndpoint,
     type DefaultErrorResponseType,
     type DefaultResponseHeadersType,
+    type DefinableHttpMethod,
+    type EndpointDefinition,
     type EndpointResponseType,
 } from '../api/endpoint.js';
 import {RestVirClient} from '../client.js';
+import {type NoParam} from '../util/no-param.js';
 import type {
     DefinedEndpointFetchOutputs,
     DefinedEndpointFetchStreamOutputs,
@@ -332,6 +335,39 @@ describe('EndpointFetchOutput', () => {
             typeof HttpMethod.Post
         >;
         const generic: EndpointFetchOutput = specific;
+
+        assert.tsType(generic).matches<EndpointFetchOutput>();
+    });
+
+    it('allows a concrete instance to be erased to the NoParam instantiation', () => {
+        const specific = {} as EndpointFetchOutput<
+            typeof usersCreateEndpoint,
+            typeof HttpMethod.Post,
+            true
+        >;
+
+        const erased: EndpointFetchOutput<NoParam, NoParam, true> = specific;
+
+        assert.tsType(erased).matches<EndpointFetchOutput<NoParam, NoParam, true>>();
+    });
+
+    it('cannot relate an abstract generic instantiation to the NoParam instantiation', () => {
+        function passThrough<
+            Endpoint extends EndpointDefinition,
+            Method extends DefinableHttpMethod,
+        >(
+            input: EndpointFetchOutput<Endpoint, Method, true>,
+        ): EndpointFetchOutput<Endpoint, Method, true> {
+            // @ts-expect-error: an abstract generic instantiation does not reduce, so it is not
+            // assignable to the resolved NoParam instantiation.
+            const erased: EndpointFetchOutput<NoParam, NoParam, true> = input;
+
+            // @ts-expect-error: the resolved NoParam instantiation is likewise not assignable back
+            // to the abstract generic instantiation.
+            return erased;
+        }
+
+        assert.isFunction(passThrough);
     });
 
     it('exposes undefined error statuses with unknown response data', () => {
