@@ -319,6 +319,6 @@ export type EndpointFetchStreamOutput<
     Method extends DefinableHttpMethod,
 > = RequireExactlyOne<
     DefinedEndpointFetchStreamOutputs<Endpoint, Method> & {
-        unexpectedError: UnknownFetchOutput;
+        unexpectedError: UnknownFetchOutput<true>;
     }
 >;

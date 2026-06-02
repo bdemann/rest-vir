@@ -701,8 +701,14 @@ describe(RestVirClient.name, () => {
             });
             const result = await client.fetchStream(simpleEndpoint, HttpMethod.Get);
 
+            assert
+                .tsType<NonNullable<typeof result.unexpectedError>['response']>()
+                .equals<Response>();
+            assert.tsType<NonNullable<typeof result.Ok>['response']>().equals<Response>();
+
             assert.isDefined(result.Ok);
             assert.instanceOf(result.Ok.responseData, ReadableStream);
+            assert.tsType(result.Ok.response).equals<Response>();
         });
 
         it('throws when the response body is null', async () => {
@@ -722,6 +728,55 @@ describe(RestVirClient.name, () => {
                     matchMessage: 'no body to stream',
                 },
             );
+        });
+
+        it('always attaches the raw response object to whichever branch is populated', async () => {
+            const okClient = new RestVirClient(fullApi, '', () =>
+                Promise.resolve(
+                    new Response('hi', {
+                        status: HttpStatus.Ok,
+                        headers: {
+                            'content-type': 'application/json',
+                        },
+                    }),
+                ),
+            );
+            const okResult = await okClient.fetchStream(simpleEndpoint, HttpMethod.Get);
+            assert.isDefined(okResult.Ok);
+            assert.instanceOf(okResult.Ok.response, Response);
+
+            const errorClient = new RestVirClient(fullApi, '', () =>
+                Promise.resolve(
+                    new Response(
+                        JSON.stringify({
+                            error: 'missing',
+                        }),
+                        {
+                            status: HttpStatus.NotFound,
+                            headers: {
+                                'content-type': 'application/json',
+                            },
+                        },
+                    ),
+                ),
+            );
+            const errorResult = await errorClient.fetchStream(errorEndpoint, HttpMethod.Get);
+            assert.isDefined(errorResult.NotFound);
+            assert.instanceOf(errorResult.NotFound.response, Response);
+
+            const unexpectedClient = new RestVirClient(fullApi, '', () =>
+                Promise.resolve(
+                    new Response('boom', {
+                        status: HttpStatus.InternalServerError,
+                    }),
+                ),
+            );
+            const unexpectedResult = await unexpectedClient.fetchStream(
+                simpleEndpoint,
+                HttpMethod.Get,
+            );
+            assert.isDefined(unexpectedResult.unexpectedError);
+            assert.instanceOf(unexpectedResult.unexpectedError.response, Response);
         });
 
         it('builds wildcard path params correctly via the websocket builder', () => {
