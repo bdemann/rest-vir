@@ -781,9 +781,7 @@ describe(readResponseBodyAsJsonOrText.name, () => {
             }),
         );
 
-        await readResponseBodyAsJsonOrText(response, {
-            'content-type': 'application/json',
-        });
+        await readResponseBodyAsJsonOrText(response);
 
         /** Original is still readable because the helper clones before reading. */
         assert.deepEquals(await response.json(), {
@@ -793,173 +791,109 @@ describe(readResponseBodyAsJsonOrText.name, () => {
 
     itCases(readResponseBodyAsJsonOrText, [
         {
-            it: 'parses a JSON object body when content-type is application/json',
-            inputs: [
-                new Response(
+            it: 'parses a JSON object body',
+            input: new Response(
                     JSON.stringify({
                         hello: 'world',
                     }),
                 ),
-                {
-                    'content-type': 'application/json',
-                },
-            ],
             expect: {
                 hello: 'world',
             },
         },
         {
-            it: 'parses a JSON-encoded string when content-type is application/json',
-            inputs: [
-                new Response(JSON.stringify('hi')),
-                {
-                    'content-type': 'application/json',
-                },
-            ],
+            it: 'parses a JSON-encoded string',
+            input: new Response(JSON.stringify('hi')),
             expect: 'hi',
         },
         {
-            it: 'parses a JSON-encoded number when content-type is application/json',
-            inputs: [
-                new Response(JSON.stringify(42)),
-                {
-                    'content-type': 'application/json',
-                },
-            ],
+            it: 'parses a JSON-encoded number',
+            input: new Response(JSON.stringify(42)),
             expect: 42,
         },
         {
             it: 'preserves a JSON-encoded zero instead of falling back to raw text',
-            inputs: [
-                new Response(JSON.stringify(0)),
-                {
-                    'content-type': 'application/json',
-                },
-            ],
+            input: new Response(JSON.stringify(0)),
             expect: 0,
         },
         {
             it: 'preserves a JSON-encoded false instead of falling back to raw text',
-            inputs: [
-                new Response(JSON.stringify(false)),
-                {
-                    'content-type': 'application/json',
-                },
-            ],
+            input: new Response(JSON.stringify(false)),
             expect: false,
         },
         {
             it: 'preserves a JSON-encoded null instead of falling back to raw text',
-            inputs: [
-                new Response(JSON.stringify(null)),
-                {
-                    'content-type': 'application/json',
-                },
-            ],
+            input: new Response(JSON.stringify(null)),
             expect: null,
         },
         {
-            it: 'parses when content-type advertises a JSON variant like application/vnd.api+json',
-            inputs: [
-                new Response(
+            it: 'parses a JSON object body without checking content-type',
+            input: new Response(
                     JSON.stringify({
                         type: 'thing',
                     }),
                 ),
-                {
-                    'content-type': 'application/vnd.api+json; charset=utf-8',
-                },
-            ],
             expect: {
                 type: 'thing',
             },
         },
         {
-            it: 'parses JSON content types case-insensitively',
-            inputs: [
-                new Response(
+            it: 'parses another JSON object body without checking content-type',
+            input: new Response(
                     JSON.stringify({
                         type: 'thing',
                     }),
                 ),
-                {
-                    'content-type': 'Application/JSON; charset=utf-8',
-                },
-            ],
             expect: {
                 type: 'thing',
             },
         },
         {
-            it: 'returns raw text when content-type is not JSON',
-            inputs: [
-                new Response('plain text body'),
-                {
-                    'content-type': 'text/plain',
-                },
-            ],
+            it: 'returns raw text when parsing fails',
+            input: new Response('plain text body'),
             expect: 'plain text body',
         },
         {
-            it: 'returns raw text when content-type header is missing',
-            inputs: [
-                new Response('no header'),
-                {},
-            ],
+            it: 'returns raw text for another non-JSON body',
+            input: new Response('no header'),
             expect: 'no header',
         },
         {
             it: 'returns undefined for an empty body',
-            inputs: [
-                new Response(''),
-                {
-                    'content-type': 'application/json',
-                },
-            ],
+            input: new Response(''),
             expect: undefined,
         },
         {
             it: 'returns undefined for a null body',
-            inputs: [
-                new Response(null),
-                {
-                    'content-type': 'application/json',
-                },
-            ],
+            input: new Response(null),
             expect: undefined,
         },
         {
-            it: 'falls back to the raw text when JSON parsing fails on a JSON content-type',
-            inputs: [
-                new Response('not really { json'),
-                {
-                    'content-type': 'application/json',
-                },
-            ],
+            it: 'falls back to the raw text when JSON parsing fails',
+            input: new Response('not really { json'),
             expect: 'not really { json',
         },
         {
-            it: 'does not parse JSON-looking text when content-type is not JSON',
-            inputs: [
-                new Response('{"x":1}'),
-                {
-                    'content-type': 'text/plain',
-                },
-            ],
-            expect: '{"x":1}',
+            it: 'parses JSON-looking text',
+            input: new Response('{"x":1}'),
+            expect: {
+                x: 1,
+            },
         },
         {
-            it: 'parses a JSON content-type with charset parameter',
-            inputs: [
-                new Response(
+            it: 'parses another JSON-looking text body',
+            input: new Response('{"x":1}'),
+            expect: {
+                x: 1,
+            },
+        },
+        {
+            it: 'parses a JSON object body that would normally include charset metadata',
+            input: new Response(
                     JSON.stringify({
                         a: 1,
                     }),
                 ),
-                {
-                    'content-type': 'application/json; charset=utf-8',
-                },
-            ],
             expect: {
                 a: 1,
             },

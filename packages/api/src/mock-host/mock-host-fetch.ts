@@ -91,7 +91,7 @@ export function createMockHostFetch<
             );
             const pathParams = extractPathParamsFromUrl(endpoint, parsedUrl.paths);
             const requestHeaders = headersToObject(requestInit.headers);
-            const requestData = await readRequestData(requestInit, requestHeaders);
+            const requestData = await readRequestData(requestInit);
 
             const contextOutput = await resolveMockHostContext(createHostContext, {
                 searchParams,
@@ -172,17 +172,14 @@ function extractPathParamsFromUrl(
     return hasAny ? params : undefined;
 }
 
-async function readRequestData(
-    requestInit: Readonly<RequestInit>,
-    headers: Readonly<DefaultResponseHeadersType>,
-): Promise<unknown> {
+async function readRequestData(requestInit: Readonly<RequestInit>): Promise<unknown> {
     const body = requestInit.body;
     if (body == undefined) {
         return undefined;
     } else if (body instanceof FormData) {
         return body;
     }
-    return await readResponseBodyAsJsonOrText(new Response(body), headers);
+    return await readResponseBodyAsJsonOrText(new Response(body));
 }
 
 function buildMockResponseFromResult(

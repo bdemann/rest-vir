@@ -26,7 +26,7 @@ import {
     type ResponseStatusDefinition,
 } from '../api/endpoint.js';
 import {parseJsonWithUndefined} from '../augments/json.js';
-import {isJsonContentType, readHeaderValue, removeClientHeaders} from '../util/client-headers.js';
+import {removeClientHeaders} from '../util/client-headers.js';
 import {restVirApiNameHeader} from '../util/find-dev-port.js';
 import {extractHttpStatus} from '../util/http-status.js';
 import {type NoParam} from '../util/no-param.js';
@@ -200,10 +200,7 @@ export async function defaultHandleDeclaredResponseStatus({
     responseDefinition,
     endpoint,
 }: Readonly<HandleDeclaredResponseStatusOverrideParams>): Promise<unknown> {
-    const responseData = await readResponseBodyAsJsonOrText(
-        response,
-        readResponseHeaders(response.headers),
-    );
+    const responseData = await readResponseBodyAsJsonOrText(response);
 
     if (responseDefinition.responseData) {
         assertValidShape(
@@ -293,25 +290,13 @@ export async function readResponseBodyAsText(response: Readonly<Response>) {
 }
 
 /**
- * Read the response body as text, then JSON-parse it if the response advertises a JSON
- * `content-type`. Falls back to the raw text when JSON parsing yields nothing.
+ * Read the response body as text, then JSON-parse it. Falls back to the raw text when JSON parsing
+ * fails.
  */
-export async function readResponseBodyAsJsonOrText(
-    response: Readonly<Response>,
-    headers: DefaultResponseHeadersType,
-): Promise<unknown> {
+export async function readResponseBodyAsJsonOrText(response: Readonly<Response>): Promise<unknown> {
     const responseText = await readResponseBodyAsText(response);
 
-    /**
-     * `readHeaderValue` always returns an array. Check whether _any_ entry's content-type string
-     * contains `json` — covers both single-valued (typical) and the rare multi-valued case.
-     */
-    const hasJsonContentType = readHeaderValue(headers, 'content-type').some(isJsonContentType);
-
-    const parsed: unknown =
-        hasJsonContentType && responseText ? parseJsonWithUndefined(responseText) : undefined;
-
-    return parsed === undefined ? responseText : parsed;
+    return responseText ? parseJsonWithUndefined(responseText) : responseText;
 }
 
 export type EndpointFetchStreamOutput<
