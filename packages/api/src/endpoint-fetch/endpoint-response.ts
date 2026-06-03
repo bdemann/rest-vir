@@ -33,6 +33,11 @@ import {restVirApiNameHeader} from '../util/find-dev-port.js';
 import {extractHttpStatus} from '../util/http-status.js';
 import {type NoParam} from '../util/no-param.js';
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export type WithResponse<IncludeResponse extends boolean | NoParam = NoParam> =
     IsEqual<IncludeResponse, NoParam> extends true
         ? {
@@ -42,6 +47,11 @@ export type WithResponse<IncludeResponse extends boolean | NoParam = NoParam> =
           ? {response: Response}
           : {response?: never};
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export type DefinedEndpointFetchOutputs<
     Endpoint extends EndpointDefinition | NoParam = NoParam,
     Method extends DefinableHttpMethod | NoParam = NoParam,
@@ -57,6 +67,11 @@ export type DefinedEndpointFetchOutputs<
     >;
 };
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export type DefinedEndpointFetchStatusOutput<
     Endpoint extends EndpointDefinition | NoParam = NoParam,
     Method extends DefinableHttpMethod | NoParam = NoParam,
@@ -70,6 +85,11 @@ export type DefinedEndpointFetchStatusOutput<
     headers: EndpointResponseHeadersType<Endpoint, Method, Extract<Status, HttpStatus>>;
 } & WithResponse<IncludeResponse>;
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export type DefinedEndpointFetchOutputResponseData<
     Endpoint extends EndpointDefinition | NoParam = NoParam,
     Method extends DefinableHttpMethod | NoParam = NoParam,
@@ -82,6 +102,11 @@ export type DefinedEndpointFetchOutputResponseData<
             : any
         : any;
 
+/**
+ * @category Util : Client
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export type EndpointFetchOutput<
     Endpoint extends EndpointDefinition | NoParam = NoParam,
     Method extends DefinableHttpMethod | NoParam = NoParam,
@@ -92,16 +117,31 @@ export type EndpointFetchOutput<
     }
 >;
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export type UnknownFetchOutput<IncludeResponse extends boolean | NoParam = NoParam> = {
     status: HttpStatus;
     responseData: DefaultErrorResponseType;
     headers: DefaultResponseHeadersType;
 } & WithResponse<IncludeResponse>;
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export type ResolveShapeType<InnerShape extends Shape | undefined> = InnerShape extends Shape
     ? InnerShape['runtimeType']
     : undefined;
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export type HandleDeclaredResponseStatusOverrideParams = {
     endpoint: EndpointDefinition;
     response: Response;
@@ -109,6 +149,12 @@ export type HandleDeclaredResponseStatusOverrideParams = {
 };
 
 /** Extracts a fetch result no matter what status it came in under. */
+
+/**
+ * @category Util : Client
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export function extractEndpointResult<Output extends Readonly<EndpointFetchOutput>>(
     fetchResult: Output,
 ): NonNullable<Values<Output>> {
@@ -121,11 +167,21 @@ export function extractEndpointResult<Output extends Readonly<EndpointFetchOutpu
     return entries[0][1];
 }
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export type HandleDeclaredResponseStatusOverride = BivariantFunction<
     [Readonly<HandleDeclaredResponseStatusOverrideParams>],
     MaybePromise<unknown>
 >;
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export async function createEndpointResponseOutput<
     Endpoint extends EndpointDefinition,
     Method extends DefinableHttpMethod,
@@ -210,6 +266,11 @@ export async function createEndpointResponseOutput<
     }
 }
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export async function defaultHandleDeclaredResponseStatus({
     response,
     responseDefinition,
@@ -255,15 +316,30 @@ export function condenseResponse(response: Response): void {
     ]);
 }
 
+/**
+ * @category Util : Client
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export function readResponseHeaders(headers: Headers): Record<string, string> {
     return Object.fromEntries(headers.entries());
 }
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export type HttpStatusByKey<Status extends HttpStatus> = ExtractKeysWithMatchingValues<
     typeof HttpStatus,
     Status
 >;
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export const httpStatusToKey = typedObjectFromEntries(
     getObjectTypedEntries(HttpStatus).map(
         ([
@@ -278,6 +354,11 @@ export const httpStatusToKey = typedObjectFromEntries(
     [Status in HttpStatus]: ExtractKeysWithMatchingValues<typeof HttpStatus, Status>;
 };
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export type DefinedEndpointFetchStreamOutputs<
     Endpoint extends EndpointDefinition,
     Method extends DefinableHttpMethod,
@@ -300,6 +381,11 @@ export type DefinedEndpointFetchStreamOutputs<
         : {}
     : {};
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export async function readResponseBodyAsText(response: Readonly<Response>) {
     return (await response.clone().text()) || undefined;
 }
@@ -307,6 +393,9 @@ export async function readResponseBodyAsText(response: Readonly<Response>) {
 /**
  * Read the response body as text, then JSON-parse it. Falls back to the raw text when JSON parsing
  * fails.
+ *
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
  */
 export async function readResponseBodyAsJsonOrText(response: Readonly<Response>): Promise<unknown> {
     const responseText = await readResponseBodyAsText(response);
@@ -314,6 +403,11 @@ export async function readResponseBodyAsJsonOrText(response: Readonly<Response>)
     return responseText ? parseJsonWithUndefined(responseText) : responseText;
 }
 
+/**
+ * @category Util : Client
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export type EndpointFetchStreamOutput<
     Endpoint extends EndpointDefinition,
     Method extends DefinableHttpMethod,

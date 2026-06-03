@@ -11,7 +11,7 @@ import {
 /**
  * Define a single WebSocket.
  *
- * @category Define API
+ * @category API
  * @category Package : @rest-vir/api
  * @example
  *
@@ -50,6 +50,11 @@ export function defineWebSocket<const ThisWebSocket extends WebSocketDefinition>
  */
 export type WebSocketDefinition = BaseWebSocketDefinition & CommonRouteDefinition;
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export type BaseWebSocketDefinition = {
     path: BaseRoutePath;
     /** Allowed messages from the WebSocket client. */
@@ -123,6 +128,11 @@ export type WebSocketConnectProtocolType<
               : DefaultWebSocketProtocol
       : DefaultWebSocketProtocol;
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export type DefaultWebSocketProtocol = string[] | undefined;
 /**
  * Extracts a WebSocket's client message type.

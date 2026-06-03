@@ -12,6 +12,11 @@ import {matchUrlToRoute} from '../util/match-url.js';
 import {type HandledOutput, type RouteHandlerParams} from './endpoint-handler.js';
 import {buildHandlerParams} from './handler-params.js';
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/host
+ * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
+ */
 export async function runPostRouteHook(
     this: void,
     {

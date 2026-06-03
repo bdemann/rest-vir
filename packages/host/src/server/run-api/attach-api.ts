@@ -65,6 +65,11 @@ const endpointFastifyMethods = getEnumValues(HttpMethod).filter((value) => {
     );
 });
 
+/**
+ * @category Host Server
+ * @category Package : @rest-vir/host
+ * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
+ */
 export type ApiServerOptions = {
     /**
      * The origin at which the api is hosted on. Fetch requests and WebSocket connections should be
@@ -97,7 +102,7 @@ export type ApiServerOptions = {
 /**
  * Attach all handlers for an {@link ApiImplementation} to any existing Fastify server.
  *
- * @category Run Api
+ * @category Host Server
  * @category Package : @rest-vir/host
  * @example
  *
@@ -396,6 +401,8 @@ function apiHasFormDataEndpoint(api: Readonly<ApiImplementation>): boolean {
  * Merge the running Fastify server's port with the given service's origin port (if it has a port).
  *
  * @category Internal
+ * @category Package : @rest-vir/host
+ * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
  */
 export function extractRunningServerInfo(
     serverOptions: Readonly<ApiServerOptions>,

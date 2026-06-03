@@ -31,6 +31,11 @@ export type CommonRouteDefinition = {
     customProps?: UnknownObject | undefined;
 } & BaseCommonRouteDefinition;
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export type BaseCommonRouteDefinition = {
     /**
      * Search params that this route supports.

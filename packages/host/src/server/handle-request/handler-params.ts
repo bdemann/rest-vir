@@ -5,6 +5,11 @@ import {
     type ServerResponse,
 } from '../../implementation/raw-route-data.js';
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/host
+ * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
+ */
 export function buildHandlerParams({
     request,
     response,

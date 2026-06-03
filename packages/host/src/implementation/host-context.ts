@@ -17,9 +17,19 @@ export type HostCreateContextParamsExtras = {
     server: RunningServerInfo;
 };
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/host
+ * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
+ */
 export type CreateHostContext<HostContext> = CreateHostContextBase<
     HostContext,
     HostCreateContextParamsExtras
 >;
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/host
+ * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
+ */
 export type CreateHostContextParams = BaseCreateHostContextParams & HostCreateContextParamsExtras;

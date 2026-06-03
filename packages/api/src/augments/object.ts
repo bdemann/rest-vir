@@ -17,6 +17,8 @@ import {type IsAny} from 'type-fest';
  *     label: string | null;
  * }>;
  * ```
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
  */
 export type SetNullishPropertiesAsOptional<T extends AnyObject> = {
     -readonly [Key in keyof T as IsNullish<T[Key]> extends true ? never : Key]: T[Key];

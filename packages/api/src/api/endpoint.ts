@@ -19,7 +19,7 @@ import {
 /**
  * Define a single Endpoint.
  *
- * @category Define API
+ * @category API
  * @category Package : @rest-vir/api
  * @example
  *
@@ -193,6 +193,11 @@ export const definableHttpMethods = [
     HttpMethod.Trace,
 ] as const;
 
+/**
+ * @category Util : API
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export function extractHttpMethod(rawValue: string): DefinableHttpMethod | undefined {
     const upperCase = rawValue.toUpperCase();
 
@@ -246,6 +251,11 @@ export type HttpMethodsWithBodies = ArrayElement<typeof httpMethodsWithBodies>;
 export type EndpointMethodDefinition<Method extends DefinableHttpMethod = DefinableHttpMethod> =
     BaseEndpointMethodDefinition<Method> & CommonRouteDefinition;
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export type BaseEndpointMethodDefinition<Method extends DefinableHttpMethod = DefinableHttpMethod> =
     {
         /**
@@ -328,7 +338,7 @@ export type BaseRequiredResponseHeaders = Record<string, Shape | RegExp>;
 /**
  * Extracts an endpoint's request type.
  *
- * @category Define API
+ * @category Client
  * @category Package : @rest-vir/api
  * @example
  *
@@ -370,7 +380,7 @@ export type EndpointRequestType<
 /**
  * Extracts an endpoint's response type.
  *
- * @category Define API
+ * @category Client
  * @category Package : @rest-vir/api
  * @example
  *

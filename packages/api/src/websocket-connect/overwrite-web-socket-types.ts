@@ -185,6 +185,11 @@ export type OverwriteWebSocketMethods<
     }
 >;
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export type WebSocketSendMessageParams<
     Location extends WebSocketLocation,
     ThisWebSocket extends WebSocketDefinition | NoParam = NoParam,
@@ -259,6 +264,11 @@ export type SendAndWaitForReplyParamObject<
     ) => MaybePromise<boolean>;
 }>;
 
+/**
+ * @category Util : API
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export type WebSocketMessageType<
     Location extends WebSocketLocation,
     ThisWebSocket extends WebSocketDefinition | NoParam = NoParam,

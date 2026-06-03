@@ -8,7 +8,7 @@ import {defineWebSocket, type WebSocketDefinitionWithRequiredCustomProps} from '
  * on every method definition. The returned functions otherwise behave exactly like the standard
  * {@link defineEndpoint} and {@link defineWebSocket} functions.
  *
- * @category Define API
+ * @category API
  * @category Package : @rest-vir/api
  * @example
  *

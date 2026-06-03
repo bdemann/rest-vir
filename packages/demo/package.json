@@ -22,8 +22,7 @@
         "start:backend": "tsx --watch src/server/demo-server.script.ts",
         "start:frontend": "virmator frontend",
         "test": "virmator test node",
-        "test:coverage": "npm test",
-        "test:docs": "exit 0"
+        "test:coverage": "npm test"
     },
     "dependencies": {
         "@augment-vir/assert": "^31.71.0",

@@ -87,6 +87,11 @@ export function consolidateHeaders(headers: AllowedHeaders): Headers {
     return newHeaders;
 }
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export function removeClientHeaders(headers: Headers, headersToRemove: string[]) {
     headersToRemove.forEach((headerToRemove) => {
         headers.delete(headerToRemove);
@@ -114,6 +119,11 @@ export function headersToObject(headers: AllowedHeaders | undefined): Record<str
     return Object.fromEntries(consolidateHeaders(headers).entries());
 }
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export function isJsonContentType(contentType: string | undefined): boolean {
     return !!contentType?.match(/\bjson\b/i);
 }

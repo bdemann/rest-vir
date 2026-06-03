@@ -5,7 +5,7 @@ const formDataShapeKind = 'FormData' as string;
 /**
  * A custom shape definition for requests that require `FormData` as the body.
  *
- * @category Shape
+ * @category Util : API
  * @category Package : @rest-vir/api
  * @example
  *

@@ -34,7 +34,6 @@
         "start": "virmator frontend",
         "test": "virmator test node",
         "test:coverage": "npm run test coverage",
-        "test:docs": "exit 0",
         "test:update": "npm test update"
     },
     "dependencies": {
@@ -58,7 +57,9 @@
     "devDependencies": {
         "@types/node": "^25.7.0",
         "c8": "^11.0.0",
-        "istanbul-smart-text-reporter": "^1.1.5"
+        "istanbul-smart-text-reporter": "^1.1.5",
+        "markdown-code-example-inserter": "^3.0.5",
+        "typedoc": "^0.28.19"
     },
     "peerDependencies": {
         "object-shape-tester": ">=5"

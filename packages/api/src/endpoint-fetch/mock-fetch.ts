@@ -61,7 +61,7 @@ export type MockEndpointResponseOptions<
  * Creates a mocked fetch `Response` object for the given endpoint (requiring a type safe body). For
  * more generic response mocking, see {@link createMockResponse}.
  *
- * @category Testing : Client (Frontend)
+ * @category Testing : Client
  * @category Package : @rest-vir/api
  * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
  */
@@ -279,7 +279,7 @@ export function createMockResponse(params: Readonly<MockResponseParams> = {}): R
  * expectations of the given endpoint. For more generic `fetch` mocking, see
  * {@link createMockFetch}.
  *
- * @category Testing : Client (Frontend)
+ * @category Testing : Client
  * @category Package : @rest-vir/api
  * @example
  *

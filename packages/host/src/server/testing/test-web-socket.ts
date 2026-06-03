@@ -77,7 +77,7 @@ export type WithWebSocketTestCallback<
  *
  * This should be used in backend testing to verify your WebSocket implementation.
  *
- * @category Testing : Backend
+ * @category Testing : Host
  * @category Package : @rest-vir/host
  * @example
  *

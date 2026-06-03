@@ -79,7 +79,7 @@ export type FastifyPlugins = [
  *
  * To attach the service endpoint handlers to an existing Fastify server, use {@link attachApi}.
  *
- * @category Run Service
+ * @category Host Server
  * @category Package : @rest-vir/host
  * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
  */

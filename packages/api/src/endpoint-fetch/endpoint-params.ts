@@ -18,6 +18,8 @@ import {type NoParam} from '../util/no-param.js';
  * required keys.
  *
  * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
  */
 export type EndpointFetchParams<
     Endpoint extends EndpointDefinition,
@@ -33,6 +35,8 @@ export type EndpointFetchParams<
  * that all param objects should be assignable to, with all properties being optional.
  *
  * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
  */
 export type EndpointFetchParamObject<
     Endpoint extends EndpointDefinition | NoParam = NoParam,
@@ -67,6 +71,11 @@ export type EndpointFetchParamObject<
     pathParams: ExtractPathParams<Endpoint extends {path: string} ? Endpoint['path'] : NoParam>;
 }>;
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export type ClientFetch = (
     url: string,
     requestInit: RequestInit,

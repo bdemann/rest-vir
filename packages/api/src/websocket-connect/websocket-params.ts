@@ -16,6 +16,8 @@ import {type ConnectWebSocketListeners} from './overwrite-web-socket-types.js';
  * required keys.
  *
  * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
  */
 export type WebSocketConnectParams<
     ThisWebSocket extends WebSocketDefinition,
@@ -31,6 +33,8 @@ export type WebSocketConnectParams<
  * that all param objects should be assignable to, with all properties being optional.
  *
  * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
  */
 export type WebSocketConnectParamObject<
     ThisWebSocket extends WebSocketDefinition | NoParam = NoParam,
@@ -60,12 +64,22 @@ export type WebSocketConnectParamObject<
     webSocketConstructor?: WebSocketConnectWebSocketConstructor<WebSocketClass> | undefined;
 }>;
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export type WebSocketConnectWebSocketConstructor<
     WebsocketClass extends CommonWebSocket | NoParam = NoParam,
 > = WebsocketClass extends CommonWebSocket
     ? new (...params: WebSocketConnectWebSocketConstructorParams) => WebsocketClass
     : new (...params: WebSocketConnectWebSocketConstructorParams) => CommonWebSocket;
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export type WebSocketConnectWebSocketConstructorParams = [
     url: string,
     protocols: DefaultWebSocketProtocol,

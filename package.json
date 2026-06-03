@@ -30,7 +30,7 @@
         "test:all": "npm run compile && runstorm --names tests,spelling,format,docs,deps,lint \"npm run test:coverage\" \"npm run test:spelling\" \"npm run test:format\" \"npm run test:docs\" \"npm run test:deps\" \"npm run test:lint\"",
         "test:coverage": "mono-vir for-each-async npm run test:coverage",
         "test:deps": "virmator deps check",
-        "test:docs": "mono-vir for-each-async \"npm run test:docs\" && npm run docs",
+        "test:docs": "npm run docs",
         "test:format": "virmator format check",
         "test:lint": "virmator lint",
         "test:spelling": "virmator spellcheck",

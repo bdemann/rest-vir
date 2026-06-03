@@ -20,8 +20,7 @@
         "compile": "virmator compile",
         "exec": "tsx",
         "test": "exit 0",
-        "test:coverage": "npm test",
-        "test:docs": "exit 0"
+        "test:coverage": "npm test"
     },
     "dependencies": {
         "@virmator/docs": "^14.14.2",

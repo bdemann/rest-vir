@@ -4,6 +4,11 @@ import {type HasRequiredKeys, type IsEqual, type IsNever} from 'type-fest';
 import {type NoParam} from '../util/no-param.js';
 import {type BaseRoutePath} from './route.js';
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export type RoutePathDefinition<Path extends BaseRoutePath = BaseRoutePath> = Readonly<{
     path: Path;
 }>;
@@ -96,6 +101,8 @@ export type ResolveNamedParams<Named extends string> =
  * Generic path params.
  *
  * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
  */
 export type GenericPathParams =
     | (PartialWithUndefined<{
@@ -104,6 +111,11 @@ export type GenericPathParams =
           Record<string, string | undefined>)
     | undefined;
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export type BuildRoutePathOptions<Path extends BaseRoutePath = BaseRoutePath> = (
     undefined extends ExtractPathParams<NoInfer<Path>>
         ? Readonly<{
@@ -118,6 +130,11 @@ export type BuildRoutePathOptions<Path extends BaseRoutePath = BaseRoutePath> = 
       }
     : never;
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export type BuildRoutePathParams<Path extends BaseRoutePath = BaseRoutePath> =
     HasRequiredKeys<BuildRoutePathOptions<Path>> extends true
         ? [Readonly<BuildRoutePathOptions<Path>>]
@@ -158,7 +175,7 @@ export type ExtractPathParams<Path extends PropertyKey | NoParam = NoParam> =
  * Builds the path portion of an endpoint or WebSocket URL by interpolating `:named` path params and
  * trailing wildcard params.
  *
- * @category Client
+ * @category Util : API
  * @category Package : @rest-vir/api
  * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
  */
@@ -166,6 +183,11 @@ export function buildRoutePath<const Path extends BaseRoutePath>(
     route: RoutePathDefinition<Path>,
     ...restOptions: BuildRoutePathParams<NoInfer<Path>>
 ): string;
+/**
+ * @category Util : API
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export function buildRoutePath(
     route: RoutePathDefinition,
     ...restOptions: [

@@ -52,7 +52,19 @@ export type OriginCheckCallback = (originToCheck: string | undefined) => MaybePr
  * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
  */
 export type OriginRequirementResult = boolean | undefined | AnyOrigin;
+
+/**
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export const AnyOrigin = '*' as const;
+
+/**
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export type AnyOrigin = typeof AnyOrigin;
 
 /**

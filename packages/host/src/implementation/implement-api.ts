@@ -12,6 +12,11 @@ import {type WebSocketImplementation} from './implement-websocket.js';
 import {type PostRouteHook} from './post-route-hook.js';
 import {type UserServerLogger} from './server-logger.js';
 
+/**
+ * @category Host
+ * @category Package : @rest-vir/host
+ * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
+ */
 export function implementApi<HostContext = unknown>() {
     return <
         const Api extends Readonly<ApiDefinition>,

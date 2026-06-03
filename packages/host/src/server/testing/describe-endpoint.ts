@@ -18,10 +18,20 @@ import {type CreateHostContext} from '../../implementation/host-context.js';
 import {type EndpointImplementation} from '../../implementation/implement-endpoint.js';
 import {testEndpoint, type HostContextFromImplementation} from './test-endpoint.js';
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/host
+ * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
+ */
 export type DescribeEndpointParams<Endpoint extends Readonly<EndpointDefinition>, HostContext> = {
     endpointCases: EndpointCases<NoInfer<Endpoint>, NoInfer<HostContext>>;
 };
 
+/**
+ * @category Testing : Host
+ * @category Package : @rest-vir/host
+ * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
+ */
 export function describeEndpoint<
     const Endpoint extends Readonly<EndpointDefinition>,
     const HostContext,
@@ -58,12 +68,22 @@ export function describeEndpoint<
     });
 }
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/host
+ * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
+ */
 export type EndpointTestCasesArray<
     Endpoint extends Readonly<EndpointDefinition>,
     Method extends EndpointDefinitionMethods<NoInfer<Endpoint>>,
     HostContext,
 > = ReadonlyArray<EndpointTestCase<Endpoint, Method, HostContext>>;
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/host
+ * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
+ */
 export type EndpointTestCase<
     Endpoint extends Readonly<EndpointDefinition>,
     Method extends EndpointDefinitionMethods<NoInfer<Endpoint>>,
@@ -86,11 +106,21 @@ export type EndpointTestCase<
     }>
 >;
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/host
+ * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
+ */
 export type EndpointCaseAfterCallback = BivariantFunction<
     [Readonly<EndpointCaseAfterParams>],
     MaybePromise<unknown>
 >;
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/host
+ * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
+ */
 export type EndpointCases<Endpoint extends Readonly<EndpointDefinition>, HostContext> = {
     [Method in EndpointDefinitionMethods<NoInfer<Endpoint>>]: BivariantFunction<
         [
@@ -101,6 +131,11 @@ export type EndpointCases<Endpoint extends Readonly<EndpointDefinition>, HostCon
     >;
 };
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/host
+ * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
+ */
 export type EndpointCaseSuiteParams<HostContext> = {
     createHostContext: CreateHostContext<HostContext>;
 } & PartialWithUndefined<{
@@ -108,11 +143,21 @@ export type EndpointCaseSuiteParams<HostContext> = {
     after: EndpointCaseAfterCallback;
 }>;
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/host
+ * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
+ */
 export type IndividualEndpointTestInputs<
     Endpoint extends Readonly<EndpointDefinition>,
     Method extends EndpointDefinitionMethods<NoInfer<Endpoint>>,
 > = EndpointFetchParamObject<Endpoint, Method>;
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/host
+ * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
+ */
 export type IndividualEndpointTestCallback<
     Endpoint extends Readonly<EndpointDefinition>,
     Method extends EndpointDefinitionMethods<NoInfer<Endpoint>>,
@@ -151,11 +196,21 @@ type EndpointTesterFunction<
     Promise<IndividualEndpointTestResult<Endpoint, Method>>
 >;
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/host
+ * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
+ */
 export type EndpointCaseAfterParams = {
     response: Response;
     testContext: Readonly<UniversalTestContext>;
 };
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/host
+ * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
+ */
 export type IndividualEndpointTestResult<
     Endpoint extends Readonly<EndpointDefinition>,
     Method extends EndpointDefinitionMethods<NoInfer<Endpoint>>,

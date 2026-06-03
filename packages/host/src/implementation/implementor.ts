@@ -8,6 +8,11 @@ import {
     type WebSocketListenerImplementations,
 } from './implement-websocket.js';
 
+/**
+ * @category Host
+ * @category Package : @rest-vir/host
+ * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
+ */
 export function createApiImplementor<HostContext>(this: void) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return <Api extends Readonly<ApiDefinition>>(api: Api) => {

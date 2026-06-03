@@ -3,6 +3,11 @@ import {mapObject, stringify} from '@augment-vir/common';
 import {assertValidShape, type Shape} from 'object-shape-tester';
 import {readHeaderValue} from './util/client-headers.js';
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export function extractRequiredHeaders(
     path: PropertyKey,
     requiredRequestHeaders: Record<string, Shape | RegExp> | undefined,

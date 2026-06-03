@@ -327,7 +327,7 @@ export async function testExistingServer<const Api extends Readonly<ApiImplement
  * See {@link testApi} for more control over how tests are run (but without automatic server
  * shutdown).
  *
- * @category Testing : Backend
+ * @category Testing : Host
  * @category Package : @rest-vir/host
  * @example
  *

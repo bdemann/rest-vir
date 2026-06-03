@@ -9,6 +9,11 @@ import {implementApi} from '../../implementation/implement-api.js';
 import {type EndpointImplementation} from '../../implementation/implement-endpoint.js';
 import {testApi} from './test-api.js';
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/host
+ * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
+ */
 export type EndpointFromImplementation<Implementation> =
     Implementation extends Readonly<{
         definition: Readonly<infer Endpoint extends EndpointDefinition>;
@@ -16,6 +21,11 @@ export type EndpointFromImplementation<Implementation> =
         ? Endpoint
         : never;
 
+/**
+ * @category Internal
+ * @category Package : @rest-vir/host
+ * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
+ */
 export type HostContextFromImplementation<Implementation> =
     Implementation extends Readonly<{
         implementation: infer Implementations;
@@ -30,7 +40,7 @@ export type HostContextFromImplementation<Implementation> =
 /**
  * Test your endpoint with real Request and Response objects.
  *
- * @category Testing : Backend
+ * @category Testing : Host
  * @category Package : @rest-vir/host
  * @example
  *

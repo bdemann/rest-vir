@@ -53,6 +53,11 @@ import {
     type WebSocketConnectWebSocketConstructor,
 } from './websocket-connect/websocket-params.js';
 
+/**
+ * @category Client
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
 export class RestVirClient<const ClientApi extends ApiDefinition> {
     constructor(
         public readonly api: Readonly<ClientApi>,

@@ -67,7 +67,7 @@ export type EndpointImplementation<
  *
  * @category Internal
  * @category Package : @rest-vir/host
- * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
  */
 export type EndpointImplementationMethods<Endpoint extends EndpointImplementation | NoParam> =
     Endpoint extends EndpointImplementation

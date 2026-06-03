@@ -25,7 +25,7 @@ export type MockHostParams<Api extends Readonly<ApiDefinition>, Context> = Parti
  * `.fetch()`/`.connectWebSocket()` calls work, but every request is served by your declared mock
  * implementations in-process.
  *
- * @category Testing
+ * @category Testing : Client
  * @category Package : @rest-vir/api
  * @example
  *

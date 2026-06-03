@@ -17,7 +17,7 @@ const mockWebSocketRegistry: {lastInstance: MockWebSocket | undefined} = {
  * constructed yet (typically because the test did not call `client.connectWebSocket(...)` with
  * `webSocketConstructor: MockWebSocket` in its params).
  *
- * @category Testing
+ * @category Testing : Client
  * @category Package : @rest-vir/api
  * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
  */
@@ -28,7 +28,7 @@ export function getLastMockWebSocket() {
 /**
  * Options accepted by the {@link MockWebSocket} constructor's fourth argument.
  *
- * @category Testing
+ * @category Testing : Client
  * @category Package : @rest-vir/api
  * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
  */
@@ -47,7 +47,7 @@ export type MockWebSocketOptions = {
  * events, inspect captured constructor args, or capture outbound client sends via
  * {@link MockWebSocket.sendCallback}.
  *
- * @category Testing
+ * @category Testing : Client
  * @category Package : @rest-vir/api
  * @example
  *

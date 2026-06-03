@@ -38,7 +38,7 @@ export class DefineApiError extends Error {
  * into the returned {@link ApiDefinition}'s record keys without also capturing each route's full
  * shape, which keeps TypeScript from getting overwhelmed on large APIs.
  *
- * @category Define Api
+ * @category API
  * @category Package : @rest-vir/api
  * @example
  *

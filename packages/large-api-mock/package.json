@@ -21,7 +21,6 @@
         "compile": "virmator compile",
         "test": "exit 0",
         "test:coverage": "npm test",
-        "test:docs": "exit 0",
         "test:update": "exit 0"
     },
     "dependencies": {
