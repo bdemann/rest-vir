@@ -32,18 +32,18 @@ import {
  * @category Package : @rest-vir/api
  * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
  */
-export type MockHostWebSocketConstructorOptions<Context> = {
+export type MockHostWebSocketConstructorOptions<HostContext> = {
     webSocketImplementations: Readonly<
         Record<
             string,
-            MockWebSocketListenerImplementations<WebSocketDefinition, Context> | undefined
+            MockWebSocketListenerImplementations<WebSocketDefinition, HostContext> | undefined
         >
     >;
     /**
      * Raw mock-host `createHostContext` callback. The constructor handles the missing-callback case
      * (treats it as `{context: undefined}`) and forwards the per-event params for you.
      */
-    createHostContext: MockCreateHostContext<Context> | undefined;
+    createHostContext: MockCreateHostContext<HostContext> | undefined;
 };
 
 /**
@@ -58,10 +58,10 @@ export type MockHostWebSocketConstructorOptions<Context> = {
  * @category Package : @rest-vir/api
  * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
  */
-export function createMockHostWebSocketConstructor<const Context = unknown>({
+export function createMockHostWebSocketConstructor<const HostContext = unknown>({
     webSocketImplementations,
     createHostContext,
-}: MockHostWebSocketConstructorOptions<Context>): WebSocketConnectWebSocketConstructor {
+}: MockHostWebSocketConstructorOptions<HostContext>): WebSocketConnectWebSocketConstructor {
     class MockHostWebSocketConstructor implements CommonWebSocket {
         public readyState: CommonWebSocketState = CommonWebSocketState.Connecting;
         public async send(data: unknown) {
@@ -76,7 +76,7 @@ export function createMockHostWebSocketConstructor<const Context = unknown>({
         protected readonly protocols: string[];
         protected readonly webSocketDefinition: WebSocketDefinition;
         protected readonly implementations:
-            | MockWebSocketListenerImplementations<WebSocketDefinition, Context>
+            | MockWebSocketListenerImplementations<WebSocketDefinition, HostContext>
             | undefined;
         protected readonly searchParams: ReturnType<typeof extractSearchParams>;
         /**
@@ -246,7 +246,7 @@ export function createMockHostWebSocketConstructor<const Context = unknown>({
          */
         protected async resolveSocketContext(
             message: unknown,
-        ): Promise<CreateHostContextOutput<Context> | undefined> {
+        ): Promise<CreateHostContextOutput<HostContext> | undefined> {
             try {
                 const output = await resolveMockHostContext(createHostContext, {
                     searchParams: this.searchParams,

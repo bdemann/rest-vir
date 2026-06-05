@@ -35,9 +35,9 @@ import {type NoParam} from '../util/no-param.js';
 export type BaseEndpointMethodImplementationParams<
     Endpoint extends Readonly<EndpointDefinition> | NoParam = NoParam,
     Method extends Readonly<DefinableHttpMethod> | NoParam = NoParam,
-    Context = unknown,
+    HostContext = unknown,
 > = {
-    context: Context;
+    context: HostContext;
     method: Method extends DefinableHttpMethod ? Method : DefinableHttpMethod;
     endpointDefinition: Endpoint extends EndpointDefinition
         ? Readonly<Exclude<Endpoint, NoParam>>
@@ -197,7 +197,7 @@ export type EndpointMethodImplementationErrorOutput = RequireExactlyOne<{
  */
 export type EndpointMethodImplementationsBase<
     Endpoint extends EndpointDefinition | NoParam = NoParam,
-    Context = unknown,
+    HostContext = unknown,
     ExtraParams = unknown,
 > = Endpoint extends EndpointDefinition
     ? {
@@ -206,7 +206,7 @@ export type EndpointMethodImplementationsBase<
               : never]: Method extends DefinableHttpMethod
               ? BivariantFunction<
                     [
-                        BaseEndpointMethodImplementationParams<Endpoint, Method, Context> &
+                        BaseEndpointMethodImplementationParams<Endpoint, Method, HostContext> &
                             ExtraParams,
                     ],
                     MaybePromise<EndpointMethodImplementationOutput<Endpoint, Method>>
@@ -233,11 +233,11 @@ export type EndpointMethodImplementationsBase<
  */
 export type EndpointImplementationBase<
     Endpoint extends Readonly<EndpointDefinition> | NoParam = NoParam,
-    Context = unknown,
+    HostContext = unknown,
     ExtraParams = unknown,
 > = {
     path: Endpoint extends EndpointDefinition ? Endpoint['path'] : BaseRoutePath;
-    implementation: Readonly<EndpointMethodImplementationsBase<Endpoint, Context, ExtraParams>>;
+    implementation: Readonly<EndpointMethodImplementationsBase<Endpoint, HostContext, ExtraParams>>;
     definition: Endpoint extends EndpointDefinition
         ? Readonly<Endpoint>
         : Readonly<EndpointDefinition>;

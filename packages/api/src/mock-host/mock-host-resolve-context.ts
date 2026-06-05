@@ -10,14 +10,14 @@ import {type MockCreateHostContext} from './mock-host-context.js';
  * @category Package : @rest-vir/api
  * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
  */
-export async function resolveMockHostContext<Context>(
-    createHostContext: MockCreateHostContext<Context> | undefined,
-    contextParams: Parameters<MockCreateHostContext<Context>>[0],
-): Promise<CreateHostContextOutput<Context>> {
+export async function resolveMockHostContext<HostContext>(
+    createHostContext: MockCreateHostContext<HostContext> | undefined,
+    contextParams: Parameters<MockCreateHostContext<HostContext>>[0],
+): Promise<CreateHostContextOutput<HostContext>> {
     if (!createHostContext) {
         return {
-            context: undefined as Context,
-        } as CreateHostContextOutput<Context>;
+            context: undefined as HostContext,
+        } as CreateHostContextOutput<HostContext>;
     }
     return await createHostContext(contextParams);
 }

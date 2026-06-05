@@ -28,8 +28,8 @@ export type MockEndpointParamsExtras = {
  */
 export type MockEndpointMethodImplementations<
     Endpoint extends EndpointDefinition | NoParam = NoParam,
-    Context = unknown,
-> = Partial<EndpointMethodImplementationsBase<Endpoint, Context, MockEndpointParamsExtras>>;
+    HostContext = unknown,
+> = Partial<EndpointMethodImplementationsBase<Endpoint, HostContext, MockEndpointParamsExtras>>;
 
 /**
  * Implementation envelope for a single endpoint on the client (mock) side.
@@ -40,5 +40,5 @@ export type MockEndpointMethodImplementations<
  */
 export type MockEndpointImplementation<
     Endpoint extends Readonly<EndpointDefinition> | NoParam = NoParam,
-    Context = unknown,
-> = EndpointImplementationBase<Endpoint, Context, MockEndpointParamsExtras>;
+    HostContext = unknown,
+> = EndpointImplementationBase<Endpoint, HostContext, MockEndpointParamsExtras>;

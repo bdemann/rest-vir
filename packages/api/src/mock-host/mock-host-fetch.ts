@@ -26,13 +26,13 @@ import {type MockHostEndpointMap} from './mock-host-route-map.js';
  * @category Package : @rest-vir/api
  * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
  */
-export type MockHostFetchOptions<Api extends Readonly<ApiDefinition>, Context> = {
-    endpointImplementations: Readonly<MockHostEndpointMap<Api, Context>>;
+export type MockHostFetchOptions<Api extends Readonly<ApiDefinition>, HostContext> = {
+    endpointImplementations: Readonly<MockHostEndpointMap<Api, HostContext>>;
     /**
      * Raw mock-host `createHostContext` callback. The fetch wrapper handles the missing-callback
      * case (treats it as `{context: undefined}`) and forwards the per-request params for you.
      */
-    createHostContext: MockCreateHostContext<Context> | undefined;
+    createHostContext: MockCreateHostContext<HostContext> | undefined;
 };
 
 /**
@@ -46,8 +46,8 @@ export type MockHostFetchOptions<Api extends Readonly<ApiDefinition>, Context> =
  */
 export function createMockHostFetch<
     const Api extends Readonly<ApiDefinition>,
-    const Context = unknown,
->({endpointImplementations, createHostContext}: MockHostFetchOptions<Api, Context>): ClientFetch {
+    const HostContext = unknown,
+>({endpointImplementations, createHostContext}: MockHostFetchOptions<Api, HostContext>): ClientFetch {
     return async function mockFetch(
         ...[
             url,

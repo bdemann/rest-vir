@@ -21,9 +21,9 @@ import {type NoParam} from '../util/no-param.js';
 export type BaseWebSocketImplementationParams<
     ThisWebSocket extends Readonly<WebSocketDefinition> | NoParam = NoParam,
     WithMessage extends boolean = boolean,
-    Context = unknown,
+    HostContext = unknown,
 > = {
-    context: Context;
+    context: HostContext;
     webSocketDefinition: ThisWebSocket extends WebSocketDefinition
         ? Readonly<ThisWebSocket>
         : Readonly<WebSocketDefinition>;
@@ -47,22 +47,22 @@ export type BaseWebSocketImplementationParams<
  */
 export type WebSocketListenerImplementationsBase<
     ThisWebSocket extends WebSocketDefinition | NoParam = NoParam,
-    Context = unknown,
+    HostContext = unknown,
     ExtraParams = unknown,
 > = Partial<{
     /** This will be called when the WebSocket is opened and created. */
     open: BivariantFunction<
-        [BaseWebSocketImplementationParams<ThisWebSocket, false, Context> & ExtraParams],
+        [BaseWebSocketImplementationParams<ThisWebSocket, false, HostContext> & ExtraParams],
         MaybePromise<void>
     >;
     /** This will be called on every received WebSocket message. */
     message: BivariantFunction<
-        [BaseWebSocketImplementationParams<ThisWebSocket, true, Context> & ExtraParams],
+        [BaseWebSocketImplementationParams<ThisWebSocket, true, HostContext> & ExtraParams],
         MaybePromise<void>
     >;
     /** This will be called when the WebSocket is closed. */
     close: BivariantFunction<
-        [BaseWebSocketImplementationParams<ThisWebSocket, false, Context> & ExtraParams],
+        [BaseWebSocketImplementationParams<ThisWebSocket, false, HostContext> & ExtraParams],
         MaybePromise<void>
     >;
 }>;
@@ -77,11 +77,11 @@ export type WebSocketListenerImplementationsBase<
  */
 export type WebSocketImplementationBase<
     ThisWebSocket extends Readonly<WebSocketDefinition> = WebSocketDefinition,
-    Context = unknown,
+    HostContext = unknown,
     ExtraParams = unknown,
 > = {
     path: ThisWebSocket['path'];
-    implementation: WebSocketListenerImplementationsBase<ThisWebSocket, Context, ExtraParams>;
+    implementation: WebSocketListenerImplementationsBase<ThisWebSocket, HostContext, ExtraParams>;
     definition: ThisWebSocket;
     isWebSocket: true;
     isEndpoint: false;

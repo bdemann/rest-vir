@@ -13,10 +13,10 @@ import {createMockHostWebSocketConstructor} from './mock-host-web-socket-constru
  * @category Package : @rest-vir/api
  * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
  */
-export type MockHostParams<Api extends Readonly<ApiDefinition>, Context> = PartialWithUndefined<{
-    createHostContext: MockCreateHostContext<Context>;
-    endpoints: Readonly<MockHostEndpointMap<Api, Context>>;
-    webSockets: Readonly<MockHostWebSocketMap<Api, Context>>;
+export type MockHostParams<Api extends Readonly<ApiDefinition>, HostContext> = PartialWithUndefined<{
+    createHostContext: MockCreateHostContext<HostContext>;
+    endpoints: Readonly<MockHostEndpointMap<Api, HostContext>>;
+    webSockets: Readonly<MockHostWebSocketMap<Api, HostContext>>;
 }>;
 
 /**
@@ -53,19 +53,19 @@ export type MockHostParams<Api extends Readonly<ApiDefinition>, Context> = Parti
  *
  * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
  */
-export function createMockHost<const Api extends Readonly<ApiDefinition>, const Context = unknown>(
+export function createMockHost<const Api extends Readonly<ApiDefinition>, const HostContext = unknown>(
     api: Readonly<Api>,
-    params: Readonly<MockHostParams<Api, Context>> = {},
+    params: Readonly<MockHostParams<Api, HostContext>> = {},
 ): RestVirClient<Api> {
-    const endpointImplementations: MockHostEndpointMap<Api, Context> = params.endpoints ?? {};
-    const webSocketImplementations: MockHostWebSocketMap<Api, Context> = params.webSockets ?? {};
+    const endpointImplementations: MockHostEndpointMap<Api, HostContext> = params.endpoints ?? {};
+    const webSocketImplementations: MockHostWebSocketMap<Api, HostContext> = params.webSockets ?? {};
 
-    const mockFetch = createMockHostFetch<Api, Context>({
+    const mockFetch = createMockHostFetch<Api, HostContext>({
         endpointImplementations,
         createHostContext: params.createHostContext,
     });
 
-    const webSocketConstructor = createMockHostWebSocketConstructor<Context>({
+    const webSocketConstructor = createMockHostWebSocketConstructor<HostContext>({
         webSocketImplementations,
         createHostContext: params.createHostContext,
     });

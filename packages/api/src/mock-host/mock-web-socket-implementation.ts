@@ -27,8 +27,8 @@ export type MockWebSocketParamsExtras = {
  */
 export type MockWebSocketListenerImplementations<
     ThisWebSocket extends WebSocketDefinition | NoParam = NoParam,
-    Context = unknown,
-> = WebSocketListenerImplementationsBase<ThisWebSocket, Context, MockWebSocketParamsExtras>;
+    HostContext = unknown,
+> = WebSocketListenerImplementationsBase<ThisWebSocket, HostContext, MockWebSocketParamsExtras>;
 
 /**
  * Implementation envelope for a single WebSocket on the client (mock) side.
@@ -39,8 +39,8 @@ export type MockWebSocketListenerImplementations<
  */
 export type MockWebSocketImplementation<
     ThisWebSocket extends Readonly<WebSocketDefinition> = WebSocketDefinition,
-    Context = unknown,
-> = WebSocketImplementationBase<ThisWebSocket, Context, MockWebSocketParamsExtras>;
+    HostContext = unknown,
+> = WebSocketImplementationBase<ThisWebSocket, HostContext, MockWebSocketParamsExtras>;
 
 /**
  * The minimal `webSocket` interface that a mock WebSocket implementation can call into to send

@@ -11,10 +11,10 @@ import {type MockWebSocketListenerImplementations} from './mock-web-socket-imple
  * @category Package : @rest-vir/api
  * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
  */
-export type MockHostEndpointMap<Api extends Readonly<ApiDefinition>, Context> = {
+export type MockHostEndpointMap<Api extends Readonly<ApiDefinition>, HostContext> = {
     [Path in keyof Api['endpoints']]?: MockEndpointMethodImplementations<
         Extract<Api['endpoints'][Path], EndpointDefinition>,
-        Context
+        HostContext
     >;
 };
 
@@ -26,9 +26,9 @@ export type MockHostEndpointMap<Api extends Readonly<ApiDefinition>, Context> = 
  * @category Package : @rest-vir/api
  * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
  */
-export type MockHostWebSocketMap<Api extends Readonly<ApiDefinition>, Context> = {
+export type MockHostWebSocketMap<Api extends Readonly<ApiDefinition>, HostContext> = {
     [Path in keyof Api['webSockets']]?: MockWebSocketListenerImplementations<
         Extract<Api['webSockets'][Path], WebSocketDefinition>,
-        Context
+        HostContext
     >;
 };
