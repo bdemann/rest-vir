@@ -7,6 +7,7 @@ import {type IsAny} from 'type-fest';
  * unchanged.
  *
  * @category Internal
+ * @category Package : @rest-vir/api
  * @example
  *
  * ```ts
@@ -17,7 +18,7 @@ import {type IsAny} from 'type-fest';
  *     label: string | null;
  * }>;
  * ```
- * @category Package : @rest-vir/api
+ *
  * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
  */
 export type SetNullishPropertiesAsOptional<T extends AnyObject> = {

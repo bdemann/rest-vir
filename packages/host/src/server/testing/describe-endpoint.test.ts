@@ -1,4 +1,5 @@
-import {describe, it} from '@augment-vir/test';
+import {assert} from '@augment-vir/assert';
+import {describe, extractTestName, it} from '@augment-vir/test';
 import {defineApi, defineEndpoint, HttpMethod, HttpStatus} from '@rest-vir/api';
 import {defineShape} from 'object-shape-tester';
 import {createApiImplementor} from '../../implementation/implementor.js';
@@ -171,9 +172,6 @@ describeEndpoint(itemEndpointImplementation, ({endpointCases}) => {
     endpointCases.GET(
         {
             createHostContext: createTestHostContext,
-            after() {
-                return 'suite after';
-            },
         },
         [
             {
@@ -184,7 +182,6 @@ describeEndpoint(itemEndpointImplementation, ({endpointCases}) => {
                     },
                 },
                 expect: {
-                    afterResult: 'suite after',
                     result: {
                         Ok: {
                             status: HttpStatus.Ok,
@@ -213,7 +210,6 @@ describeEndpoint(itemEndpointImplementation, ({endpointCases}) => {
                     },
                 },
                 expect: {
-                    afterResult: 'suite after',
                     result: {
                         Ok: {
                             status: HttpStatus.Ok,
@@ -228,16 +224,13 @@ describeEndpoint(itemEndpointImplementation, ({endpointCases}) => {
                 },
             },
             {
-                it: 'supports callback inputs and case-level after overrides',
+                it: 'supports callback inputs',
                 createHostContext() {
                     return {
                         context: {
                             prefix: 'case',
                         },
                     };
-                },
-                after() {
-                    return 'case after';
                 },
                 input() {
                     return {
@@ -247,7 +240,6 @@ describeEndpoint(itemEndpointImplementation, ({endpointCases}) => {
                     };
                 },
                 expect: {
-                    afterResult: 'case after',
                     result: {
                         Ok: {
                             status: HttpStatus.Ok,
@@ -269,7 +261,6 @@ describeEndpoint(itemEndpointImplementation, ({endpointCases}) => {
                     },
                 },
                 expect: {
-                    afterResult: 'suite after',
                     result: {
                         Ok: {
                             status: HttpStatus.Ok,
@@ -367,6 +358,106 @@ describeEndpoint(itemEndpointImplementation, ({endpointCases}) => {
                             status: HttpStatus.NoContent,
                             headers: {},
                             responseData: undefined,
+                        },
+                    },
+                },
+            },
+        ],
+    );
+});
+
+describeEndpoint(itemEndpointImplementation, ({endpointCases}) => {
+    endpointCases.GET(
+        {
+            createTestParams({testContext}) {
+                return {
+                    prefix: extractTestName(testContext),
+                };
+            },
+            createHostContext({testParams}) {
+                return {
+                    context: {
+                        prefix: testParams.prefix,
+                    },
+                };
+            },
+            assembleResult({result, testParams}) {
+                const okResult = 'Ok' in result ? result.Ok : undefined;
+
+                return {
+                    /**
+                     * `input` selected this `itemId` only because it received a truthy
+                     * `testParams`.
+                     */
+                    inputReceivedTestParams: okResult?.responseData.itemId === 'item-ok',
+                    /** `prefix` flows `createTestParams` -> `createHostContext` -> response. */
+                    contextPrefixMatchesTestParams:
+                        okResult?.responseData.prefix === testParams.prefix,
+                };
+            },
+        },
+        [
+            {
+                it: 'threads testParams through createHostContext, input, and assembleResult',
+                input({testParams}) {
+                    return {
+                        pathParams: {
+                            itemId: testParams.prefix ? 'item-ok' : 'missing',
+                        },
+                    };
+                },
+                expect: {
+                    inputReceivedTestParams: true,
+                    contextPrefixMatchesTestParams: true,
+                },
+            },
+        ],
+    );
+});
+
+describeEndpoint(itemEndpointImplementation, ({endpointCases}) => {
+    endpointCases.GET<{prefix: string}>(
+        {
+            createTestParams() {
+                return {
+                    prefix: 'teardown',
+                };
+            },
+            createHostContext({testParams}) {
+                return {
+                    context: {
+                        prefix: testParams.prefix,
+                    },
+                };
+            },
+            teardown({testParams, hostContext}) {
+                /** A failure here throws from the tester's `finally`, failing the case. */
+                assert.deepEquals(testParams, {
+                    prefix: 'teardown',
+                });
+                assert.deepEquals(hostContext, {
+                    prefix: 'teardown',
+                });
+            },
+        },
+        [
+            {
+                it: 'runs teardown with testParams and the created host context',
+                input: {
+                    pathParams: {
+                        itemId: 'item-1',
+                    },
+                },
+                expect: {
+                    result: {
+                        Ok: {
+                            status: HttpStatus.Ok,
+                            headers: {},
+                            responseData: {
+                                hidden: 'not selected',
+                                itemId: 'item-1',
+                                prefix: 'teardown',
+                            },
                         },
                     },
                 },

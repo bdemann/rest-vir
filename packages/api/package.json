@@ -1,6 +1,6 @@
 {
     "name": "@rest-vir/api",
-    "version": "2.1.1",
+    "version": "2.2.0",
     "description": "Define a declarative and type safe REST API and connect to it from a client.",
     "keywords": [
         "rest",
@@ -20,7 +20,7 @@
         "type": "git",
         "url": "git+https://github.com/electrovir/rest-vir.git"
     },
-    "license": "(MIT or CC0 1.0)",
+    "license": "(MIT OR CC0-1.0)",
     "author": {
         "name": "electrovir",
         "url": "https://github.com/electrovir"

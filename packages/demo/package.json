@@ -1,6 +1,6 @@
 {
     "name": "@rest-vir/demo",
-    "version": "2.1.1",
+    "version": "2.2.0",
     "private": true,
     "homepage": "https://github.com/electrovir/rest-vir",
     "bugs": {
@@ -10,7 +10,7 @@
         "type": "git",
         "url": "git+https://github.com/electrovir/rest-vir.git"
     },
-    "license": "(MIT or CC0 1.0)",
+    "license": "(MIT OR CC0-1.0)",
     "author": {
         "name": "electrovir",
         "url": "https://github.com/electrovir"
@@ -28,8 +28,8 @@
         "@augment-vir/assert": "^31.71.0",
         "@augment-vir/common": "^31.71.0",
         "@fastify/multipart": "^10.0.0",
-        "@rest-vir/api": "^2.1.1",
-        "@rest-vir/host": "^2.1.1",
+        "@rest-vir/api": "^2.2.0",
+        "@rest-vir/host": "^2.2.0",
         "element-vir": "^26.16.0",
         "object-shape-tester": "^6.12.1",
         "type-fest": "^5.6.0",
