@@ -4,10 +4,10 @@ import {
     typedObjectFromEntries,
     type AnyFunction,
     type BivariantFunction,
+    type Constructor,
 } from '@augment-vir/common';
 import {type EndpointDefinitionMethods} from '@rest-vir/api';
 import {type OutgoingHttpHeaders} from 'node:http';
-import {type Constructor} from 'type-fest';
 import {buildUrl} from 'url-vir';
 import {type ApiDefinition} from './api/api.js';
 import {
@@ -143,6 +143,7 @@ export class RestVirClient<const ClientApi extends ApiDefinition> {
      * {@link RestVirClient.fetchStream}; their only divergent step is how they read `responseData`
      * out of the response.
      */
+    // eslint-disable-next-line @virmator/prefer-params-object
     protected async runEndpointRequest<
         const Endpoint extends EndpointDefinition & {path: keyof ClientApi['endpoints']},
         const Method extends EndpointDefinitionMethods<NoInfer<Endpoint>>,

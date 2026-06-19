@@ -1,6 +1,5 @@
-import {type UnknownObject} from '@augment-vir/common';
+import {type IsNever, type UnknownObject} from '@augment-vir/common';
 import {type Shape} from 'object-shape-tester';
-import {type IsNever} from 'type-fest';
 import {type NoParam} from '../util/no-param.js';
 import {
     type BaseRoutePath,

@@ -292,7 +292,7 @@ describe('ExtractPathParams', () => {
     it('returns a loose union type for NoParam', () => {
         assert.tsType<ExtractPathParams>().equals<
             | ({
-                  wildcard?: string;
+                  wildcard?: string | undefined;
               } & Record<string, string | undefined>)
             | undefined
         >();

@@ -13,7 +13,10 @@ import {createMockHostWebSocketConstructor} from './mock-host-web-socket-constru
  * @category Package : @rest-vir/api
  * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
  */
-export type MockHostParams<Api extends Readonly<ApiDefinition>, HostContext> = PartialWithUndefined<{
+export type MockHostParams<
+    Api extends Readonly<ApiDefinition>,
+    HostContext,
+> = PartialWithUndefined<{
     createHostContext: MockCreateHostContext<HostContext>;
     endpoints: Readonly<MockHostEndpointMap<Api, HostContext>>;
     webSockets: Readonly<MockHostWebSocketMap<Api, HostContext>>;
@@ -53,12 +56,13 @@ export type MockHostParams<Api extends Readonly<ApiDefinition>, HostContext> = P
  *
  * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
  */
-export function createMockHost<const Api extends Readonly<ApiDefinition>, const HostContext = unknown>(
-    api: Readonly<Api>,
-    params: Readonly<MockHostParams<Api, HostContext>> = {},
-): RestVirClient<Api> {
+export function createMockHost<
+    const Api extends Readonly<ApiDefinition>,
+    const HostContext = unknown,
+>(api: Readonly<Api>, params: Readonly<MockHostParams<Api, HostContext>> = {}): RestVirClient<Api> {
     const endpointImplementations: MockHostEndpointMap<Api, HostContext> = params.endpoints ?? {};
-    const webSocketImplementations: MockHostWebSocketMap<Api, HostContext> = params.webSockets ?? {};
+    const webSocketImplementations: MockHostWebSocketMap<Api, HostContext> =
+        params.webSockets ?? {};
 
     const mockFetch = createMockHostFetch<Api, HostContext>({
         endpointImplementations,

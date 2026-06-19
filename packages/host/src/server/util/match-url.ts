@@ -1,6 +1,5 @@
-import {getObjectTypedKeys} from '@augment-vir/common';
+import {getObjectTypedKeys, type RequireAtLeastOne} from '@augment-vir/common';
 import {type ApiDefinition, type BaseRoutePath} from '@rest-vir/api';
-import {type RequireAtLeastOne} from 'type-fest';
 import {parseUrl} from 'url-vir';
 import {match} from './path-to-regexp.js';
 

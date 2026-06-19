@@ -90,6 +90,9 @@ export type WithWebSocketTestCallback<
  *         'does a thing',
  *         withWebSocketTest(
  *             myApiImplementation.implementation.webSockets['/my-web-socket-path'],
+ *             () => {
+ *                 return {context: undefined};
+ *             },
  *             {},
  *             async (webSocket) => {
  *                 const response = await webSocket.sendAndWaitForReply();
@@ -102,6 +105,7 @@ export type WithWebSocketTestCallback<
  *
  * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
  */
+// eslint-disable-next-line @virmator/prefer-params-object
 export function withWebSocketTest<
     const HostContext,
     const ThisWebSocket extends Readonly<WebSocketImplementation<WebSocketDefinition, HostContext>>,

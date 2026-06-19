@@ -82,6 +82,8 @@ describe('EndpointParamObject', () => {
                 typeof namedParamsAndWildcardEndpoint,
                 typeof HttpMethod.Get
             >;
+
+        assert.tsType(fromNamedParamsAndWildcard).equals<EndpointFetchParamObject>();
     });
 
     it('makes all properties optional for an endpoint with no request data or search params', () => {

@@ -21,6 +21,7 @@ describe('ApiInit', () => {
         const api: ApiInit = {
             apiName: 'test',
         };
+        assert.tsType(api).equals<ApiInit>();
     });
 
     it('allows empty endpoint and web socket arrays', () => {
@@ -29,6 +30,7 @@ describe('ApiInit', () => {
             endpoints: [],
             webSockets: [],
         };
+        assert.tsType(api).equals<ApiInit>();
     });
 
     it('accepts an array of endpoint definitions', () => {
@@ -52,6 +54,7 @@ describe('ApiInit', () => {
                 },
             ],
         };
+        assert.tsType(api).equals<ApiInit>();
     });
 
     it('accepts an array of web socket definitions', () => {
@@ -65,6 +68,7 @@ describe('ApiInit', () => {
                 },
             ],
         };
+        assert.tsType(api).equals<ApiInit>();
     });
 
     it('accepts a full api with both endpoints and web sockets', () => {
@@ -112,6 +116,7 @@ describe('ApiInit', () => {
                 },
             ],
         };
+        assert.tsType(api).equals<ApiInit>();
     });
 });
 
@@ -724,5 +729,6 @@ describe(defineApi.name, () => {
         });
 
         const asBase: ApiDefinition = result;
+        assert.tsType(asBase).equals<ApiDefinition>();
     });
 });

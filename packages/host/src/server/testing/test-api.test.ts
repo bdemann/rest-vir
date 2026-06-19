@@ -773,7 +773,9 @@ const gapsImplementation = implementApi<undefined>()(gapsApi, {
                     'x-post-hook': 'headers-only',
                 },
             };
-        } else if (originalStatus !== HttpStatus.Ok) {
+        } else if (originalStatus === HttpStatus.Ok) {
+            return undefined;
+        } else {
             // For any non-Ok response, override with custom headers so the post-route
             // hook short-circuits the response in attach-api (lines 167-168).
             return {
@@ -782,7 +784,6 @@ const gapsImplementation = implementApi<undefined>()(gapsApi, {
                 },
             };
         }
-        return undefined;
     },
     endpoints: [
         gapsImplementor.implementEndpoint(gapsEchoEndpoint, {
@@ -1205,7 +1206,7 @@ describe('coverage-gaps integration', () => {
                 closed.resolve(-1);
             });
 
-            await closed.promise;
+            assert.isNumber(await closed.promise);
         } finally {
             await kill();
         }

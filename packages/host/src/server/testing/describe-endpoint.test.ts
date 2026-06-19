@@ -84,17 +84,17 @@ const itemEndpointImplementation = implementor.implementEndpoint(itemEndpoint, {
                     },
                 },
             };
-        }
-
-        return {
-            [HttpStatus.Ok]: {
-                responseData: {
-                    hidden: 'not selected',
-                    itemId,
-                    prefix: context.prefix,
+        } else {
+            return {
+                [HttpStatus.Ok]: {
+                    responseData: {
+                        hidden: 'not selected',
+                        itemId,
+                        prefix: context.prefix,
+                    },
                 },
-            },
-        };
+            };
+        }
     },
     [HttpMethod.Delete]() {
         return {

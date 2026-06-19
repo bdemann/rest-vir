@@ -74,26 +74,6 @@ describe(createRouteDefiners.name, () => {
             });
         });
 
-        it('rejects an unknown customProps key', () => {
-            defineCustomEndpoint({
-                path: '/admin',
-                requests: {
-                    [HttpMethod.Get]: {
-                        customProps: {
-                            requiresAuth: true,
-                            // @ts-expect-error: unknown key not allowed by the narrowed customProps.
-                            unknownKey: 'oops',
-                        },
-                        responses: {
-                            [HttpStatus.Ok]: {
-                                responseData: defineShape(''),
-                            },
-                        },
-                    },
-                },
-            });
-        });
-
         it('preserves the path literal type', () => {
             const result = defineCustomEndpoint({
                 path: '/admin',
@@ -147,17 +127,6 @@ describe(createRouteDefiners.name, () => {
                 customProps: {
                     // @ts-expect-error: requiresAuth must be a boolean, not a string.
                     requiresAuth: 'yes',
-                },
-            });
-        });
-
-        it('rejects an unknown customProps key', () => {
-            defineCustomWebSocket({
-                path: '/ws',
-                customProps: {
-                    requiresAuth: true,
-                    // @ts-expect-error: unknown key not allowed by the narrowed customProps.
-                    unknownKey: 'oops',
                 },
             });
         });

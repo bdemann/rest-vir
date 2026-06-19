@@ -1,11 +1,10 @@
-import {type PartialWithUndefined} from '@augment-vir/common';
+import {type IsEqual, type PartialWithUndefined} from '@augment-vir/common';
 import {
     type ApiDefinition,
     type BaseRoutePath,
     type NoParam,
     type OriginRequirement,
 } from '@rest-vir/api';
-import {type IsEqual} from 'type-fest';
 import {type CreateHostContext} from './host-context.js';
 import {type EndpointImplementation} from './implement-endpoint.js';
 import {type WebSocketImplementation} from './implement-websocket.js';

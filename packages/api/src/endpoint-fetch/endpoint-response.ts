@@ -10,11 +10,12 @@ import {
     type BivariantFunction,
     type ErrorHttpStatus,
     type ExtractKeysWithMatchingValues,
+    type IsEqual,
     type MaybePromise,
+    type RequireExactlyOne,
     type Values,
 } from '@augment-vir/common';
 import {assertValidShape, type Shape} from 'object-shape-tester';
-import {type IsEqual, type RequireExactlyOne} from 'type-fest';
 import {
     extractEndpointMethodDefinition,
     type DefaultErrorResponseType,
@@ -250,15 +251,15 @@ export async function createEndpointResponseOutput<
             condenseResponse(response);
         }
 
-        const unexpectedError: UnknownFetchOutput = {
-            ...baseResponseResult,
-            responseData,
-            headers: readResponseHeaders(response.headers),
+        const unexpectedErrorOutput: Partial<Record<'unexpectedError', UnknownFetchOutput>> = {
+            unexpectedError: {
+                ...baseResponseResult,
+                responseData,
+                headers: readResponseHeaders(response.headers),
+            },
         };
 
-        return {
-            unexpectedError,
-        } satisfies EndpointFetchOutput as EndpointFetchOutput<Endpoint, Method, IncludeResponse>;
+        return unexpectedErrorOutput as EndpointFetchOutput<Endpoint, Method, IncludeResponse>;
     } else {
         throw new Error(
             `Received unexpected successful response status from endpoint '${endpoint.path}': ${status}`,

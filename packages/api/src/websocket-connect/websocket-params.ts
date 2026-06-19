@@ -1,4 +1,4 @@
-import {type HasRequiredKeys} from 'type-fest';
+import {type HasRequiredKeys} from '@augment-vir/common';
 import {type ExtractPathParams} from '../api/path-params.js';
 import {type RouteSearchParamsType} from '../api/route.js';
 import {

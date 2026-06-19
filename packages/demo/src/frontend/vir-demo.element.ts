@@ -5,6 +5,7 @@ import {
     getObjectTypedEntries,
     type JsonCompatibleValue,
     log,
+    type RequireExactlyOne,
     safeJsonStringify,
 } from '@augment-vir/common';
 import {findDevServerPort, RestVirClient} from '@rest-vir/api';
@@ -17,7 +18,6 @@ import {
     listen,
     nothing,
 } from 'element-vir';
-import {type RequireExactlyOne} from 'type-fest';
 import {
     LoaderAnimated24Icon,
     noNativeSpacing,

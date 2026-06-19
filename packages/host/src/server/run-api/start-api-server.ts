@@ -114,7 +114,12 @@ export async function startApiServer(
 
     if (finalOptions.workerCount === 1 || !check.isNumber(port)) {
         /** Only run a single server. */
-        const result = await startServer(api, finalOptions, fastifyPlugins, options.externalOrigin);
+        const result = await startServer({
+            ...finalOptions,
+            api,
+            fastifyPlugins,
+            serverOrigin: options.externalOrigin,
+        });
 
         if (finalOptions.port) {
             serverLogger.info(
@@ -127,12 +132,12 @@ export async function startApiServer(
         /** Run in a cluster. */
         const manager = runInCluster(
             async () => {
-                const {kill} = await startServer(
+                const {kill} = await startServer({
+                    ...finalOptions,
                     api,
-                    finalOptions,
                     fastifyPlugins,
-                    options.externalOrigin,
-                );
+                    serverOrigin: options.externalOrigin,
+                });
 
                 return () => {
                     void kill();
@@ -174,33 +179,35 @@ export async function startApiServer(
     }
 }
 
-async function startServer(
-    api: Readonly<ApiImplementation>,
-    {
-        host,
-        port,
-        bodyLimit,
-        connectionTimeout,
-        keepAliveTimeout,
-        requestTimeout,
-        trustProxy,
-        webSocketMaxPayload,
-    }: Readonly<
-        Pick<
-            RunApiOptions,
-            | 'host'
-            | 'port'
-            | 'bodyLimit'
-            | 'connectionTimeout'
-            | 'keepAliveTimeout'
-            | 'requestTimeout'
-            | 'trustProxy'
-            | 'webSocketMaxPayload'
-        >
-    >,
-    fastifyPlugins: Readonly<FastifyPlugins>,
-    serverOrigin: string,
-): Promise<StartApiServerOutput> {
+async function startServer({
+    api,
+    host,
+    port,
+    bodyLimit,
+    connectionTimeout,
+    keepAliveTimeout,
+    requestTimeout,
+    trustProxy,
+    webSocketMaxPayload,
+    fastifyPlugins,
+    serverOrigin,
+}: Readonly<
+    Pick<
+        RunApiOptions,
+        | 'host'
+        | 'port'
+        | 'bodyLimit'
+        | 'connectionTimeout'
+        | 'keepAliveTimeout'
+        | 'requestTimeout'
+        | 'trustProxy'
+        | 'webSocketMaxPayload'
+    > & {
+        api: Readonly<ApiImplementation>;
+        fastifyPlugins: Readonly<FastifyPlugins>;
+        serverOrigin: string;
+    }
+>): Promise<StartApiServerOutput> {
     const server = fastify({
         bodyLimit,
         connectionTimeout,

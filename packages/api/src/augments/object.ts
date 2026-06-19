@@ -1,5 +1,4 @@
-import {type AnyObject} from '@augment-vir/common';
-import {type IsAny} from 'type-fest';
+import {type AnyObject, type IsAny} from '@augment-vir/common';
 
 /**
  * Converts any properties whose type includes `undefined` or `null` into optional properties typed

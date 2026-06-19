@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-non-null-assertion, @virmator/prefer-protected-over-private, @virmator/prefer-params-object */
 // cspell:ignore Embrey
 /* node:coverage disable */
 
@@ -498,6 +498,7 @@ function negate(delimiter: string, backtrack: string) {
         return `(?:(?!${escape(delimiter)})[^${escape(backtrack)}])`;
     } else if (delimiter.length < 2) {
         return `(?:(?!${escape(backtrack)})[^${escape(delimiter)}])`;
+    } else {
+        return String.raw`(?:(?!${escape(backtrack)}|${escape(delimiter)})[\s\S])`;
     }
-    return String.raw`(?:(?!${escape(backtrack)}|${escape(delimiter)})[\s\S])`;
 }

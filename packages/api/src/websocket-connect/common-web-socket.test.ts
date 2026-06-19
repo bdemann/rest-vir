@@ -13,6 +13,9 @@ describe(CommonWebSocket.name, () => {
         const wsTest: CommonWebSocket = {} as any as WsWebSocket;
 
         const webTest: CommonWebSocket = {} as any as globalThis.WebSocket;
+
+        assert.tsType(wsTest).equals<CommonWebSocket>();
+        assert.tsType(webTest).equals<CommonWebSocket>();
     });
     it('cannot be constructed in typescript', () => {
         // @ts-expect-error: this is an abstract class and cannot be constructed

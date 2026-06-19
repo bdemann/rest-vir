@@ -1,5 +1,4 @@
-import {type MaybePromise} from '@augment-vir/common';
-import {type HasRequiredKeys} from 'type-fest';
+import {type HasRequiredKeys, type MaybePromise} from '@augment-vir/common';
 import {
     type DefinableHttpMethod,
     type EndpointDefinition,

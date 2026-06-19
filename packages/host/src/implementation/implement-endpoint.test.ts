@@ -131,6 +131,7 @@ describe('EndpointMethodImplementations', () => {
         const testAssignment: EndpointMethodImplementations = {} as EndpointMethodImplementations<
             typeof mockEndpoint
         >;
+        assert.tsType(testAssignment).equals<EndpointMethodImplementations>();
     });
 });
 
@@ -377,6 +378,7 @@ describe('EndpointMethodImplementationErrorOutput', () => {
                 responseData: 'invalid',
             },
         };
+        assert.isDefined(errorOutput);
 
         implementMockEndpoint(mockEndpoint, {
             [HttpMethod.Get]() {

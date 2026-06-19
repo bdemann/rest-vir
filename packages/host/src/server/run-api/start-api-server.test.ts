@@ -65,11 +65,13 @@ describe(startApiServer.name, () => {
         });
         it('fires websocket listeners', async ({connectWebSocket}) => {
             const webSocket = await connectWebSocket(withAllListenersWebSocket.path);
+            assert.isDefined(webSocket);
 
             webSocket.send();
         });
         it('handles client message data that should not exist', async ({connectWebSocket}) => {
             const webSocket = await connectWebSocket(noClientDataWebSocket.path);
+            assert.isDefined(webSocket);
 
             webSocket.send('something here');
         });
@@ -753,6 +755,7 @@ describe(startApiServer.name, () => {
             externalOrigin: 'http://localhost',
             trustProxy: true,
         });
+        assert.isDefined(kill);
         await kill();
     });
 });

@@ -225,6 +225,7 @@ function passThroughValue(rawValue: unknown): AllowedSearchParamValue | undefine
             return undefined;
         }
         return stringValues;
+    } else {
+        return stringify(rawValue);
     }
-    return stringify(rawValue);
 }

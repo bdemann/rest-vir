@@ -1,6 +1,6 @@
 {
     "name": "@rest-vir/host",
-    "version": "2.2.0",
+    "version": "2.2.1",
     "description": "Implement a declarative and type safe REST API and host it.",
     "keywords": [
         "rest",
@@ -37,29 +37,28 @@
         "test:update": "npm test update"
     },
     "dependencies": {
-        "@augment-vir/assert": "^31.71.0",
-        "@augment-vir/common": "^31.71.0",
-        "@augment-vir/node": "^31.71.0",
-        "@augment-vir/test": "^31.71.0",
-        "@fastify/compress": "^8.3.1",
+        "@augment-vir/assert": "^32.2.1",
+        "@augment-vir/common": "^32.2.1",
+        "@augment-vir/node": "^32.2.1",
+        "@augment-vir/test": "^32.2.1",
+        "@fastify/compress": "^9.0.0",
         "@fastify/multipart": "^10.0.0",
         "@fastify/websocket": "^11.2.0",
-        "@rest-vir/api": "^2.2.0",
+        "@rest-vir/api": "^2.2.1",
         "@types/ws": "^8.18.1",
         "cluster-vir": "^1.0.1",
-        "date-vir": "^8.3.2",
-        "fastify": "^5.8.5",
+        "date-vir": "^8.6.2",
+        "fastify": "^5.10.0",
         "light-my-request": "^6.6.0",
         "portfinder": "^1.0.38",
-        "type-fest": "^5.6.0",
         "url-vir": "^2.1.9"
     },
     "devDependencies": {
-        "@types/node": "^25.7.0",
-        "c8": "^11.0.0",
+        "@types/node": "^26.1.1",
+        "c8": "^12.0.0",
         "istanbul-smart-text-reporter": "^1.1.5",
-        "markdown-code-example-inserter": "^3.0.5",
-        "typedoc": "^0.28.19"
+        "markdown-code-example-inserter": "^3.0.6",
+        "typedoc": "^0.28.20"
     },
     "peerDependencies": {
         "object-shape-tester": ">=5"

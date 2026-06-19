@@ -1695,6 +1695,7 @@ describe('RestVirClient.connectWebSocket', () => {
                 'graphql-ws',
             ],
         });
+        assert.isDefined(socket);
         await socket.close();
     });
 

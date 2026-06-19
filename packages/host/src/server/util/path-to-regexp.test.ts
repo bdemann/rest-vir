@@ -2,41 +2,41 @@ import {describe, itCases} from '@augment-vir/test';
 import {match} from './path-to-regexp.js';
 
 describe(match.name, () => {
-    function testMatch(path: string, matchAgainst: string) {
+    function testMatch({path, matchAgainst}: {path: string; matchAgainst: string}) {
         return !!match(path)(matchAgainst);
     }
 
     itCases(testMatch, [
         {
             it: 'matches a plain path',
-            inputs: [
-                '/hi/bye',
-                '/hi/bye',
-            ],
+            input: {
+                path: '/hi/bye',
+                matchAgainst: '/hi/bye',
+            },
             expect: true,
         },
         {
             it: 'rejects a plain path mismatch',
-            inputs: [
-                '/hi/bye',
-                '/hi/bye2',
-            ],
+            input: {
+                path: '/hi/bye',
+                matchAgainst: '/hi/bye2',
+            },
             expect: false,
         },
         {
             it: 'matches a parameterized path',
-            inputs: [
-                '/hi/:param1/:param2',
-                '/hi/bye/see',
-            ],
+            input: {
+                path: '/hi/:param1/:param2',
+                matchAgainst: '/hi/bye/see',
+            },
             expect: true,
         },
         {
             it: 'matches an unnamed wildcard path',
-            inputs: [
-                '/hi/*',
-                '/hi/bye/see',
-            ],
+            input: {
+                path: '/hi/*',
+                matchAgainst: '/hi/bye/see',
+            },
             expect: true,
         },
         {
@@ -47,18 +47,18 @@ describe(match.name, () => {
              * > Wildcard must be the last character in the route
              */
             it: 'matches an unnamed wildcard in the middle',
-            inputs: [
-                '/hi/*/again',
-                '/hi/bye/again',
-            ],
+            input: {
+                path: '/hi/*/again',
+                matchAgainst: '/hi/bye/again',
+            },
             expect: true,
         },
         {
             it: 'rejects an invalid parameterized path',
-            inputs: [
-                '/hi/:param1/:param2',
-                '/hi/bye/see/you',
-            ],
+            input: {
+                path: '/hi/:param1/:param2',
+                matchAgainst: '/hi/bye/see/you',
+            },
             expect: false,
         },
     ]);

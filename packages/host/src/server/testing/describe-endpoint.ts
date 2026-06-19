@@ -78,12 +78,12 @@ export function describeEndpoint<
                     Output
                 >,
             ) {
-                endpointCases<Endpoint, typeof endpointMethod, HostContext, TestParams, Output>(
+                endpointCases<Endpoint, typeof endpointMethod, HostContext, TestParams, Output>({
                     endpointImplementation,
-                    endpointMethod,
+                    method: endpointMethod,
                     suiteParams,
                     testCases,
-                );
+                });
             };
         },
     ) satisfies Partial<Record<EndpointDefinitionMethods<Endpoint>, unknown>> as EndpointCases<
@@ -357,14 +357,19 @@ function endpointCases<
     const HostContext,
     const TestParams,
     const Output,
->(
-    endpointImplementation: Readonly<EndpointImplementation<Endpoint, HostContext>>,
-    method: Method,
+>({
+    endpointImplementation,
+    method,
+    suiteParams,
+    testCases,
+}: Readonly<{
+    endpointImplementation: Readonly<EndpointImplementation<Endpoint, HostContext>>;
+    method: Method;
     suiteParams: Readonly<
         EndpointCaseSuiteParams<Endpoint, Method, HostContext, TestParams, Output>
-    >,
-    testCases: EndpointTestCasesArray<Endpoint, Method, HostContext, TestParams, Output>,
-) {
+    >;
+    testCases: EndpointTestCasesArray<Endpoint, Method, HostContext, TestParams, Output>;
+}>) {
     const testCaseInputs = testCases.map(
         ({it, only, skip, input, expect, createTestParams, createHostContext, useFullResponse}) => {
             const testInput: EndpointTesterInput<Endpoint, Method, HostContext, TestParams> = {

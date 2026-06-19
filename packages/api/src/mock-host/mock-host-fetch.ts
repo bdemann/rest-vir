@@ -47,7 +47,10 @@ export type MockHostFetchOptions<Api extends Readonly<ApiDefinition>, HostContex
 export function createMockHostFetch<
     const Api extends Readonly<ApiDefinition>,
     const HostContext = unknown,
->({endpointImplementations, createHostContext}: MockHostFetchOptions<Api, HostContext>): ClientFetch {
+>({
+    endpointImplementations,
+    createHostContext,
+}: MockHostFetchOptions<Api, HostContext>): ClientFetch {
     return async function mockFetch(
         ...[
             url,
@@ -177,8 +180,9 @@ async function readRequestData(requestInit: Readonly<RequestInit>): Promise<unkn
         return undefined;
     } else if (body instanceof FormData) {
         return body;
+    } else {
+        return await readResponseBodyAsJsonOrText(new Response(body));
     }
-    return await readResponseBodyAsJsonOrText(new Response(body));
 }
 
 function buildMockResponseFromResult(

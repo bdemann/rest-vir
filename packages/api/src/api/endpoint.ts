@@ -5,10 +5,11 @@ import {
     type ArrayElement,
     type ErrorHttpStatus,
     type HttpStatus,
+    type IsNever,
+    type RequireAtLeastOne,
     type UnknownObject,
 } from '@augment-vir/common';
 import {type Shape} from 'object-shape-tester';
-import {type IsNever, type RequireAtLeastOne} from 'type-fest';
 import {type NoParam} from '../util/no-param.js';
 import {
     type BaseRoutePath,

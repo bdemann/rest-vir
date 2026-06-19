@@ -368,10 +368,11 @@ export const mockApiImplementation = implementApi<undefined>()(mockApi, {
             throw new RejectRequestError(HttpStatus.Unauthorized);
         } else if (request.headers.authorization === 'error') {
             throw new Error('Context creation failed.');
+        } else {
+            return {
+                context: undefined,
+            };
         }
-        return {
-            context: undefined,
-        };
     },
     clientOriginRequirement: {
         anyOrigin: true,

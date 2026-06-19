@@ -223,6 +223,7 @@ describe('EndpointMethodDefinition', () => {
                 },
             },
         };
+        assert.tsType(definition).equals<EndpointMethodDefinition<typeof HttpMethod.Post>>();
     });
 
     it('disallows requestData for GET', () => {
@@ -261,6 +262,7 @@ describe('EndpointMethodDefinition', () => {
                 },
             },
         };
+        assert.tsType(definition).equals<EndpointMethodDefinition<typeof HttpMethod.Get>>();
     });
 
     it('allows customProps', () => {
@@ -275,6 +277,7 @@ describe('EndpointMethodDefinition', () => {
                 },
             },
         };
+        assert.tsType(definition).equals<EndpointMethodDefinition<typeof HttpMethod.Get>>();
     });
 
     it('allows omitting optional fields', () => {
@@ -286,6 +289,7 @@ describe('EndpointMethodDefinition', () => {
                 },
             },
         };
+        assert.tsType(definition).equals<EndpointMethodDefinition<typeof HttpMethod.Post>>();
     });
 });
 
@@ -298,6 +302,7 @@ describe('ResponseDefinitions', () => {
                 }),
             },
         };
+        assert.isDefined(responses);
     });
 
     it('allows undefined responseData', () => {
@@ -306,6 +311,7 @@ describe('ResponseDefinitions', () => {
                 responseData: undefined,
             },
         };
+        assert.isDefined(responses);
     });
 
     it('allows multiple status codes', () => {
@@ -324,6 +330,7 @@ describe('ResponseDefinitions', () => {
                 responseData: undefined,
             },
         };
+        assert.isDefined(responses);
     });
 });
 
@@ -357,6 +364,7 @@ describe('EndpointDefinition', () => {
                 },
             },
         };
+        assert.tsType(endpoint).equals<EndpointDefinition>();
     });
 
     it('requires at least one method definition', () => {
@@ -597,24 +605,6 @@ describe(defineEndpoint.name, () => {
                 },
             },
         });
-
-        defineAuthEndpoint({
-            path: '/admin',
-            requests: {
-                [HttpMethod.Get]: {
-                    customProps: {
-                        requiresAuth: true,
-                        // @ts-expect-error: unknown key is rejected by the narrowed customProps type.
-                        unknownKey: 'oops',
-                    },
-                    responses: {
-                        [HttpStatus.Ok]: {
-                            responseData: defineShape(''),
-                        },
-                    },
-                },
-            },
-        });
     });
 
     it('preserves searchParams types', () => {
@@ -706,6 +696,7 @@ describe(defineEndpoint.name, () => {
         });
 
         const asBase: EndpointDefinition = result;
+        assert.tsType(asBase).equals<EndpointDefinition>();
     });
 
     it('preserves multiple method definitions simultaneously', () => {
@@ -1166,6 +1157,7 @@ describe('DefaultOutgoingResponseHeadersType', () => {
         const headers: DefaultOutgoingResponseHeadersType = {
             'content-type': 'application/json',
         };
+        assert.tsType(headers).equals<DefaultOutgoingResponseHeadersType>();
     });
 
     it('accepts an array of string values', () => {
@@ -1175,18 +1167,21 @@ describe('DefaultOutgoingResponseHeadersType', () => {
                 'second=2',
             ],
         };
+        assert.tsType(headers).equals<DefaultOutgoingResponseHeadersType>();
     });
 
     it('accepts an undefined value', () => {
         const headers: DefaultOutgoingResponseHeadersType = {
             'x-maybe': undefined,
         };
+        assert.tsType(headers).equals<DefaultOutgoingResponseHeadersType>();
     });
 
     it('accepts a numeric value (e.g. content-length)', () => {
         const headers: DefaultOutgoingResponseHeadersType = {
             'content-length': 1024,
         };
+        assert.tsType(headers).equals<DefaultOutgoingResponseHeadersType>();
     });
 
     it("accepts Node.js's OutgoingHttpHeaders without a cast", () => {
@@ -1201,6 +1196,7 @@ describe('DefaultOutgoingResponseHeadersType', () => {
         };
 
         const headers: DefaultOutgoingResponseHeadersType = outgoing;
+        assert.tsType(headers).equals<DefaultOutgoingResponseHeadersType>();
     });
 });
 

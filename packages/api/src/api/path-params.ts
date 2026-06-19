@@ -1,6 +1,11 @@
 import {check} from '@augment-vir/assert';
-import {addPrefix, type PartialWithUndefined} from '@augment-vir/common';
-import {type HasRequiredKeys, type IsEqual, type IsNever} from 'type-fest';
+import {
+    addPrefix,
+    type HasRequiredKeys,
+    type IsEqual,
+    type IsNever,
+    type PartialWithUndefined,
+} from '@augment-vir/common';
 import {type NoParam} from '../util/no-param.js';
 import {type BaseRoutePath} from './route.js';
 

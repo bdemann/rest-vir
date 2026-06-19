@@ -65,6 +65,7 @@ export type MockEndpointResponseOptions<
  * @category Package : @rest-vir/api
  * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
  */
+// eslint-disable-next-line @virmator/prefer-params-object
 export function createMockEndpointResponse<
     const Endpoint extends EndpointDefinition,
     const Method extends EndpointDefinitionMethods<NoInfer<Endpoint>>,
@@ -115,6 +116,7 @@ export type MockResponseParams = Overwrite<
 export class MockResponseBodyStream extends ReadableStream<Uint8Array<ArrayBuffer>> {
     constructor(
         body: unknown,
+        // eslint-disable-next-line @virmator/prefer-protected-over-private
         private getReaderCalled: () => void,
     ) {
         super({
@@ -296,6 +298,7 @@ export function createMockResponse(params: Readonly<MockResponseParams> = {}): R
  *
  * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
  */
+// eslint-disable-next-line @virmator/prefer-params-object
 export function createMockEndpointFetch<
     const Endpoint extends EndpointDefinition,
     const Method extends EndpointDefinitionMethods<NoInfer<Endpoint>>,

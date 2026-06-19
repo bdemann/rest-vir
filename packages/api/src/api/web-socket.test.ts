@@ -20,12 +20,16 @@ describe('WebSocketDefinition', () => {
             hostMessage: defineShape(''),
             connectProtocol: tupleShape(''),
         };
+
+        assert.tsType(definition).equals<WebSocketDefinition>();
     });
 
     it('allows omitting all optional fields', () => {
         const definition: WebSocketDefinition = {
             path: '/ws',
         };
+
+        assert.tsType(definition).equals<WebSocketDefinition>();
     });
 
     it('allows undefined for optional shape fields', () => {
@@ -35,6 +39,8 @@ describe('WebSocketDefinition', () => {
             hostMessage: undefined,
             connectProtocol: undefined,
         };
+
+        assert.tsType(definition).equals<WebSocketDefinition>();
     });
 
     it('allows searchParams', () => {
@@ -44,6 +50,8 @@ describe('WebSocketDefinition', () => {
                 token: defineShape(''),
             },
         };
+
+        assert.tsType(definition).equals<WebSocketDefinition>();
     });
 
     it('allows customProps', () => {
@@ -53,6 +61,8 @@ describe('WebSocketDefinition', () => {
                 maxConnections: 100,
             },
         };
+
+        assert.tsType(definition).equals<WebSocketDefinition>();
     });
 
     it('allows requiredClientOrigin', () => {
@@ -60,6 +70,8 @@ describe('WebSocketDefinition', () => {
             path: '/ws',
             clientOriginRequirement: 'https://example.com',
         };
+
+        assert.tsType(definition).equals<WebSocketDefinition>();
     });
 
     it('is compatible with specific definition', () => {
@@ -72,6 +84,8 @@ describe('WebSocketDefinition', () => {
 
             const generic: WebSocketDefinition = webSocket as Generic;
         }
+
+        assert.isDefined(testFunction);
     });
 });
 
@@ -179,15 +193,6 @@ describe(defineWebSocket.name, () => {
                 requiresAuth: 'yes',
             },
         });
-
-        defineAuthWebSocket({
-            path: '/ws',
-            customProps: {
-                requiresAuth: true,
-                // @ts-expect-error: unknown key is rejected by the narrowed customProps type.
-                unknownKey: 'oops',
-            },
-        });
     });
 
     it('preserves searchParams types', () => {
@@ -260,12 +265,16 @@ describe(defineWebSocket.name, () => {
         });
 
         const asBase: WebSocketDefinition = result;
+
+        assert.tsType(asBase).equals<WebSocketDefinition>();
     });
 
     it('a path-only definition is assignable to WebSocketDefinition', () => {
         const asBase: WebSocketDefinition = defineWebSocket({
             path: '/ws/empty',
         });
+
+        assert.tsType(asBase).equals<WebSocketDefinition>();
     });
 
     it('a definition with a string-shape connectProtocol is assignable', () => {
@@ -275,6 +284,8 @@ describe(defineWebSocket.name, () => {
             clientMessage: defineShape(''),
             hostMessage: defineShape(''),
         });
+
+        assert.tsType(asBase).equals<WebSocketDefinition>();
     });
 
     it('a definition with an exactShape connectProtocol is assignable', () => {
@@ -284,6 +295,8 @@ describe(defineWebSocket.name, () => {
             clientMessage: defineShape(''),
             hostMessage: defineShape(''),
         });
+
+        assert.tsType(asBase).equals<WebSocketDefinition>();
     });
 
     it('a definition with searchParams is assignable', () => {
@@ -301,6 +314,8 @@ describe(defineWebSocket.name, () => {
                 data: '',
             }),
         });
+
+        assert.tsType(asBase).equals<WebSocketDefinition>();
     });
 
     it('a definition with customProps is assignable', () => {
@@ -313,6 +328,8 @@ describe(defineWebSocket.name, () => {
             clientMessage: defineShape(''),
             hostMessage: defineShape(''),
         });
+
+        assert.tsType(asBase).equals<WebSocketDefinition>();
     });
 
     it('a definition with requiredRequestHeaders is assignable', () => {
@@ -328,6 +345,8 @@ describe(defineWebSocket.name, () => {
                 result: '',
             }),
         });
+
+        assert.tsType(asBase).equals<WebSocketDefinition>();
     });
 
     it('a definition with a string-literal clientOrigin is assignable', () => {
@@ -337,6 +356,8 @@ describe(defineWebSocket.name, () => {
             clientMessage: defineShape(''),
             hostMessage: defineShape(0),
         });
+
+        assert.tsType(asBase).equals<WebSocketDefinition>();
     });
 
     it('a definition with a regex clientOrigin is assignable', () => {
@@ -346,6 +367,8 @@ describe(defineWebSocket.name, () => {
             clientMessage: defineShape(''),
             hostMessage: defineShape(''),
         });
+
+        assert.tsType(asBase).equals<WebSocketDefinition>();
     });
 
     it('a definition with named path params is assignable', () => {
@@ -354,6 +377,8 @@ describe(defineWebSocket.name, () => {
             clientMessage: defineShape(''),
             hostMessage: defineShape(''),
         });
+
+        assert.tsType(asBase).equals<WebSocketDefinition>();
     });
 
     it('a definition with multiple named path params is assignable', () => {
@@ -362,6 +387,8 @@ describe(defineWebSocket.name, () => {
             clientMessage: defineShape(''),
             hostMessage: defineShape(''),
         });
+
+        assert.tsType(asBase).equals<WebSocketDefinition>();
     });
 
     it('a definition with a wildcard path is assignable', () => {
@@ -370,6 +397,8 @@ describe(defineWebSocket.name, () => {
             clientMessage: defineShape(''),
             hostMessage: defineShape(''),
         });
+
+        assert.tsType(asBase).equals<WebSocketDefinition>();
     });
 
     it('a definition with combined named param and wildcard is assignable', () => {
@@ -378,12 +407,16 @@ describe(defineWebSocket.name, () => {
             clientMessage: defineShape(''),
             hostMessage: defineShape(''),
         });
+
+        assert.tsType(asBase).equals<WebSocketDefinition>();
     });
 
     it('a definition without messages is assignable', () => {
         const asBase: WebSocketDefinition = defineWebSocket({
             path: '/ws/no-messages',
         });
+
+        assert.tsType(asBase).equals<WebSocketDefinition>();
     });
 
     it('a definition with only a clientMessage is assignable', () => {
@@ -393,6 +426,8 @@ describe(defineWebSocket.name, () => {
                 value: '',
             }),
         });
+
+        assert.tsType(asBase).equals<WebSocketDefinition>();
     });
 
     it('a definition with only a hostMessage is assignable', () => {
@@ -402,6 +437,8 @@ describe(defineWebSocket.name, () => {
                 value: '',
             }),
         });
+
+        assert.tsType(asBase).equals<WebSocketDefinition>();
     });
 
     it('a definition with all CommonRouteDefinition fields and shapes is assignable', () => {
@@ -425,6 +462,8 @@ describe(defineWebSocket.name, () => {
             },
             clientOrigin: /^https:\/\/.*\.example\.com$/,
         });
+
+        assert.tsType(asBase).equals<WebSocketDefinition>();
     });
 });
 

@@ -4,8 +4,8 @@ import {
     type ErrorHttpStatus,
     type HttpStatus,
     type MaybePromise,
+    type RequireExactlyOne,
 } from '@augment-vir/common';
-import {type RequireExactlyOne} from 'type-fest';
 import {
     type DefaultErrorResponseType,
     type DefaultOutgoingResponseHeadersType,

@@ -1,5 +1,5 @@
 import {assert} from '@augment-vir/assert';
-import {HttpMethod, HttpStatus} from '@augment-vir/common';
+import {HttpMethod, HttpStatus, type RequireExactlyOne} from '@augment-vir/common';
 import {describe, it, itCases} from '@augment-vir/test';
 import {
     type downloadEndpoint,
@@ -10,7 +10,6 @@ import {
     type usersEndpoint,
 } from '@rest-vir/api/src/api/api.mock.js';
 import {defineShape} from 'object-shape-tester';
-import {type RequireExactlyOne} from 'type-fest';
 import {defineApi} from '../api/api.js';
 import {
     defineEndpoint,

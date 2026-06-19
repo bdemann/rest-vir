@@ -28,8 +28,9 @@ export function matchesWebSocketProtocolRequirement(
         return checkValidShape(protocol, requirement, {
             allowExtraKeys: true,
         });
+    } else {
+        return false;
     }
-    return false;
 }
 
 /**

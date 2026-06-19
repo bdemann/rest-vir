@@ -1,6 +1,10 @@
-import {type AnyObject, type UnknownObject} from '@augment-vir/common';
+import {
+    type AnyObject,
+    type IsNever,
+    type Primitive,
+    type UnknownObject,
+} from '@augment-vir/common';
 import {type Shape} from 'object-shape-tester';
-import {type IsNever, type Primitive} from 'type-fest';
 import {type NoParam} from '../util/no-param.js';
 import {type OriginRequirement} from './origin-requirement.js';
 

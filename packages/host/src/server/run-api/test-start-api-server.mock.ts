@@ -1,4 +1,4 @@
-import {waitUntil} from '@augment-vir/assert';
+import {assert, waitUntil} from '@augment-vir/assert';
 import {DeferredPromise, log, type MaybePromise, removeColor, safeMatch} from '@augment-vir/common';
 import {
     interpolationSafeWindowsPath,
@@ -185,16 +185,18 @@ export function describeApiServerScript(
 
         const innerIt: InnerIt = (doesThis, itCallback) => {
             it(doesThis, async () => {
+                assert.isDefined(service);
                 await itCallback(await service);
             });
         };
 
         describeCallback({
             it: Object.assign(innerIt, {
-                /* node:coverage ignore next 6: this is only used when `it.only` is used. */
+                /* node:coverage ignore next 7: this is only used when `it.only` is used. */
                 only: ((doesThis, itCallback) => {
                     // eslint-disable-next-line sonarjs/no-exclusive-tests
                     it.only(doesThis, async () => {
+                        assert.isDefined(service);
                         await itCallback(await service);
                     });
                 }) satisfies InnerIt,
@@ -208,6 +210,7 @@ export function describeApiServerScript(
         // eslint-disable-next-line sonarjs/no-exclusive-tests
         it.only('closes the server', async () => {
             const {kill} = await service;
+            assert.isDefined(kill);
             kill();
         });
     });

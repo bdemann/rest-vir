@@ -95,13 +95,13 @@ export async function handleCors(
     if (isPreflight) {
         return {
             statusCode: HttpStatus.NoContent,
-            headers: buildOptionsRequestCorsHeaders(
+            headers: buildOptionsRequestCorsHeaders({
                 matchedOrigin,
                 allowedMethods,
-                api.implementation.customHeaders,
+                customHeaders: api.implementation.customHeaders,
                 requiredRequestHeaderKeys,
                 disableRestVirApiNameHeader,
-            ),
+            }),
         };
     } else if (matchedOrigin) {
         return {
@@ -172,13 +172,19 @@ const contentLengthHeaders = {
     'Content-Length': '0',
 };
 
-function buildOptionsRequestCorsHeaders(
-    matchedOrigin: MatchedOrigin,
-    allowedMethods: ReadonlyArray<DefinableHttpMethod>,
-    customHeaders: ReadonlyArray<string> | undefined,
-    requiredRequestHeaderKeys: ReadonlyArray<string>,
-    disableRestVirApiNameHeader: boolean | undefined,
-): OutgoingHttpHeaders {
+function buildOptionsRequestCorsHeaders({
+    matchedOrigin,
+    allowedMethods,
+    customHeaders,
+    requiredRequestHeaderKeys,
+    disableRestVirApiNameHeader,
+}: Readonly<{
+    matchedOrigin: MatchedOrigin;
+    allowedMethods: ReadonlyArray<DefinableHttpMethod>;
+    customHeaders: ReadonlyArray<string> | undefined;
+    requiredRequestHeaderKeys: ReadonlyArray<string>;
+    disableRestVirApiNameHeader: boolean | undefined;
+}>): OutgoingHttpHeaders {
     if (matchedOrigin == undefined) {
         return contentLengthHeaders;
     }

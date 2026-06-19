@@ -267,11 +267,13 @@ describe(createMockHost.name, () => {
     it('passes a created host context into the implementation', async () => {
         let receivedContext: {user: string} | undefined;
         const client = createMockHost<typeof mockApi, {user: string}>(mockApi, {
-            createHostContext: () => ({
-                context: {
-                    user: 'alice',
-                },
-            }),
+            createHostContext: () => {
+                return {
+                    context: {
+                        user: 'alice',
+                    },
+                };
+            },
             endpoints: {
                 '/echo': {
                     [HttpMethod.Post]({context, requestData}) {
@@ -452,12 +454,14 @@ describe(createMockHost.name, () => {
 
     it('returns the rejected status when createHostContext returns {reject}', async () => {
         const client = createMockHost(mockApi, {
-            createHostContext: () => ({
-                reject: {
-                    statusCode: HttpStatus.Unauthorized,
-                    responseData: 'nope',
-                },
-            }),
+            createHostContext: () => {
+                return {
+                    reject: {
+                        statusCode: HttpStatus.Unauthorized,
+                        responseData: 'nope',
+                    },
+                };
+            },
             endpoints: {
                 '/echo': {
                     [HttpMethod.Post]() {
@@ -773,12 +777,14 @@ describe(createMockHost.name, () => {
 
     it('closes the websocket when createHostContext returns {reject}', async () => {
         const client = createMockHost<typeof mockApi, undefined>(mockApi, {
-            createHostContext: () => ({
-                reject: {
-                    statusCode: HttpStatus.Unauthorized,
-                    responseData: 'nope',
-                },
-            }),
+            createHostContext: () => {
+                return {
+                    reject: {
+                        statusCode: HttpStatus.Unauthorized,
+                        responseData: 'nope',
+                    },
+                };
+            },
             webSockets: {
                 '/chat': {
                     message() {
@@ -853,6 +859,7 @@ describe(createMockHost.name, () => {
 
         await socket.close();
         await socket.close();
+        assert.isDefined(socket);
     });
 
     it('parses an undefined message sent from the client', async () => {
@@ -905,6 +912,7 @@ describe(createMockHost.name, () => {
             milliseconds: 5,
         });
         await socket.close();
+        assert.isDefined(socket);
     });
 
     it('drops a client send when no message handler is defined', async () => {

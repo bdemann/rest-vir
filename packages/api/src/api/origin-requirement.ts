@@ -1,6 +1,5 @@
 import {assert, check} from '@augment-vir/assert';
-import {type MaybeArray, type MaybePromise} from '@augment-vir/common';
-import {type RequireExactlyOne} from 'type-fest';
+import {type MaybeArray, type MaybePromise, type RequireExactlyOne} from '@augment-vir/common';
 
 /**
  * Allows you to set origin requirements.

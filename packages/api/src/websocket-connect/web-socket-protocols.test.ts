@@ -22,25 +22,29 @@ const exactProtocolWebSocket = defineWebSocket({
 
 describe(assertValidWebSocketProtocols.name, () => {
     it('passes when protocols is undefined', () => {
-        assertValidWebSocketProtocols(undefined, noProtocolWebSocket);
+        assert.doesNotThrow(() => assertValidWebSocketProtocols(undefined, noProtocolWebSocket));
     });
 
     it('passes when protocols is an empty array', () => {
-        assertValidWebSocketProtocols([], noProtocolWebSocket);
+        assert.doesNotThrow(() => assertValidWebSocketProtocols([], noProtocolWebSocket));
     });
 
     it('passes when no connectProtocol requirement is declared on the WebSocket', () => {
-        assertValidWebSocketProtocols(
-            [
-                'soap',
-                'mqtt',
-            ],
-            noProtocolWebSocket,
+        assert.doesNotThrow(() =>
+            assertValidWebSocketProtocols(
+                [
+                    'soap',
+                    'mqtt',
+                ],
+                noProtocolWebSocket,
+            ),
         );
     });
 
     it('passes when every protocol satisfies the connectProtocol shape', () => {
-        assertValidWebSocketProtocols(['graphql-ws'], exactProtocolWebSocket);
+        assert.doesNotThrow(() =>
+            assertValidWebSocketProtocols(['graphql-ws'], exactProtocolWebSocket),
+        );
     });
 
     it('throws when a protocol does not satisfy the connectProtocol shape', () => {

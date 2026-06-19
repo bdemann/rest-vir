@@ -27,13 +27,15 @@ const myApi = defineApi({
 export const mockClient = createMockHost(myApi, {
     endpoints: {
         '/health': {
-            [HttpMethod.Get]: () => ({
-                [HttpStatus.Ok]: {
-                    responseData: {
-                        status: 'ok',
+            [HttpMethod.Get]: () => {
+                return {
+                    [HttpStatus.Ok]: {
+                        responseData: {
+                            status: 'ok',
+                        },
                     },
-                },
-            }),
+                };
+            },
         },
     },
 });

@@ -51,12 +51,15 @@ export type HostContextFromImplementation<Implementation> =
  * const response = await testEndpoint(
  *     myApiImplementation.implementation.endpoints['/my-endpoint'],
  *     HttpMethod.Get,
- *     () => ({context: undefined}),
+ *     () => {
+ *         return {context: undefined};
+ *     },
  * );
  * ```
  *
  * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
  */
+// eslint-disable-next-line @virmator/prefer-params-object
 export async function testEndpoint<
     const EndpointImplementationToTest extends Readonly<{
         definition: Readonly<EndpointDefinition>;

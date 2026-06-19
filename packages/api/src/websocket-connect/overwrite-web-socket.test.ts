@@ -32,7 +32,7 @@ describe(getOppositeWebSocketLocation.name, () => {
 
 class FakeWebSocket {
     public readyState: CommonWebSocketState = CommonWebSocketState.Connecting;
-    private listeners = new Map<keyof CommonWebSocketEventMap, Set<(event: unknown) => void>>();
+    protected listeners = new Map<keyof CommonWebSocketEventMap, Set<(event: unknown) => void>>();
 
     public addEventListener<EventName extends keyof CommonWebSocketEventMap>(
         eventName: EventName,
@@ -86,6 +86,8 @@ describe(waitForOpenWebSocket.name, () => {
         fake.readyState = CommonWebSocketState.Open;
 
         await openedPromise;
+
+        assert.isDefined(openedPromise);
     });
 
     it('rejects when an error event fires before opening', async () => {

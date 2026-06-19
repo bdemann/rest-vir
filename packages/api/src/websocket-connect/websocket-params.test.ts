@@ -89,6 +89,8 @@ describe('WebSocketConnectParamObject', () => {
             >;
         const fromGlobalWebSocket: WebSocketConnectParamObject =
             {} as any as WebSocketConnectParamObject<typeof chatWebSocket, globalThis.WebSocket>;
+
+        assert.tsType(fromGlobalWebSocket).equals<WebSocketConnectParamObject>();
     });
 
     it('requires protocol', () => {

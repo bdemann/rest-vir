@@ -1,5 +1,9 @@
-import {type BivariantFunction, type ErrorHttpStatus, type MaybePromise} from '@augment-vir/common';
-import {type RequireExactlyOne} from 'type-fest';
+import {
+    type BivariantFunction,
+    type ErrorHttpStatus,
+    type MaybePromise,
+    type RequireExactlyOne,
+} from '@augment-vir/common';
 import {
     type DefaultErrorResponseType,
     type DefinableHttpMethod,

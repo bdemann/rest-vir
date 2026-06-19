@@ -44,11 +44,13 @@ describe(handleEndpointRequest.name, () => {
             isWebSocket: false,
             definition: endpointDefinition,
             implementation: {
-                [HttpMethod.Post]: () => ({
-                    [HttpStatus.Ok]: {
-                        responseData: undefined,
-                    },
-                }),
+                [HttpMethod.Post]: () => {
+                    return {
+                        [HttpStatus.Ok]: {
+                            responseData: undefined,
+                        },
+                    };
+                },
             },
         };
 
@@ -94,11 +96,13 @@ describe(handleEndpointRequest.name, () => {
             isWebSocket: false,
             definition: endpointDefinition,
             implementation: {
-                [HttpMethod.Get]: () => ({
-                    [HttpStatus.BadRequest]: {
-                        responseData: 'Please enter a question.',
-                    },
-                }),
+                [HttpMethod.Get]: () => {
+                    return {
+                        [HttpStatus.BadRequest]: {
+                            responseData: 'Please enter a question.',
+                        },
+                    };
+                },
             },
         };
 
@@ -147,11 +151,13 @@ describe(handleEndpointRequest.name, () => {
             isWebSocket: false,
             definition: endpointDefinition,
             implementation: {
-                [HttpMethod.Get]: () => ({
-                    [HttpStatus.BadRequest]: {
-                        responseData: undefined,
-                    },
-                }),
+                [HttpMethod.Get]: () => {
+                    return {
+                        [HttpStatus.BadRequest]: {
+                            responseData: undefined,
+                        },
+                    };
+                },
             },
         };
 
@@ -366,11 +372,13 @@ describe(handleEndpointRequest.name, () => {
             isWebSocket: false,
             definition: stringResponseEndpoint,
             implementation: {
-                [HttpMethod.Get]: () => ({
-                    [HttpStatus.Ok]: {
-                        responseData: 'hello',
-                    },
-                }),
+                [HttpMethod.Get]: () => {
+                    return {
+                        [HttpStatus.Ok]: {
+                            responseData: 'hello',
+                        },
+                    };
+                },
             },
         };
 
@@ -430,14 +438,16 @@ describe(handleEndpointRequest.name, () => {
             isWebSocket: false,
             definition: stringResponseEndpoint,
             implementation: {
-                [HttpMethod.Get]: () => ({
-                    [HttpStatus.Ok]: {
-                        responseData: 'hello',
-                        headers: {
-                            'content-type': 'application/vnd.api+json',
+                [HttpMethod.Get]: () => {
+                    return {
+                        [HttpStatus.Ok]: {
+                            responseData: 'hello',
+                            headers: {
+                                'content-type': 'application/vnd.api+json',
+                            },
                         },
-                    },
-                }),
+                    };
+                },
             },
         };
 
@@ -497,11 +507,13 @@ describe(handleEndpointRequest.name, () => {
             isWebSocket: false,
             definition: falseResponseEndpoint,
             implementation: {
-                [HttpMethod.Get]: () => ({
-                    [HttpStatus.Ok]: {
-                        responseData: false,
-                    },
-                }),
+                [HttpMethod.Get]: () => {
+                    return {
+                        [HttpStatus.Ok]: {
+                            responseData: false,
+                        },
+                    };
+                },
             },
         };
 
@@ -566,14 +578,16 @@ describe(handleEndpointRequest.name, () => {
             isWebSocket: false,
             definition: stringResponseEndpoint,
             implementation: {
-                [HttpMethod.Get]: () => ({
-                    [HttpStatus.Ok]: {
-                        responseData: 'hello',
-                        headers: {
-                            'content-type': 'text/plain',
+                [HttpMethod.Get]: () => {
+                    return {
+                        [HttpStatus.Ok]: {
+                            responseData: 'hello',
+                            headers: {
+                                'content-type': 'text/plain',
+                            },
                         },
-                    },
-                }),
+                    };
+                },
             },
         };
 
