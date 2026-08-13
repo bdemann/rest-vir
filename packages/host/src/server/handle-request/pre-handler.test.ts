@@ -87,8 +87,8 @@ type MockServerResponse = {
 
 describe(preHandler.name, () => {
     it('ignores a missing implementation', async () => {
-        await assert.doesNotThrow(async () =>
-            preHandler({
+        await assert.doesNotThrow(async () => {
+            return preHandler({
                 request: {
                     originalUrl: '/missing',
                     headers: {},
@@ -102,8 +102,8 @@ describe(preHandler.name, () => {
                 },
                 attachId: '',
                 serverLogger: silentServerLogger,
-            }),
-        );
+            });
+        });
     });
 
     it('accepts an omitted body when requestData is explicitly undefined', async () => {

@@ -346,10 +346,12 @@ export const httpStatusToKey = typedObjectFromEntries(
         ([
             key,
             status,
-        ]) => [
-            status,
-            key,
-        ],
+        ]) => {
+            return [
+                status,
+                key,
+            ];
+        },
     ),
 ) satisfies Record<HttpStatus, keyof typeof HttpStatus> as {
     [Status in HttpStatus]: ExtractKeysWithMatchingValues<typeof HttpStatus, Status>;

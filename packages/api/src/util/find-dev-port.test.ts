@@ -128,8 +128,8 @@ describe(findDevServerPort.name, () => {
 
     it('rejects a service without endpoints', async () => {
         await assert.throws(
-            () =>
-                findDevServerPort(
+            () => {
+                return findDevServerPort(
                     {
                         apiName: '',
                         endpoints: {},
@@ -138,7 +138,8 @@ describe(findDevServerPort.name, () => {
                     {
                         startOrigin: '',
                     },
-                ),
+                );
+            },
             {
                 matchMessage: 'Api has no endpoints',
             },
@@ -165,15 +166,16 @@ describe(findLivePort.name, () => {
     });
     it('rejects an invalid (non-numeric) port', async () => {
         await assert.throws(
-            () =>
-                findLivePort('localhost:not-a-number', testEndpoint, {
+            () => {
+                return findLivePort('localhost:not-a-number', testEndpoint, {
                     fetchOverride() {
                         return createMockResponse({
                             status: HttpStatus.InternalServerError,
                         });
                     },
                     maxScanDistance: 1,
-                }),
+                });
+            },
             {
                 matchMessage: "doesn't have a valid port",
             },
@@ -182,13 +184,14 @@ describe(findLivePort.name, () => {
 
     it('uses the global fetch when fetchOverride is omitted', async () => {
         await assert.throws(
-            () =>
-                findLivePort('http://127.0.0.1:1', testEndpoint, {
+            () => {
+                return findLivePort('http://127.0.0.1:1', testEndpoint, {
                     maxScanDistance: 0,
                     timeout: {
                         milliseconds: 500,
                     },
-                }),
+                });
+            },
             {
                 matchMessage: /Max port scan distance|timeout/i,
             },
@@ -206,8 +209,8 @@ describe(findLivePort.name, () => {
     });
     it('times out', async () => {
         await assert.throws(
-            () =>
-                findLivePort('localhost:3000', testEndpoint, {
+            () => {
+                return findLivePort('localhost:3000', testEndpoint, {
                     async fetchOverride() {
                         await wait({
                             milliseconds: 10,
@@ -221,7 +224,8 @@ describe(findLivePort.name, () => {
                     timeout: {
                         milliseconds: 100,
                     },
-                }),
+                });
+            },
             {
                 matchMessage: 'Port scan timeout reached',
             },
@@ -245,15 +249,16 @@ describe(findLivePort.name, () => {
 
     it('throws Max port scan distance when nothing valid is found', async () => {
         await assert.throws(
-            () =>
-                findLivePort('localhost:3000', testEndpoint, {
+            () => {
+                return findLivePort('localhost:3000', testEndpoint, {
                     fetchOverride() {
                         return createMockResponse({
                             status: HttpStatus.InternalServerError,
                         });
                     },
                     maxScanDistance: 2,
-                }),
+                });
+            },
             {
                 matchMessage: 'Max port scan distance reached',
             },
@@ -317,8 +322,8 @@ describe('restVirApiNameHeader', () => {
         };
 
         await assert.throws(
-            () =>
-                findDevServerPort(apiWithName, {
+            () => {
+                return findDevServerPort(apiWithName, {
                     startOrigin: 'localhost:3000',
                     fetchOverride() {
                         return createMockResponse({
@@ -331,7 +336,8 @@ describe('restVirApiNameHeader', () => {
                     timeout: {
                         milliseconds: 250,
                     },
-                }),
+                });
+            },
             {
                 matchMessage: 'special-api-name',
             },

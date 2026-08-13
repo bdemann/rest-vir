@@ -149,9 +149,9 @@ describe(verifyWebSocketMessage.name, () => {
     });
 
     it('throws when a host message has the wrong shape', () => {
-        assert.throws(() =>
-            verifyWebSocketMessage(echoWebSocket, 'wrong', WebSocketLocation.OnHost),
-        );
+        assert.throws(() => {
+            return verifyWebSocketMessage(echoWebSocket, 'wrong', WebSocketLocation.OnHost);
+        });
     });
 
     it('throws when a message arrives but the WebSocket expects no client data', () => {

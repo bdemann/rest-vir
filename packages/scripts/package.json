@@ -15,6 +15,7 @@
         "name": "electrovir",
         "url": "https://github.com/electrovir"
     },
+    "sideEffects": false,
     "type": "module",
     "scripts": {
         "compile": "virmator compile",
@@ -24,7 +25,7 @@
     },
     "dependencies": {
         "@augment-vir/common": "^32.2.1",
-        "@virmator/docs": "^14.27.4",
+        "@virmator/docs": "^14.30.6",
         "typedoc": "^0.28.20"
     },
     "engines": {

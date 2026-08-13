@@ -373,16 +373,16 @@ describe(RestVirClient.name, () => {
 
     describe('fetch', () => {
         it('returns the Ok status entry with parsed data for a 2xx response', async () => {
-            const client = new RestVirClient(fullApi, '', () =>
-                Promise.resolve(
+            const client = new RestVirClient(fullApi, '', () => {
+                return Promise.resolve(
                     createMockResponse({
                         headers: {
                             'content-type': 'application/json',
                         },
                         body: 'hi',
                     }),
-                ),
-            );
+                );
+            });
 
             const result = await client.fetch(simpleEndpoint).GET();
 
@@ -393,8 +393,8 @@ describe(RestVirClient.name, () => {
         });
 
         it('returns the NotFound status entry with parsed data for a 4xx response', async () => {
-            const client = new RestVirClient(fullApi, '', () =>
-                Promise.resolve(
+            const client = new RestVirClient(fullApi, '', () => {
+                return Promise.resolve(
                     createMockResponse({
                         headers: {
                             'content-type': 'application/json',
@@ -404,8 +404,8 @@ describe(RestVirClient.name, () => {
                             error: 'missing',
                         },
                     }),
-                ),
-            );
+                );
+            });
             const result = await client.fetch(errorEndpoint).GET();
 
             assert.isDefined(result.NotFound);
@@ -415,8 +415,8 @@ describe(RestVirClient.name, () => {
         });
 
         it('returns the unexpectedError entry when an error response has no shape definition', async () => {
-            const client = new RestVirClient(fullApi, '', () =>
-                Promise.resolve(
+            const client = new RestVirClient(fullApi, '', () => {
+                return Promise.resolve(
                     createMockResponse({
                         headers: {
                             'content-type': 'application/json',
@@ -424,8 +424,8 @@ describe(RestVirClient.name, () => {
                         status: HttpStatus.InternalServerError,
                         body: 'oops',
                     }),
-                ),
-            );
+                );
+            });
             const result = await client.fetch(simpleEndpoint).GET();
 
             assert.isDefined(result.unexpectedError);
@@ -437,16 +437,16 @@ describe(RestVirClient.name, () => {
             const responseBody = JSON.stringify({
                 error: 'unauthorized',
             });
-            const client = new RestVirClient(fullApi, '', () =>
-                Promise.resolve(
+            const client = new RestVirClient(fullApi, '', () => {
+                return Promise.resolve(
                     new Response(responseBody, {
                         status: HttpStatus.Unauthorized,
                         headers: {
                             'content-type': 'application/json',
                         },
                     }),
-                ),
-            );
+                );
+            });
             const result = await client.fetch(simpleEndpoint).GET();
 
             assert.isDefined(result.unexpectedError);
@@ -478,16 +478,17 @@ describe(RestVirClient.name, () => {
                     },
                 },
             });
-            const client = new RestVirClient(fullApi, '', () =>
-                Promise.resolve(createMockResponse()),
-            );
+            const client = new RestVirClient(fullApi, '', () => {
+                return Promise.resolve(createMockResponse());
+            });
 
             await assert.throws(
-                async () =>
-                    await client
+                async () => {
+                    return await client
                         // @ts-expect-error: `otherEndpoint` is not in `fullApi`.
                         .fetch(otherEndpoint)
-                        .GET(),
+                        .GET();
+                },
                 {
                     matchMessage: '/other',
                 },
@@ -495,35 +496,36 @@ describe(RestVirClient.name, () => {
         });
 
         it('omits undeclared methods from the fetch result object', () => {
-            const client = new RestVirClient(fullApi, '', () =>
-                Promise.resolve(createMockResponse()),
-            );
+            const client = new RestVirClient(fullApi, '', () => {
+                return Promise.resolve(createMockResponse());
+            });
             const fetchers = client.fetch(simpleEndpoint) as Record<string, unknown>;
             assert.isFunction(fetchers.GET);
             assert.isUndefined(fetchers.POST);
         });
 
         it('uses fetchOverride from params instead of constructor', async () => {
-            const client = new RestVirClient(fullApi, '', () =>
-                Promise.resolve(
+            const client = new RestVirClient(fullApi, '', () => {
+                return Promise.resolve(
                     createMockResponse({
                         headers: {
                             'content-type': 'application/json',
                         },
                         body: 'wrong',
                     }),
-                ),
-            );
+                );
+            });
             const result = await client.fetch(simpleEndpoint).GET({
-                fetchOverride: () =>
-                    Promise.resolve(
+                fetchOverride: () => {
+                    return Promise.resolve(
                         createMockResponse({
                             headers: {
                                 'content-type': 'application/json',
                             },
                             body: 'hi',
                         }),
-                    ),
+                    );
+                },
             });
 
             assert.isDefined(result.Ok);
@@ -600,15 +602,16 @@ describe(RestVirClient.name, () => {
         it('falls back to globalThis.fetch when no override is provided', async () => {
             const originalFetch = globalThis.fetch;
             try {
-                globalThis.fetch = ((..._args: unknown[]) =>
-                    Promise.resolve(
+                globalThis.fetch = ((..._args: unknown[]) => {
+                    return Promise.resolve(
                         createMockResponse({
                             headers: {
                                 'content-type': 'application/json',
                             },
                             body: 'hi',
                         }),
-                    )) as unknown as typeof globalThis.fetch;
+                    );
+                }) as unknown as typeof globalThis.fetch;
 
                 const client = new RestVirClient(fullApi, '');
                 const result = await client.fetch(simpleEndpoint).GET();
@@ -619,24 +622,25 @@ describe(RestVirClient.name, () => {
         });
 
         it('throws when responseData is undefined-shaped but the server sends body data', async () => {
-            const client = new RestVirClient(fullApi, '', () =>
-                Promise.resolve(
+            const client = new RestVirClient(fullApi, '', () => {
+                return Promise.resolve(
                     createMockResponse({
                         headers: {
                             'content-type': 'application/json',
                         },
                         body: 'unexpected payload',
                     }),
-                ),
-            );
+                );
+            });
 
             await assert.throws(
-                async () =>
-                    await client.fetch(regexSearchEndpoint).GET({
+                async () => {
+                    return await client.fetch(regexSearchEndpoint).GET({
                         searchParams: {
                             code: 'ABC',
                         },
-                    }),
+                    });
+                },
                 {
                     matchMessage: 'unexpectedly present data',
                 },
@@ -644,8 +648,8 @@ describe(RestVirClient.name, () => {
         });
 
         it('throws when responseData is undefined-shaped but the server sends falsy body data', async () => {
-            const client = new RestVirClient(fullApi, '', () =>
-                Promise.resolve(
+            const client = new RestVirClient(fullApi, '', () => {
+                return Promise.resolve(
                     createMockResponse({
                         headers: {
                             'content-type': 'application/json',
@@ -653,16 +657,17 @@ describe(RestVirClient.name, () => {
                         status: HttpStatus.NoContent,
                         body: false,
                     }),
-                ),
-            );
+                );
+            });
 
             await assert.throws(
-                async () =>
-                    await client.fetch(userByIdEndpoint).DELETE({
+                async () => {
+                    return await client.fetch(userByIdEndpoint).DELETE({
                         pathParams: {
                             userId: 'abc',
                         },
-                    }),
+                    });
+                },
                 {
                     matchMessage: 'unexpectedly present data',
                 },
@@ -670,8 +675,8 @@ describe(RestVirClient.name, () => {
         });
 
         it('throws when receiving an unexpected successful status with no response definition', async () => {
-            const client = new RestVirClient(fullApi, '', () =>
-                Promise.resolve(
+            const client = new RestVirClient(fullApi, '', () => {
+                return Promise.resolve(
                     createMockResponse({
                         headers: {
                             'content-type': 'application/json',
@@ -679,8 +684,8 @@ describe(RestVirClient.name, () => {
                         status: HttpStatus.Accepted,
                         body: 'unexpected',
                     }),
-                ),
-            );
+                );
+            });
 
             await assert.throws(async () => await client.fetch(simpleEndpoint).GET(), {
                 matchMessage: 'unexpected successful response',
@@ -731,22 +736,22 @@ describe(RestVirClient.name, () => {
         });
 
         it('always attaches the raw response object to whichever branch is populated', async () => {
-            const okClient = new RestVirClient(fullApi, '', () =>
-                Promise.resolve(
+            const okClient = new RestVirClient(fullApi, '', () => {
+                return Promise.resolve(
                     new Response('hi', {
                         status: HttpStatus.Ok,
                         headers: {
                             'content-type': 'application/json',
                         },
                     }),
-                ),
-            );
+                );
+            });
             const okResult = await okClient.fetchStream(simpleEndpoint, HttpMethod.Get);
             assert.isDefined(okResult.Ok);
             assert.instanceOf(okResult.Ok.response, Response);
 
-            const errorClient = new RestVirClient(fullApi, '', () =>
-                Promise.resolve(
+            const errorClient = new RestVirClient(fullApi, '', () => {
+                return Promise.resolve(
                     new Response(
                         JSON.stringify({
                             error: 'missing',
@@ -758,19 +763,19 @@ describe(RestVirClient.name, () => {
                             },
                         },
                     ),
-                ),
-            );
+                );
+            });
             const errorResult = await errorClient.fetchStream(errorEndpoint, HttpMethod.Get);
             assert.isDefined(errorResult.NotFound);
             assert.instanceOf(errorResult.NotFound.response, Response);
 
-            const unexpectedClient = new RestVirClient(fullApi, '', () =>
-                Promise.resolve(
+            const unexpectedClient = new RestVirClient(fullApi, '', () => {
+                return Promise.resolve(
                     new Response('boom', {
                         status: HttpStatus.InternalServerError,
                     }),
-                ),
-            );
+                );
+            });
             const unexpectedResult = await unexpectedClient.fetchStream(
                 simpleEndpoint,
                 HttpMethod.Get,
@@ -819,14 +824,15 @@ describe(RestVirClient.name, () => {
 
         it('throws when a wildcard is missing', () => {
             assert.throws(
-                () =>
-                    client.buildEndpointUrl(
+                () => {
+                    return client.buildEndpointUrl(
                         filesEndpoint,
                         HttpMethod.Get,
 
                         // @ts-expect-error: missing wildcard path param
                         {},
-                    ),
+                    );
+                },
                 {
                     matchMessage: 'wildcard',
                 },
@@ -835,11 +841,12 @@ describe(RestVirClient.name, () => {
 
         it('throws when a named path param is missing', () => {
             assert.throws(
-                () =>
-                    client.buildEndpointUrl(userByIdEndpoint, HttpMethod.Get, {
+                () => {
+                    return client.buildEndpointUrl(userByIdEndpoint, HttpMethod.Get, {
                         // @ts-expect-error: missing path param
                         pathParams: {},
-                    }),
+                    });
+                },
                 {
                     matchMessage: 'userId',
                 },
@@ -848,13 +855,14 @@ describe(RestVirClient.name, () => {
 
         it('throws when path has no params but pathParams are set', () => {
             assert.throws(
-                () =>
-                    client.buildEndpointUrl(simpleEndpoint, HttpMethod.Get, {
+                () => {
+                    return client.buildEndpointUrl(simpleEndpoint, HttpMethod.Get, {
                         // @ts-expect-error: expected path param
                         pathParams: {
                             extra: 'oops',
                         },
-                    }),
+                    });
+                },
                 {
                     matchMessage: '/simple',
                 },
@@ -865,7 +873,9 @@ describe(RestVirClient.name, () => {
             assert.throws(
                 () =>
                     // @ts-expect-error: simpleEndpoint has no POST method.
-                    client.buildEndpointUrl(simpleEndpoint, HttpMethod.Post, {}),
+                    {
+                        return client.buildEndpointUrl(simpleEndpoint, HttpMethod.Post, {});
+                    },
                 {
                     matchMessage: HttpMethod.Post,
                 },
@@ -893,12 +903,13 @@ describe(RestVirClient.name, () => {
 
         it('throws when a regex search param does not match', () => {
             assert.throws(
-                () =>
-                    client.buildEndpointUrl(regexSearchEndpoint, HttpMethod.Get, {
+                () => {
+                    return client.buildEndpointUrl(regexSearchEndpoint, HttpMethod.Get, {
                         searchParams: {
                             code: 'abc',
                         },
-                    }),
+                    });
+                },
                 {
                     matchMessage: 'code',
                 },
@@ -929,13 +940,14 @@ describe(RestVirClient.name, () => {
 
         it('throws when method does not exist on endpoint', () => {
             assert.throws(
-                () =>
-                    client.buildEndpointRequestInit(
+                () => {
+                    return client.buildEndpointRequestInit(
                         simpleEndpoint,
                         // @ts-expect-error: simpleEndpoint has no POST method.
                         HttpMethod.Post,
                         undefined,
-                    ),
+                    );
+                },
                 {
                     matchMessage: HttpMethod.Post,
                 },
@@ -1114,13 +1126,14 @@ describe(RestVirClient.name, () => {
 
         it('throws when required headers are missing', () => {
             assert.throws(
-                () =>
-                    client.buildEndpointRequestInit(
+                () => {
+                    return client.buildEndpointRequestInit(
                         protectedEndpoint,
                         HttpMethod.Get,
                         // @ts-expect-error: missing required headers
                         {},
-                    ),
+                    );
+                },
                 {
                     matchMessage: '/protected',
                 },
@@ -1129,12 +1142,13 @@ describe(RestVirClient.name, () => {
 
         it('throws when a regex required header value does not match', () => {
             assert.throws(
-                () =>
-                    client.buildEndpointRequestInit(regexHeaderEndpoint, HttpMethod.Get, {
+                () => {
+                    return client.buildEndpointRequestInit(regexHeaderEndpoint, HttpMethod.Get, {
                         requiredHeaders: {
                             'x-api-key': 'INVALID',
                         },
-                    }),
+                    });
+                },
                 {
                     matchMessage: 'x-api-key',
                 },
@@ -1270,26 +1284,25 @@ describe(RestVirClient.name, () => {
             },
         });
 
-        const client = new RestVirClient(otherApi, '', () =>
-            Promise.resolve(
+        const client = new RestVirClient(otherApi, '', () => {
+            return Promise.resolve(
                 createMockResponse({
                     headers: {
                         'content-type': 'application/json',
                     },
                     body: 'hi',
                 }),
-            ),
-        );
+            );
+        });
 
         assert.isDefined((await client.fetch(simpleEndpoint).GET()).Ok);
 
-        await assert.throws(
-            async () =>
-                await client
-                    // @ts-expect-error: `otherEndpoint` is not in `otherApi`.
-                    .fetch(otherEndpoint)
-                    .GET(),
-        );
+        await assert.throws(async () => {
+            return await client
+                // @ts-expect-error: `otherEndpoint` is not in `otherApi`.
+                .fetch(otherEndpoint)
+                .GET();
+        });
     });
 });
 
@@ -1563,13 +1576,14 @@ describe('RestVirClient.connectWebSocket', () => {
         });
 
         await assert.throws(
-            () =>
-                socket.sendAndWaitForReply({
+            () => {
+                return socket.sendAndWaitForReply({
                     message: 'ping',
                     timeout: {
                         milliseconds: 50,
                     },
-                }),
+                });
+            },
             {
                 matchMessage: 'got no reply',
             },
@@ -1601,14 +1615,15 @@ describe('RestVirClient.connectWebSocket', () => {
         const client = makeClient();
 
         await assert.throws(
-            () =>
-                client.connectWebSocket(noMessagesWebSocket, {
+            () => {
+                return client.connectWebSocket(noMessagesWebSocket, {
                     webSocketConstructor: MockWebSocket,
                     protocols: [
                         '',
                         'b',
                     ],
-                }),
+                });
+            },
             {
                 matchMessage: 'Invalid protocols given',
             },
@@ -1619,14 +1634,15 @@ describe('RestVirClient.connectWebSocket', () => {
         const client = makeClient();
 
         await assert.throws(
-            () =>
-                client.connectWebSocket(noMessagesWebSocket, {
+            () => {
+                return client.connectWebSocket(noMessagesWebSocket, {
                     webSocketConstructor: MockWebSocket,
                     protocols: [
                         'a',
                         'a',
                     ],
-                }),
+                });
+            },
             {
                 matchMessage: 'Invalid protocols given',
             },
@@ -1637,14 +1653,15 @@ describe('RestVirClient.connectWebSocket', () => {
         const client = makeClient();
 
         await assert.throws(
-            () =>
-                client.connectWebSocket(noMessagesWebSocket, {
+            () => {
+                return client.connectWebSocket(noMessagesWebSocket, {
                     webSocketConstructor: MockWebSocket,
                     protocols: [
                         ',',
                         'b',
                     ],
-                }),
+                });
+            },
             {
                 matchMessage: 'Invalid protocols given',
             },
@@ -1655,14 +1672,15 @@ describe('RestVirClient.connectWebSocket', () => {
         const client = makeClient();
 
         await assert.throws(
-            () =>
-                client.connectWebSocket(noMessagesWebSocket, {
+            () => {
+                return client.connectWebSocket(noMessagesWebSocket, {
                     webSocketConstructor: MockWebSocket,
                     protocols: [
                         ' ',
                         'b',
                     ],
-                }),
+                });
+            },
             {
                 matchMessage: 'Invalid protocols given',
             },
@@ -1673,14 +1691,15 @@ describe('RestVirClient.connectWebSocket', () => {
         const client = makeClient();
 
         await assert.throws(
-            () =>
-                client.connectWebSocket(exactProtocolWebSocket, {
+            () => {
+                return client.connectWebSocket(exactProtocolWebSocket, {
                     webSocketConstructor: MockWebSocket,
                     protocols: [
                         // @ts-expect-error: invalid protocol
                         'soap-ws',
                     ],
-                }),
+                });
+            },
             {
                 matchMessage: 'failed protocol requirement',
             },
@@ -1715,10 +1734,11 @@ describe('RestVirClient.connectWebSocket', () => {
         }
 
         await assert.throws(
-            () =>
-                client.connectWebSocket(noMessagesWebSocket, {
+            () => {
+                return client.connectWebSocket(noMessagesWebSocket, {
                     webSocketConstructor: ErrorMockWebSocket,
-                }),
+                });
+            },
             {
                 matchMessage: 'WebSocket connection failed',
             },
@@ -1741,10 +1761,11 @@ describe('RestVirClient.connectWebSocket', () => {
         }
 
         await assert.throws(
-            () =>
-                client.connectWebSocket(noMessagesWebSocket, {
+            () => {
+                return client.connectWebSocket(noMessagesWebSocket, {
                     webSocketConstructor: ImmediatelyClosedMockWebSocket,
-                }),
+                });
+            },
             {
                 matchMessage: 'WebSocket closed while waiting for it to open',
             },
@@ -1802,11 +1823,12 @@ describe('RestVirClient.buildWebSocketUrl', () => {
     it('throws when a path param is missing', () => {
         const client = new RestVirClient(wsApi, 'https://example.com');
         assert.throws(
-            () =>
-                client.buildWebSocketUrl(pathParamsWebSocket, {
+            () => {
+                return client.buildWebSocketUrl(pathParamsWebSocket, {
                     // @ts-expect-error: missing path param
                     pathParams: {},
-                }),
+                });
+            },
             {
                 matchMessage: 'roomId',
             },
@@ -1816,11 +1838,12 @@ describe('RestVirClient.buildWebSocketUrl', () => {
     it('throws when a wildcard segment is missing', () => {
         const client = new RestVirClient(wsApi, 'https://example.com');
         assert.throws(
-            () =>
-                client.buildWebSocketUrl(wildcardWebSocket, {
+            () => {
+                return client.buildWebSocketUrl(wildcardWebSocket, {
                     // @ts-expect-error: missing wildcard path param
                     pathParams: {},
-                }),
+                });
+            },
             {
                 matchMessage: 'wildcard',
             },

@@ -234,13 +234,13 @@ export async function preHandler({
         };
     }
 
-    const requestData = wrapInTry(() =>
-        extractRequestData({
+    const requestData = wrapInTry(() => {
+        return extractRequestData({
             body: request.body,
             headers: request.headers,
             endpointMethodDefinition,
-        }),
-    );
+        });
+    });
 
     if (requestData instanceof Error) {
         serverLogger.error(

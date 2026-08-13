@@ -149,8 +149,8 @@ describe(implementApi.name, () => {
 
     it('throws when endpoints field is undefined but the api declares endpoints', () => {
         assert.throws(
-            () =>
-                implementApi()(smallApi, {
+            () => {
+                return implementApi()(smallApi, {
                     createHostContext() {
                         return {
                             context: undefined,
@@ -160,7 +160,8 @@ describe(implementApi.name, () => {
                         chatImplementation,
                         presenceImplementation,
                     ],
-                }),
+                });
+            },
             {
                 matchConstructor: ImplementApiError,
                 matchMessage: '/ping',
@@ -170,8 +171,8 @@ describe(implementApi.name, () => {
 
     it('throws when an api endpoint path is missing an implementation', () => {
         assert.throws(
-            () =>
-                implementApi()(smallApi, {
+            () => {
+                return implementApi()(smallApi, {
                     createHostContext() {
                         return {
                             context: undefined,
@@ -182,7 +183,8 @@ describe(implementApi.name, () => {
                         chatImplementation,
                         presenceImplementation,
                     ],
-                }),
+                });
+            },
             {
                 matchConstructor: ImplementApiError,
                 matchMessage: '/users/create',
@@ -192,8 +194,8 @@ describe(implementApi.name, () => {
 
     it('throws when an api webSocket path is missing an implementation', () => {
         assert.throws(
-            () =>
-                implementApi()(smallApi, {
+            () => {
+                return implementApi()(smallApi, {
                     createHostContext() {
                         return {
                             context: undefined,
@@ -204,7 +206,8 @@ describe(implementApi.name, () => {
                         usersCreateImplementation,
                     ],
                     webSockets: [chatImplementation],
-                }),
+                });
+            },
             {
                 matchConstructor: ImplementApiError,
                 matchMessage: '/ws/presence',
@@ -213,15 +216,15 @@ describe(implementApi.name, () => {
     });
 
     it('lists every missing path in the error message', () => {
-        const caught = wrapInTry(() =>
-            implementApi()(smallApi, {
+        const caught = wrapInTry(() => {
+            return implementApi()(smallApi, {
                 createHostContext() {
                     return {
                         context: undefined,
                     };
                 },
-            }),
-        );
+            });
+        });
 
         assert.instanceOf(caught, ImplementApiError);
         assert.isTrue(caught.message.includes('/ping'));
@@ -232,8 +235,8 @@ describe(implementApi.name, () => {
 
     it('throws on duplicate endpoint paths', () => {
         assert.throws(
-            () =>
-                implementApi()(smallApi, {
+            () => {
+                return implementApi()(smallApi, {
                     createHostContext() {
                         return {
                             context: undefined,
@@ -247,7 +250,8 @@ describe(implementApi.name, () => {
                         chatImplementation,
                         presenceImplementation,
                     ],
-                }),
+                });
+            },
             {
                 matchConstructor: ImplementApiError,
                 matchMessage: 'duplicate',
@@ -257,8 +261,8 @@ describe(implementApi.name, () => {
 
     it('throws on duplicate webSocket paths', () => {
         assert.throws(
-            () =>
-                implementApi()(smallApi, {
+            () => {
+                return implementApi()(smallApi, {
                     createHostContext() {
                         return {
                             context: undefined,
@@ -272,7 +276,8 @@ describe(implementApi.name, () => {
                         chatImplementation,
                         chatImplementation,
                     ],
-                }),
+                });
+            },
             {
                 matchConstructor: ImplementApiError,
                 matchMessage: 'duplicate',

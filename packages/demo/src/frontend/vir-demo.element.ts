@@ -154,9 +154,9 @@ export const VirDemo = defineElement()({
                 endpointPath,
                 demoFetches,
             ]) => {
-                const demoFetchTemplates = demoFetches.map((demoRoute) =>
-                    renderDemoButton(endpointPath, demoRoute),
-                );
+                const demoFetchTemplates = demoFetches.map((demoRoute) => {
+                    return renderDemoButton(endpointPath, demoRoute);
+                });
 
                 return html`
                     <div class="routes">
@@ -174,9 +174,9 @@ export const VirDemo = defineElement()({
                 webSocketPath,
                 demoWebSockets,
             ]) => {
-                const demoWebSocketTemplates = demoWebSockets.map((demoRoute) =>
-                    renderDemoButton(webSocketPath, demoRoute),
-                );
+                const demoWebSocketTemplates = demoWebSockets.map((demoRoute) => {
+                    return renderDemoButton(webSocketPath, demoRoute);
+                });
 
                 return html`
                     <div class="routes">

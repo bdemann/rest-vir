@@ -241,8 +241,8 @@ describe(testEndpoint.name, () => {
 
     it('fails a wrong method', async () => {
         await assert.throws(
-            () =>
-                testEndpoint(
+            () => {
+                return testEndpoint(
                     echoImplementation,
                     // @ts-expect-error: incorrect method
                     HttpMethod.Get,
@@ -253,7 +253,8 @@ describe(testEndpoint.name, () => {
                             testValue: -1,
                         },
                     },
-                ),
+                );
+            },
             {
                 matchMessage: "Method 'GET' does not exist on endpoint '/echo'",
             },
@@ -262,14 +263,15 @@ describe(testEndpoint.name, () => {
 
     it('requires path params', async () => {
         await assert.throws(
-            () =>
-                testEndpoint(
+            () => {
+                return testEndpoint(
                     pathParamsImplementation,
                     HttpMethod.Get,
                     createTestHostContext,
                     // @ts-expect-error: this endpoint is missing its path params
                     {},
-                ),
+                );
+            },
             {
                 matchMessage: 'Missing value for path param',
             },
@@ -278,14 +280,20 @@ describe(testEndpoint.name, () => {
 
     it('requires wildcard', async () => {
         await assert.throws(
-            () =>
-                testEndpoint(pathParamsImplementation, HttpMethod.Get, createTestHostContext, {
-                    // @ts-expect-error: this endpoint is missing its wildcard
-                    pathParams: {
-                        param1: 'hi',
-                        param2: 'bye',
+            () => {
+                return testEndpoint(
+                    pathParamsImplementation,
+                    HttpMethod.Get,
+                    createTestHostContext,
+                    {
+                        // @ts-expect-error: this endpoint is missing its wildcard
+                        pathParams: {
+                            param1: 'hi',
+                            param2: 'bye',
+                        },
                     },
-                }),
+                );
+            },
             {
                 matchMessage: 'Missing value for wildcard param',
             },

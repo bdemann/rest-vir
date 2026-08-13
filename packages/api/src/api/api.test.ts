@@ -340,14 +340,15 @@ describe(defineApi.name, () => {
         });
 
         assert.throws(
-            () =>
-                defineApi({
+            () => {
+                return defineApi({
                     apiName: 'test',
                     endpoints: [
                         firstEndpoint,
                         secondEndpoint,
                     ],
-                }),
+                });
+            },
             {
                 matchConstructor: DefineApiError,
                 matchMessage: 'Duplicate API endpoints paths: /users',
@@ -366,14 +367,15 @@ describe(defineApi.name, () => {
         });
 
         assert.throws(
-            () =>
-                defineApi({
+            () => {
+                return defineApi({
                     apiName: 'test',
                     webSockets: [
                         firstSocket,
                         secondSocket,
                     ],
-                }),
+                });
+            },
             {
                 matchConstructor: DefineApiError,
             },
@@ -409,14 +411,15 @@ describe(defineApi.name, () => {
         });
 
         assert.throws(
-            () =>
-                defineApi({
+            () => {
+                return defineApi({
                     apiName: 'test',
                     endpoints: [
                         firstEndpoint,
                         secondEndpoint,
                     ],
-                }),
+                });
+            },
             {
                 matchMessage: '/orders',
             },
@@ -434,14 +437,15 @@ describe(defineApi.name, () => {
         });
 
         assert.throws(
-            () =>
-                defineApi({
+            () => {
+                return defineApi({
                     apiName: 'test',
                     webSockets: [
                         firstSocket,
                         secondSocket,
                     ],
-                }),
+                });
+            },
             {
                 matchMessage: '/updates',
             },

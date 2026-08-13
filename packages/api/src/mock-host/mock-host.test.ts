@@ -694,8 +694,8 @@ describe(createMockHost.name, () => {
         let closeHandlerRan = false;
         let rejectActive = false;
         const client = createMockHost<typeof mockApi, undefined>(mockApi, {
-            createHostContext: () =>
-                rejectActive
+            createHostContext: () => {
+                return rejectActive
                     ? {
                           reject: {
                               statusCode: HttpStatus.Unauthorized,
@@ -704,7 +704,8 @@ describe(createMockHost.name, () => {
                       }
                     : {
                           context: undefined,
-                      },
+                      };
+            },
             webSockets: {
                 '/closable': {
                     close() {
@@ -760,13 +761,14 @@ describe(createMockHost.name, () => {
         });
 
         await assert.throws(
-            () =>
-                socket.sendAndWaitForReply({
+            () => {
+                return socket.sendAndWaitForReply({
                     message: 'ping',
                     timeout: {
                         milliseconds: 50,
                     },
-                }),
+                });
+            },
             {
                 matchMessage: 'got no reply',
             },
@@ -802,13 +804,14 @@ describe(createMockHost.name, () => {
         });
 
         await assert.throws(
-            () =>
-                socket.sendAndWaitForReply({
+            () => {
+                return socket.sendAndWaitForReply({
                     message: 'ping',
                     timeout: {
                         milliseconds: 50,
                     },
-                }),
+                });
+            },
             {
                 matchMessage: 'got no reply',
             },
@@ -838,13 +841,14 @@ describe(createMockHost.name, () => {
         });
 
         await assert.throws(
-            () =>
-                socket.sendAndWaitForReply({
+            () => {
+                return socket.sendAndWaitForReply({
                     message: 'ping',
                     timeout: {
                         milliseconds: 50,
                     },
-                }),
+                });
+            },
             {
                 matchMessage: 'got no reply',
             },

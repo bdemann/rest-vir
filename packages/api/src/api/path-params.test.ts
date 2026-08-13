@@ -393,11 +393,12 @@ describe(buildRoutePath.name, () => {
 
     it('throws when a named path param is missing', () => {
         assert.throws(
-            () =>
-                buildRoutePath(roomWebSocket, {
+            () => {
+                return buildRoutePath(roomWebSocket, {
                     // @ts-expect-error: missing path param.
                     pathParams: {},
-                }),
+                });
+            },
             {
                 matchMessage: 'roomId',
             },
@@ -406,13 +407,14 @@ describe(buildRoutePath.name, () => {
 
     it('throws when a wildcard path param is missing', () => {
         assert.throws(
-            () =>
-                buildRoutePath(userFileEndpoint, {
+            () => {
+                return buildRoutePath(userFileEndpoint, {
                     // @ts-expect-error: missing wildcard.
                     pathParams: {
                         userId: '42',
                     },
-                }),
+                });
+            },
             {
                 matchMessage: 'wildcard',
             },
@@ -421,8 +423,8 @@ describe(buildRoutePath.name, () => {
 
     it('throws when path params are supplied to a path without params', () => {
         assert.throws(
-            () =>
-                buildRoutePath(
+            () => {
+                return buildRoutePath(
                     {
                         path: '/health',
                     },
@@ -432,7 +434,8 @@ describe(buildRoutePath.name, () => {
                             extra: 'oops',
                         },
                     },
-                ),
+                );
+            },
             {
                 matchMessage: '/health',
             },

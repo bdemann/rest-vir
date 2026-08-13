@@ -55,8 +55,8 @@ describe(handleEndpointRequest.name, () => {
         };
 
         await assert.throws(
-            async () =>
-                await handleEndpointRequest({
+            async () => {
+                return await handleEndpointRequest({
                     endpoint: forgedImplementation,
                     request: {
                         method: HttpMethod.Post,
@@ -77,7 +77,8 @@ describe(handleEndpointRequest.name, () => {
                     server: {} as RunningServerInfo,
                     serverLogger: silentServerLogger,
                     api,
-                }),
+                });
+            },
             {
                 matchMessage: `No definition found for method '${HttpMethod.Post}'`,
             },
@@ -204,20 +205,21 @@ describe(handleEndpointRequest.name, () => {
             isWebSocket: false,
             definition: endpointDefinition,
             implementation: {
-                [HttpMethod.Get]: () =>
-                    ({
+                [HttpMethod.Get]: () => {
+                    return {
                         [HttpStatus.BadRequest]: {
                             responseData: {
                                 error: 'object body is not allowed for undeclared error statuses',
                             },
                         },
-                    }) as never,
+                    } as never;
+                },
             },
         };
 
         await assert.throws(
-            async () =>
-                await handleEndpointRequest({
+            async () => {
+                return await handleEndpointRequest({
                     endpoint: nonStringErrorImpl,
                     request: {
                         method: HttpMethod.Get,
@@ -238,7 +240,8 @@ describe(handleEndpointRequest.name, () => {
                     server: {} as RunningServerInfo,
                     serverLogger: silentServerLogger,
                     api,
-                }),
+                });
+            },
             {
                 matchMessage: 'Got response data but none was expected.',
             },
@@ -257,18 +260,19 @@ describe(handleEndpointRequest.name, () => {
             isWebSocket: false,
             definition: endpointDefinition,
             implementation: {
-                [HttpMethod.Get]: () =>
-                    ({
+                [HttpMethod.Get]: () => {
+                    return {
                         [HttpStatus.Accepted]: {
                             responseData: 'string body is not allowed for undeclared success',
                         },
-                    }) as never,
+                    } as never;
+                },
             },
         };
 
         await assert.throws(
-            async () =>
-                await handleEndpointRequest({
+            async () => {
+                return await handleEndpointRequest({
                     endpoint: undeclaredSuccessImpl,
                     request: {
                         method: HttpMethod.Get,
@@ -289,7 +293,8 @@ describe(handleEndpointRequest.name, () => {
                     server: {} as RunningServerInfo,
                     serverLogger: silentServerLogger,
                     api,
-                }),
+                });
+            },
             {
                 matchMessage: 'Got response data but none was expected.',
             },
@@ -303,18 +308,19 @@ describe(handleEndpointRequest.name, () => {
             isWebSocket: false,
             definition: endpointDefinition,
             implementation: {
-                [HttpMethod.Get]: () =>
-                    ({
+                [HttpMethod.Get]: () => {
+                    return {
                         [HttpStatus.Ok]: {
                             responseData: false,
                         },
-                    }) as never,
+                    } as never;
+                },
             },
         };
 
         await assert.throws(
-            async () =>
-                await handleEndpointRequest({
+            async () => {
+                return await handleEndpointRequest({
                     endpoint: falsyDataImplementation,
                     request: {
                         method: HttpMethod.Get,
@@ -335,7 +341,8 @@ describe(handleEndpointRequest.name, () => {
                     server: {} as RunningServerInfo,
                     serverLogger: silentServerLogger,
                     api,
-                }),
+                });
+            },
             {
                 matchMessage: 'Got response data but none was expected.',
             },
@@ -635,21 +642,22 @@ describe(handleEndpointRequest.name, () => {
             isWebSocket: false,
             definition: endpointDefinition,
             implementation: {
-                [HttpMethod.Get]: () =>
-                    ({
+                [HttpMethod.Get]: () => {
+                    return {
                         [HttpStatus.Ok]: {
                             responseData: undefined,
                         },
                         [HttpStatus.Accepted]: {
                             responseData: undefined,
                         },
-                    }) as never,
+                    } as never;
+                },
             },
         };
 
         await assert.throws(
-            async () =>
-                await handleEndpointRequest({
+            async () => {
+                return await handleEndpointRequest({
                     endpoint: multiStatusImplementation,
                     request: {
                         method: HttpMethod.Get,
@@ -670,7 +678,8 @@ describe(handleEndpointRequest.name, () => {
                     server: {} as RunningServerInfo,
                     serverLogger: silentServerLogger,
                     api,
-                }),
+                });
+            },
             {
                 matchMessage: 'Expected exactly one status code response key',
             },
@@ -684,16 +693,17 @@ describe(handleEndpointRequest.name, () => {
             isWebSocket: false,
             definition: endpointDefinition,
             implementation: {
-                [HttpMethod.Get]: () =>
-                    ({
+                [HttpMethod.Get]: () => {
+                    return {
                         [HttpStatus.Ok]: undefined,
-                    }) as never,
+                    } as never;
+                },
             },
         };
 
         await assert.throws(
-            async () =>
-                await handleEndpointRequest({
+            async () => {
+                return await handleEndpointRequest({
                     endpoint: missingStatusResponseImplementation,
                     request: {
                         method: HttpMethod.Get,
@@ -714,7 +724,8 @@ describe(handleEndpointRequest.name, () => {
                     server: {} as RunningServerInfo,
                     serverLogger: silentServerLogger,
                     api,
-                }),
+                });
+            },
             {
                 matchMessage: 'Missing status response.',
             },

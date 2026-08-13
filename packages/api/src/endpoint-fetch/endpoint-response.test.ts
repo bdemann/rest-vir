@@ -591,8 +591,8 @@ describe(createEndpointResponseOutput.name, () => {
 
     it('throws for undefined successful statuses', async () => {
         await assert.throws(
-            async () =>
-                await createEndpointResponseOutput({
+            async () => {
+                return await createEndpointResponseOutput({
                     endpoint: authLoginEndpoint,
                     method: HttpMethod.Post,
                     response: createMockResponse({
@@ -603,7 +603,8 @@ describe(createEndpointResponseOutput.name, () => {
                     handleDeclaredResponseStatusOverride() {
                         throw new Error('This callback should not run.');
                     },
-                }),
+                });
+            },
             {
                 matchMessage: `Received unexpected successful response status from endpoint '${authLoginEndpoint.path}': ${HttpStatus.Created}`,
             },
@@ -970,12 +971,12 @@ describe(extractEndpointResult.name, () => {
     };
 
     it('returns the defined Ok branch when the response is a successful 200', async () => {
-        const client = new RestVirClient(loginApi, '', () =>
-            createMockResponse({
+        const client = new RestVirClient(loginApi, '', () => {
+            return createMockResponse({
                 status: HttpStatus.Ok,
                 body: okBody,
-            }),
-        );
+            });
+        });
 
         const output = (await client.fetch(authLoginEndpoint).POST({
             requestData: validCredentials,
@@ -989,12 +990,12 @@ describe(extractEndpointResult.name, () => {
     });
 
     it('handles a generic response', async () => {
-        const client = new RestVirClient(loginApi, '', () =>
-            createMockResponse({
+        const client = new RestVirClient(loginApi, '', () => {
+            return createMockResponse({
                 status: HttpStatus.Ok,
                 body: okBody,
-            }),
-        );
+            });
+        });
 
         const output = await client.fetch(authLoginEndpoint).POST({
             requestData: validCredentials,
@@ -1027,12 +1028,12 @@ describe(extractEndpointResult.name, () => {
             remainingAttempts: 2,
         };
 
-        const client = new RestVirClient(loginApi, '', () =>
-            createMockResponse({
+        const client = new RestVirClient(loginApi, '', () => {
+            return createMockResponse({
                 status: HttpStatus.BadRequest,
                 body: badRequestBody,
-            }),
-        );
+            });
+        });
 
         const output = await client.fetch(authLoginEndpoint).POST({
             requestData: validCredentials,
@@ -1044,12 +1045,12 @@ describe(extractEndpointResult.name, () => {
     });
 
     it('returns the unexpectedError branch when the response is an undeclared error status', async () => {
-        const client = new RestVirClient(loginApi, '', () =>
-            createMockResponse({
+        const client = new RestVirClient(loginApi, '', () => {
+            return createMockResponse({
                 status: HttpStatus.InternalServerError,
                 body: 'boom',
-            }),
-        );
+            });
+        });
 
         const output = await client.fetch(authLoginEndpoint).POST({
             requestData: validCredentials,

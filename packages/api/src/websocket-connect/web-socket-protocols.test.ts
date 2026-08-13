@@ -30,21 +30,21 @@ describe(assertValidWebSocketProtocols.name, () => {
     });
 
     it('passes when no connectProtocol requirement is declared on the WebSocket', () => {
-        assert.doesNotThrow(() =>
-            assertValidWebSocketProtocols(
+        assert.doesNotThrow(() => {
+            return assertValidWebSocketProtocols(
                 [
                     'soap',
                     'mqtt',
                 ],
                 noProtocolWebSocket,
-            ),
-        );
+            );
+        });
     });
 
     it('passes when every protocol satisfies the connectProtocol shape', () => {
-        assert.doesNotThrow(() =>
-            assertValidWebSocketProtocols(['graphql-ws'], exactProtocolWebSocket),
-        );
+        assert.doesNotThrow(() => {
+            return assertValidWebSocketProtocols(['graphql-ws'], exactProtocolWebSocket);
+        });
     });
 
     it('throws when a protocol does not satisfy the connectProtocol shape', () => {
@@ -55,14 +55,15 @@ describe(assertValidWebSocketProtocols.name, () => {
 
     it('throws when any one protocol in a list fails the shape requirement', () => {
         assert.throws(
-            () =>
-                assertValidWebSocketProtocols(
+            () => {
+                return assertValidWebSocketProtocols(
                     [
                         'graphql-ws',
                         'mqtt',
                     ],
                     exactProtocolWebSocket,
-                ),
+                );
+            },
             {
                 matchMessage: 'failed protocol requirement',
             },
@@ -71,14 +72,15 @@ describe(assertValidWebSocketProtocols.name, () => {
 
     it('throws on an empty-string protocol', () => {
         assert.throws(
-            () =>
-                assertValidWebSocketProtocols(
+            () => {
+                return assertValidWebSocketProtocols(
                     [
                         '',
                         'b',
                     ],
                     noProtocolWebSocket,
-                ),
+                );
+            },
             {
                 matchMessage: 'Invalid protocols given',
             },
@@ -87,13 +89,14 @@ describe(assertValidWebSocketProtocols.name, () => {
 
     it('throws on a protocol containing an illegal token character', () => {
         assert.throws(
-            () =>
-                assertValidWebSocketProtocols(
+            () => {
+                return assertValidWebSocketProtocols(
                     [
                         'a/b',
                     ],
                     noProtocolWebSocket,
-                ),
+                );
+            },
             {
                 matchMessage: 'Invalid protocols given',
             },
@@ -102,14 +105,15 @@ describe(assertValidWebSocketProtocols.name, () => {
 
     it('throws on duplicate protocols', () => {
         assert.throws(
-            () =>
-                assertValidWebSocketProtocols(
+            () => {
+                return assertValidWebSocketProtocols(
                     [
                         'a',
                         'a',
                     ],
                     noProtocolWebSocket,
-                ),
+                );
+            },
             {
                 matchMessage: 'Invalid protocols given',
             },
@@ -118,14 +122,15 @@ describe(assertValidWebSocketProtocols.name, () => {
 
     it('throws on whitespace-only protocols', () => {
         assert.throws(
-            () =>
-                assertValidWebSocketProtocols(
+            () => {
+                return assertValidWebSocketProtocols(
                     [
                         ' ',
                         'b',
                     ],
                     noProtocolWebSocket,
-                ),
+                );
+            },
             {
                 matchMessage: 'Invalid protocols given',
             },

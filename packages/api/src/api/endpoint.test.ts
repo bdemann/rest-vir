@@ -1109,16 +1109,16 @@ describe('wrapper inference', () => {
                 wrappedSimpleEndpoint,
             ],
         });
-        const client = new RestVirClient(api, '', () =>
-            Promise.resolve(
+        const client = new RestVirClient(api, '', () => {
+            return Promise.resolve(
                 createMockResponse({
                     headers: {
                         'content-type': 'application/json',
                     },
                     body: 'hi',
                 }),
-            ),
-        );
+            );
+        });
 
         const result = await client.fetch(wrappedSimpleEndpoint).GET();
 

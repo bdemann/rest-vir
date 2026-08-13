@@ -218,9 +218,9 @@ function passThroughValue(rawValue: unknown): AllowedSearchParamValue | undefine
     } else if (check.isArray(rawValue)) {
         const stringValues = (rawValue as ReadonlyArray<unknown>)
             .filter(check.isDefined)
-            .map((value) =>
-                String(value),
-            ) satisfies ReadonlyArray<string> as AllowedSingleSearchParamValue[];
+            .map((value) => {
+                return String(value);
+            }) satisfies ReadonlyArray<string> as AllowedSingleSearchParamValue[];
         if (!stringValues.length) {
             return undefined;
         }

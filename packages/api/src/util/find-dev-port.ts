@@ -218,15 +218,15 @@ export async function findLivePort(
             port,
         }).href;
 
-        const response = await wrapInTry(() =>
-            (fetchOverride || fetch)(
+        const response = await wrapInTry(() => {
+            return (fetchOverride || fetch)(
                 newUrl,
                 {
                     method: HttpMethod.Options,
                 },
                 endpoint,
-            ),
-        );
+            );
+        });
 
         if (
             !check.instanceOf(response, Error) &&
