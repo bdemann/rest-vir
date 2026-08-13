@@ -871,11 +871,10 @@ describe(RestVirClient.name, () => {
 
         it('throws when method does not exist on endpoint', () => {
             assert.throws(
-                () =>
+                () => {
                     // @ts-expect-error: simpleEndpoint has no POST method.
-                    {
-                        return client.buildEndpointUrl(simpleEndpoint, HttpMethod.Post, {});
-                    },
+                    return client.buildEndpointUrl(simpleEndpoint, HttpMethod.Post, {});
+                },
                 {
                     matchMessage: HttpMethod.Post,
                 },

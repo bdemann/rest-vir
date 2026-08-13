@@ -1,6 +1,6 @@
 {
     "name": "@rest-vir/demo",
-    "version": "2.2.1",
+    "version": "2.3.0",
     "private": true,
     "homepage": "https://github.com/electrovir/rest-vir",
     "bugs": {
@@ -29,8 +29,8 @@
         "@augment-vir/assert": "^32.2.1",
         "@augment-vir/common": "^32.2.1",
         "@fastify/multipart": "^10.1.0",
-        "@rest-vir/api": "^2.2.1",
-        "@rest-vir/host": "^2.2.1",
+        "@rest-vir/api": "^2.3.0",
+        "@rest-vir/host": "^2.3.0",
         "element-vir": "^26.17.3",
         "object-shape-tester": "^6.14.1",
         "vira": "^31.29.0"

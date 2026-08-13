@@ -1,5 +1,6 @@
 import {assert, check} from '@augment-vir/assert';
-import {type MaybeArray, type MaybePromise, type RequireExactlyOne} from '@augment-vir/common';
+import {type MaybeArray, type MaybePromise} from '@augment-vir/common';
+import {classShape, exactShape, nullableShape, unionShape} from 'object-shape-tester';
 
 /**
  * Allows you to set origin requirements.
@@ -16,20 +17,7 @@ import {type MaybeArray, type MaybePromise, type RequireExactlyOne} from '@augme
  * @category Package : @rest-vir/api
  * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
  */
-export type OriginRequirement =
-    | RequireExactlyOne<{
-          /** Allows any origin with a '*' response. */
-          anyOrigin: true;
-          /**
-           * Accepts whatever the request's origin is the required origin. In practice this is
-           * nearly identical to `anyOrigin` but allows credentials to be included in requests when
-           * the browser normally blocks for `anyOrigin` (`*`).
-           */
-          anyOriginWithCredentials: true;
-      }>
-    | string
-    | RegExp
-    | OriginCheckCallback;
+export type OriginRequirement = typeof originRequirementShape.runtimeType;
 
 /**
  * Callback form of an {@link OriginRequirement}. Returns `true` to accept the origin, `false` to
@@ -40,6 +28,45 @@ export type OriginRequirement =
  * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
  */
 export type OriginCheckCallback = (originToCheck: string | undefined) => MaybePromise<boolean>;
+
+/**
+ * (Shape definition for {@link OriginRequirement}).
+ *
+ * Allows you to set origin requirements.
+ *
+ * - A string: requires the incoming origin to exactly match this string.
+ * - A RegExp: requires the incoming origin to match this RegExp.
+ * - A function: requires the incoming origin to result in a `true` return value from this function.
+ *
+ * When no `clientOriginRequirement` is set on either a route or the api as a whole, **all origins
+ * are accepted** (`Access-Control-Allow-Origin: *` is returned). Set a non-undefined value at the
+ * route or api level to restrict who may call the api from a browser.
+ *
+ * @category Internal
+ * @category Package : @rest-vir/api
+ * @package [`@rest-vir/api`](https://www.npmjs.com/package/@rest-vir/api)
+ */
+export const originRequirementShape = unionShape(
+    '',
+    classShape(RegExp),
+    ((originToCheck) => {
+        return Boolean(originToCheck);
+    }) satisfies OriginCheckCallback as OriginCheckCallback,
+    {
+        /** Allows any origin with a '*' response. */
+        anyOrigin: exactShape(true),
+        anyOriginWithCredentials: nullableShape(undefined),
+    },
+    {
+        anyOrigin: nullableShape(undefined),
+        /**
+         * Accepts whatever the request's origin is the required origin. In practice this is nearly
+         * identical to `anyOrigin` but allows credentials to be included in requests when the
+         * browser normally blocks for `anyOrigin` (`*`).
+         */
+        anyOriginWithCredentials: exactShape(true),
+    },
+);
 
 /**
  * - `boolean`: the origin was explicitly checked and passed (`true`) or failed (`false`)

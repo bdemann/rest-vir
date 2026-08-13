@@ -1,9 +1,11 @@
 import {assert} from '@augment-vir/assert';
 import {describe, it, itCases} from '@augment-vir/test';
+import {checkValidShape} from 'object-shape-tester';
 import {
     AnyOrigin,
     checkOriginRequirement,
     matchesOriginRequirement,
+    originRequirementShape,
     type OriginCheckCallback,
     type OriginRequirement,
     type OriginRequirementResult,
@@ -213,8 +215,9 @@ describe(checkOriginRequirement.name, () => {
     });
 
     describe('callback origin', () => {
-        const syncCallbackRequirement: OriginRequirement = (originToCheck) =>
-            originToCheck === 'https://allowed.com';
+        const syncCallbackRequirement: OriginRequirement = (originToCheck) => {
+            return originToCheck === 'https://allowed.com';
+        };
 
         const asyncCallbackRequirement: OriginCheckCallback = async (originToCheck) => {
             return Promise.resolve(originToCheck === 'https://async-allowed.com');
@@ -528,6 +531,59 @@ describe('OriginRequirement', () => {
         // @ts-expect-error: at least one of anyOrigin/anyOriginWithCredentials is required.
         const requirement: OriginRequirement = {};
         assert.isDefined(requirement);
+    });
+});
+
+describe('originRequirementShape', () => {
+    it('accepts every supported origin requirement form', () => {
+        assert.deepEquals(
+            [
+                'https://example.com',
+                /example/,
+                () => true,
+                {
+                    anyOrigin: true,
+                },
+                {
+                    anyOriginWithCredentials: true,
+                },
+            ].map((requirement) => checkValidShape(requirement, originRequirementShape)),
+            [
+                true,
+                true,
+                true,
+                true,
+                true,
+            ],
+        );
+    });
+
+    it('rejects values outside the origin requirement forms', () => {
+        assert.deepEquals(
+            [
+                undefined,
+                42,
+                {},
+                {
+                    anyOrigin: false,
+                },
+            ].map((requirement) => checkValidShape(requirement, originRequirementShape)),
+            [
+                false,
+                false,
+                false,
+                false,
+            ],
+        );
+    });
+
+    it('uses a callback default that checks whether an origin is defined', () => {
+        const callbackSchema = originRequirementShape.$_schema.anyOf[2];
+        assert.isDefined(callbackSchema);
+        const callbackDefault = callbackSchema.default;
+        assert.isFunction(callbackDefault);
+        assert.isTrue(callbackDefault('https://example.com'));
+        assert.isFalse(callbackDefault(undefined));
     });
 });
 
