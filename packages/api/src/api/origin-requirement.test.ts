@@ -585,6 +585,28 @@ describe('originRequirementShape', () => {
         assert.isTrue(callbackDefault('https://example.com'));
         assert.isFalse(callbackDefault(undefined));
     });
+
+    it('does not add nullable properties to the object requirement types', () => {
+        assert.tsType<Extract<OriginRequirement, {anyOrigin: true}>>().equals<{
+            anyOrigin: true;
+            anyOriginWithCredentials?: undefined;
+        }>();
+        assert.tsType<Extract<OriginRequirement, {anyOriginWithCredentials: true}>>().equals<{
+            anyOrigin?: undefined;
+            anyOriginWithCredentials: true;
+        }>();
+    });
+
+    it('accepts a variable typed from the shape in checkOriginRequirement', async () => {
+        const requirement: typeof originRequirementShape.runtimeType = {
+            anyOrigin: true,
+        };
+
+        assert.strictEquals(
+            await checkOriginRequirement('https://example.com', requirement),
+            AnyOrigin,
+        );
+    });
 });
 
 describe('OriginCheckCallback', () => {

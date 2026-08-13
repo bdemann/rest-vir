@@ -1,6 +1,6 @@
 import {assert, check} from '@augment-vir/assert';
 import {type MaybeArray, type MaybePromise} from '@augment-vir/common';
-import {classShape, exactShape, nullableShape, unionShape} from 'object-shape-tester';
+import {classShape, exactShape, optionalShape, unionShape} from 'object-shape-tester';
 
 /**
  * Allows you to set origin requirements.
@@ -55,10 +55,10 @@ export const originRequirementShape = unionShape(
     {
         /** Allows any origin with a '*' response. */
         anyOrigin: exactShape(true),
-        anyOriginWithCredentials: nullableShape(undefined),
+        anyOriginWithCredentials: optionalShape(undefined),
     },
     {
-        anyOrigin: nullableShape(undefined),
+        anyOrigin: optionalShape(undefined),
         /**
          * Accepts whatever the request's origin is the required origin. In practice this is nearly
          * identical to `anyOrigin` but allows credentials to be included in requests when the
