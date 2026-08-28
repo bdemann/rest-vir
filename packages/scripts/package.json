@@ -24,8 +24,8 @@
         "test:coverage": "npm test"
     },
     "dependencies": {
-        "@augment-vir/common": "^32.2.1",
-        "@virmator/docs": "^14.30.6",
+        "@augment-vir/common": "^32.2.3",
+        "@virmator/docs": "^14.32.0",
         "typedoc": "^0.28.20"
     },
     "engines": {

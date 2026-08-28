@@ -38,7 +38,7 @@
         "test:update": "mono-vir for-each-async npm run test:update"
     },
     "overrides": {
-        "esbuild": "^0.28.1",
+        "esbuild": "^0.28.2",
         "playwright": "1.61.1"
     },
     "devDependencies": {
@@ -46,13 +46,13 @@
         "@eslint/js": "^10.0.1",
         "@stylistic/eslint-plugin": "^5.10.0",
         "@stylistic/eslint-plugin-ts": "^4.4.1",
-        "@typescript-eslint/eslint-plugin": "^8.66.0",
-        "cspell": "^10.0.1",
-        "dependency-cruiser": "^18.1.1",
-        "esbuild": "^0.28.1",
-        "eslint": "^10.8.1",
+        "@typescript-eslint/eslint-plugin": "^8.67.0",
+        "cspell": "^10.1.0",
+        "dependency-cruiser": "^18.2.0",
+        "esbuild": "^0.28.2",
+        "eslint": "^10.9.0",
         "eslint-config-prettier": "^10.1.8",
-        "eslint-plugin-jsdoc": "^64.0.1",
+        "eslint-plugin-jsdoc": "^64.2.1",
         "eslint-plugin-monorepo-cop": "^1.0.2",
         "eslint-plugin-playwright": "^2.11.0",
         "eslint-plugin-prettier": "^5.5.6",
@@ -72,8 +72,8 @@
         "prettier-plugin-toml": "^2.0.6",
         "runstorm": "^1.0.6",
         "typescript": "^6.0.3",
-        "typescript-eslint": "^8.66.0",
-        "virmator": "^14.30.6"
+        "typescript-eslint": "^8.67.0",
+        "virmator": "^14.32.0"
     },
     "engines": {
         "node": ">=22"

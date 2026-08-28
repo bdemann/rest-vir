@@ -97,19 +97,13 @@ export const runApiOptionsShape = defineShape({
      * - `true`: trust headers from any hop.
      * - `false`: trust nothing (default).
      * - A string or list of strings: trust the listed CIDR ranges or IPs.
-     * - A number: trust that many hops.
      *
      * @default false
      */
     trustProxy: nullableShape(
-        unionShape(
-            false,
+        unionShape(false, '', [
             '',
-            [
-                '',
-            ],
-            0,
-        ),
+        ]),
     ),
 });
 

@@ -1,4 +1,6 @@
-import {describe, itCases} from '@augment-vir/test';
+import {assert} from '@augment-vir/assert';
+import {describe, it, itCases} from '@augment-vir/test';
+import {checkValidShape} from 'object-shape-tester';
 import {finalizeOptions, runApiOptionsShape} from './run-api-options.js';
 
 const operationalDefaults = {
@@ -64,4 +66,18 @@ describe(finalizeOptions.name, () => {
             },
         },
     ]);
+});
+
+describe('runApiOptionsShape', () => {
+    it('rejects numeric proxy trust', () => {
+        assert.isFalse(
+            checkValidShape(
+                {
+                    ...runApiOptionsShape.default,
+                    trustProxy: 1,
+                },
+                runApiOptionsShape,
+            ),
+        );
+    });
 });
