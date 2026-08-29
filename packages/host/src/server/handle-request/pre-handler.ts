@@ -34,7 +34,7 @@ import {
 import {RejectRequestError} from '../../implementation/reject-request.error.js';
 import {type ServerLogger} from '../../implementation/server-logger.js';
 import {RestVirHandlerError} from '../util/handler.error.js';
-import {matchUrlToRoute} from '../util/match-url.js';
+import {extractMatchedRoutePath} from '../util/matched-route.js';
 import {handleHandlerOutputWithoutSending, type HandledOutput} from './endpoint-handler.js';
 import {handleCors} from './handle-cors.js';
 import {handleSearchParams} from './handle-search-params.js';
@@ -75,27 +75,24 @@ export async function preHandler({
         response.header(restVirApiNameHeader, api.definition.apiName);
     }
 
-    const pathMatch = matchUrlToRoute(api.definition, request.originalUrl);
+    const matchedRoutePath = extractMatchedRoutePath({
+        request,
+        attachId,
+    });
 
-    if (!pathMatch) {
-        /** Nothing to do. */
+    if (!matchedRoutePath) {
+        /** Not a route this attachment registered. Nothing to do. */
         return undefined;
     }
 
-    const endpointDefinition = pathMatch.endpointPath
-        ? api.definition.endpoints[pathMatch.endpointPath]
+    const endpointDefinition = api.definition.endpoints[matchedRoutePath];
+    const webSocketDefinition = request.ws
+        ? api.definition.webSockets[matchedRoutePath]
         : undefined;
-    const webSocketDefinition =
-        request.ws && pathMatch.webSocketPath
-            ? api.definition.webSockets[pathMatch.webSocketPath]
-            : undefined;
-    const endpointImplementation = pathMatch.endpointPath
-        ? api.implementation.endpoints[pathMatch.endpointPath]
+    const endpointImplementation = api.implementation.endpoints[matchedRoutePath];
+    const webSocketImplementation = request.ws
+        ? api.implementation.webSockets[matchedRoutePath]
         : undefined;
-    const webSocketImplementation =
-        request.ws && pathMatch.webSocketPath
-            ? api.implementation.webSockets[pathMatch.webSocketPath]
-            : undefined;
 
     const routeDefinition: Readonly<EndpointDefinition | WebSocketDefinition> | undefined =
         endpointDefinition || webSocketDefinition;
@@ -318,6 +315,7 @@ export async function preHandler({
             );
         }
         attachedRestVirContext.context = contextOutput.context;
+        attachedRestVirContext.contextCreated = true;
 
         return undefined;
     } catch (error) {

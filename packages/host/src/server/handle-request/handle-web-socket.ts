@@ -70,6 +70,23 @@ export async function handleWebSocketRequest(
     const restVirContext = request.restVirContext?.[attachId] as undefined | RestVirRequestContext;
     assert.isDefined(restVirContext, 'restVirContext is not defined');
 
+    /**
+     * Fail closed rather than handing the implementation an undefined context: an implementation
+     * that reads its auth state off the context would otherwise run with no auth state at all.
+     */
+    if (!restVirContext.contextCreated) {
+        throw new RestVirHandlerError(
+            {
+                apiName: api.apiName,
+                isEndpoint: false,
+                isWebSocket: true,
+                path: webSocketImplementation.path,
+            },
+            'Request context was never created.',
+            HttpStatus.InternalServerError,
+        );
+    }
+
     const webSocket = overwriteWebSocketMethods(
         webSocketImplementation.definition,
         wsWebSocket,

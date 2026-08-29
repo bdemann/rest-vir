@@ -14,7 +14,7 @@ import {
 import compressPlugin from '@fastify/compress';
 import multipartPlugin from '@fastify/multipart';
 import fastifyWs from '@fastify/websocket';
-import {isFormDataShape, type BaseSearchParams} from '@rest-vir/api';
+import {isFormDataShape, type BaseRoutePath, type BaseSearchParams} from '@rest-vir/api';
 import {type FastifyInstance} from 'fastify';
 import {buildUrl, parseUrl} from 'url-vir';
 import {type ApiImplementation} from '../../implementation/implement-api.js';
@@ -26,6 +26,7 @@ import {handleRoute} from '../handle-request/handle-route.js';
 import {preHandler} from '../handle-request/pre-handler.js';
 import {runPostRouteHook} from '../handle-request/run-post-route-hook.js';
 import {RestVirHandlerError} from '../util/handler.error.js';
+import {type RestVirRouteConfig} from '../util/matched-route.js';
 
 /**
  * Context attached to each fastify request object.
@@ -39,9 +40,20 @@ export type RestVirRequestContext = {
     requestData: unknown;
     protocols: string[];
     searchParams: BaseSearchParams;
+    /**
+     * Set once {@link preHandler} has run the API's `createHostContext` for this request. `context`
+     * itself cannot carry this signal: an API whose context type is `undefined` produces a context
+     * that is indistinguishable from one that was never created, and route handlers must never run
+     * in the latter case.
+     */
+    contextCreated: boolean;
 };
 
 declare module 'fastify' {
+    interface FastifyContextConfig {
+        restVirRoute?: RestVirRouteConfig | undefined;
+    }
+
     interface FastifyRequest {
         restVirContext:
             | {
@@ -273,11 +285,27 @@ export async function attachApi(
         allPaths.forEach((path) => {
             const webSocketImplementation = api.implementation.webSockets[path];
             const endpointImplementation = api.implementation.endpoints[path];
+            /**
+             * Recorded on every route below so the request lifecycle can read Fastify's own match
+             * result rather than matching the URL a second time.
+             */
+            const restVirRoute: RestVirRouteConfig = {
+                attachId,
+                /**
+                 * `ApiImplementation` keys its route records by plain `string` while
+                 * `ApiDefinition` keys its own by `BaseRoutePath`. Every key here came from a route
+                 * path, so it does carry the leading slash.
+                 */
+                routePath: path satisfies string as BaseRoutePath,
+            };
 
             if (endpointImplementation && webSocketImplementation) {
                 server.route({
                     method: endpointFastifyMethods,
                     url: path,
+                    config: {
+                        restVirRoute,
+                    },
                     handler(request, response) {
                         return handleRoute({
                             webSocket: undefined,
@@ -296,6 +324,9 @@ export async function attachApi(
                 server.route({
                     method: HttpMethod.Get,
                     url: path,
+                    config: {
+                        restVirRoute,
+                    },
                     handler(request, response) {
                         return handleRoute({
                             webSocket: undefined,
@@ -332,6 +363,9 @@ export async function attachApi(
                         HttpMethod.Get,
                     ],
                     url: path,
+                    config: {
+                        restVirRoute,
+                    },
                     handler(request, response) {
                         return handleRoute({
                             webSocket: undefined,
@@ -351,6 +385,9 @@ export async function attachApi(
                 server.route({
                     method: HttpMethod.Get,
                     url: path,
+                    config: {
+                        restVirRoute,
+                    },
                     handler(request, response) {
                         return response.status(HttpStatus.NotFound).send();
                     },

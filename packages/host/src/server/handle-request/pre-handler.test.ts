@@ -92,6 +92,10 @@ describe(preHandler.name, () => {
                 request: {
                     originalUrl: '/missing',
                     headers: {},
+                    /** Fastify's not-found route carries no rest-vir route config. */
+                    routeOptions: {
+                        config: {},
+                    },
                 } as unknown as ServerRequest,
                 response: {
                     header() {},
@@ -114,6 +118,20 @@ describe(preHandler.name, () => {
             headers: {},
             body: undefined,
             params: {},
+            /**
+             * What `attachApi` records on the route Fastify matched. Only the fields the code under
+             * test reads are present, so the real `routeOptions` shape is asserted rather than
+             * filled in.
+             */
+            routeOptions: {
+                url: noRequestBodyEndpoint.path,
+                config: {
+                    restVirRoute: {
+                        attachId,
+                        routePath: noRequestBodyEndpoint.path,
+                    },
+                },
+            } as unknown as ServerRequest['routeOptions'],
         } satisfies Partial<ServerRequest> as unknown as ServerRequest;
 
         const result = await preHandler({

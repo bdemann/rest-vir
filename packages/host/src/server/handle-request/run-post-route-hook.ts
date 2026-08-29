@@ -8,7 +8,7 @@ import {
 } from '../../implementation/post-route-hook.js';
 import {type RunningServerInfo} from '../../implementation/raw-route-data.js';
 import {type ServerLogger} from '../../implementation/server-logger.js';
-import {matchUrlToRoute} from '../util/match-url.js';
+import {extractMatchedRoutePath} from '../util/matched-route.js';
 import {type HandledOutput, type RouteHandlerParams} from './endpoint-handler.js';
 import {buildHandlerParams} from './handler-params.js';
 
@@ -53,19 +53,19 @@ export async function runPostRouteHook(
     const requestData = restVirContext.requestData;
     const searchParams: BaseSearchParams = restVirContext.searchParams || {};
 
-    const pathMatch = matchUrlToRoute(api.definition, request.originalUrl);
+    const matchedRoutePath = extractMatchedRoutePath({
+        request,
+        attachId,
+    });
 
     /* node:coverage ignore next 10 */
-    if (!pathMatch) {
+    if (!matchedRoutePath) {
         return undefined;
     }
-    const endpointDefinition = pathMatch.endpointPath
-        ? api.definition.endpoints[pathMatch.endpointPath]
+    const endpointDefinition = api.definition.endpoints[matchedRoutePath];
+    const webSocketDefinition = request.ws
+        ? api.definition.webSockets[matchedRoutePath]
         : undefined;
-    const webSocketDefinition =
-        request.ws && pathMatch.webSocketPath
-            ? api.definition.webSockets[pathMatch.webSocketPath]
-            : undefined;
 
     const postHookParams: PostRouteHookParams = {
         ...buildHandlerParams({
