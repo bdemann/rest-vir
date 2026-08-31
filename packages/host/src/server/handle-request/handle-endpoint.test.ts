@@ -10,6 +10,7 @@ import {
     type ServerResponse,
 } from '../../implementation/raw-route-data.js';
 import {silentServerLogger} from '../../implementation/server-logger.js';
+import {RestVirHandlerError} from '../util/handler.error.js';
 import {handleEndpointRequest} from './handle-endpoint.js';
 
 const endpointDefinition = defineEndpoint({
@@ -32,6 +33,56 @@ const api = defineApi({
 });
 
 describe(handleEndpointRequest.name, () => {
+    it('fails closed when the request context was not created', async () => {
+        const endpointImplementation: EndpointImplementation = {
+            path: endpointDefinition.path,
+            isEndpoint: true,
+            isWebSocket: false,
+            definition: endpointDefinition,
+            implementation: {
+                [HttpMethod.Get]() {
+                    return {
+                        [HttpStatus.Ok]: {
+                            responseData: undefined,
+                        },
+                    };
+                },
+            },
+        };
+
+        await assert.throws(
+            async () => {
+                return await handleEndpointRequest({
+                    endpoint: endpointImplementation,
+                    request: {
+                        method: HttpMethod.Get,
+                        originalUrl: '/example',
+                        params: {},
+                        headers: {},
+                        restVirContext: {
+                            attach: {
+                                context: undefined,
+                                requestData: undefined,
+                                searchParams: {},
+                                protocols: [],
+                                contextCreated: false,
+                            },
+                        },
+                    } as AnyObject as ServerRequest,
+                    response: {} as ServerResponse,
+                    attachId: 'attach',
+                    server: {} as RunningServerInfo,
+                    serverLogger: silentServerLogger,
+                    api,
+                });
+            },
+            {
+                matchConstructor: RestVirHandlerError,
+                matchMessage: 'Request context was never created.',
+            },
+        );
+    });
+
     it('throws when the api implementation is missing a definition for the dispatched method', async () => {
         /**
          * Forge an implementation that has POST but the definition only declares GET. The api type

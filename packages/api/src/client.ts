@@ -233,8 +233,8 @@ export class RestVirClient<const ClientApi extends ApiDefinition> {
                 pathname,
             },
             /**
-             * Percent-encode search param keys and values so caller-supplied values containing
-             * `&`, `=`, or `#` cannot inject extra query parameters or truncate the URL.
+             * Percent-encode search param keys and values so caller-supplied values containing `&`,
+             * `=`, or `#` cannot inject extra query parameters or truncate the URL.
              */
             {
                 encoding: UrlEncoding.Encode,

@@ -1,7 +1,7 @@
 import {assert} from '@augment-vir/assert';
 import {HttpMethod, HttpStatus} from '@augment-vir/common';
 import {describe, it} from '@augment-vir/test';
-import {defineApi, defineEndpoint} from '@rest-vir/api';
+import {defineApi, defineEndpoint, defineWebSocket} from '@rest-vir/api';
 import {implementApi} from '../../implementation/implement-api.js';
 import {createApiImplementor} from '../../implementation/implementor.js';
 import {silentServerLogger} from '../../implementation/server-logger.js';
@@ -49,6 +49,15 @@ const matchUrlApi = defineApi({
     webSockets: [],
 });
 
+const webSocketOnlyRoute = defineWebSocket({
+    path: '/websocket-only',
+});
+
+const webSocketOnlyApi = defineApi({
+    apiName: 'WebSocket-only route test api',
+    webSockets: [webSocketOnlyRoute],
+});
+
 /**
  * Spellings where an independent matcher is likely to disagree with Fastify: a percent-encoded
  * character inside a static segment, an empty path parameter, a trailing slash, a duplicated slash,
@@ -61,6 +70,7 @@ const probePaths = [
     '/user/',
     '/static-route/stuff/',
     '/static-route//stuff',
+    // cspell:word Fstuff
     '/static-route%2Fstuff',
     '/STATIC-ROUTE/stuff',
     '/user/some-id?extra=1',
@@ -68,6 +78,12 @@ const probePaths = [
 ];
 
 describe(matchUrlToRoute.name, () => {
+    it('returns the WebSocket path for a WebSocket-only route', () => {
+        assert.deepEquals(matchUrlToRoute(webSocketOnlyApi, webSocketOnlyRoute.path), {
+            webSocketPath: webSocketOnlyRoute.path,
+        });
+    });
+
     it('agrees with what the server actually routes', async () => {
         const implementor = createApiImplementor()(matchUrlApi);
 
