@@ -39,6 +39,27 @@ export function rawMessageToString(rawMessage: WsWebSocket.Data): string {
     }
 }
 
+const maxLoggedMessageLength = 1000;
+
+/**
+ * Neutralize an attacker-supplied WebSocket message before embedding it in a log line:
+ * `JSON.stringify` escapes CR/LF, ANSI escape sequences, and every other control character (so a
+ * frame cannot forge log entries or corrupt terminal output), and truncation keeps a multi-megabyte
+ * frame from bloating the log. Mirrors the CR/LF-avoidance rationale in `handle-route.ts`. Exported
+ * for direct unit testing.
+ *
+ * @category Internal
+ * @category Package : @rest-vir/host
+ * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
+ */
+export function sanitizeMessageForLog(rawMessage: string) {
+    const truncatedMessage =
+        rawMessage.length > maxLoggedMessageLength
+            ? `${rawMessage.slice(0, maxLoggedMessageLength)}… (truncated from ${rawMessage.length} characters)`
+            : rawMessage;
+    return JSON.stringify(truncatedMessage);
+}
+
 /**
  * Handles a WebSocket request.
  *
@@ -183,7 +204,7 @@ export async function handleWebSocketRequest(
                             path: webSocketImplementation.path,
                         },
                         combineErrorMessages(
-                            `Failed to receive WebSocket message '${stringRawMessage}'.`,
+                            `Failed to receive WebSocket message ${sanitizeMessageForLog(stringRawMessage)}.`,
                             error,
                         ),
                         HttpStatus.InternalServerError,
@@ -214,7 +235,7 @@ export async function handleWebSocketRequest(
                             path: webSocketImplementation.path,
                         },
                         combineErrorMessages(
-                            `Failed to handle WebSocket message '${stringRawMessage}'.`,
+                            `Failed to handle WebSocket message ${sanitizeMessageForLog(stringRawMessage)}.`,
                             error,
                         ),
                         HttpStatus.InternalServerError,

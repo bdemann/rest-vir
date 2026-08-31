@@ -8,7 +8,7 @@ import {
 } from '@augment-vir/common';
 import {type EndpointDefinitionMethods} from '@rest-vir/api';
 import {type OutgoingHttpHeaders} from 'node:http';
-import {buildUrl} from 'url-vir';
+import {buildUrl, UrlEncoding} from 'url-vir';
 import {type ApiDefinition} from './api/api.js';
 import {
     extractEndpointMethodDefinition,
@@ -226,10 +226,20 @@ export class RestVirClient<const ClientApi extends ApiDefinition> {
             },
         );
 
-        const builtUrl = buildUrl(this.baseUrl, {
-            search: searchParams,
-            pathname,
-        }).href;
+        const builtUrl = buildUrl(
+            this.baseUrl,
+            {
+                search: searchParams,
+                pathname,
+            },
+            /**
+             * Percent-encode search param keys and values so caller-supplied values containing
+             * `&`, `=`, or `#` cannot inject extra query parameters or truncate the URL.
+             */
+            {
+                encoding: UrlEncoding.Encode,
+            },
+        ).href;
 
         return builtUrl;
     }
@@ -393,10 +403,17 @@ export class RestVirClient<const ClientApi extends ApiDefinition> {
                 typeof genericWebSocket.path
             >,
         });
-        const httpUrl = buildUrl(this.baseUrl, {
-            search: searchParams,
-            pathname,
-        }).href;
+        const httpUrl = buildUrl(
+            this.baseUrl,
+            {
+                search: searchParams,
+                pathname,
+            },
+            /** Same query-parameter-injection protection as {@link RestVirClient.buildEndpointUrl}. */
+            {
+                encoding: UrlEncoding.Encode,
+            },
+        ).href;
 
         return buildUrl(httpUrl, {
             protocol: httpUrl.startsWith('https') ? 'wss' : 'ws',

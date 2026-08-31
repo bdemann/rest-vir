@@ -1,6 +1,6 @@
 import {assertWrap} from '@augment-vir/assert';
 import {ensureErrorAndPrependMessage, extractErrorMessage, HttpStatus} from '@augment-vir/common';
-import {parseUrl} from 'url-vir';
+import {parseUrl, searchParamsToObject, UrlEncoding} from 'url-vir';
 import {type ApiDefinition} from '../api/api.js';
 import {
     extractEndpointMethodDefinition,
@@ -89,7 +89,13 @@ export function createMockHostFetch<
             const parsedUrl = parseUrl(url);
             const searchParams = extractSearchParams(
                 methodDefinition.searchParams,
-                parsedUrl.searchParams,
+                /**
+                 * `RestVirClient` percent-encodes search params when building the URL, so decode
+                 * them here to match what a real server's query parser hands to implementations.
+                 */
+                searchParamsToObject(parsedUrl.search, {
+                    encoding: UrlEncoding.Decode,
+                }),
             );
             const pathParams = extractPathParamsFromUrl(endpoint, parsedUrl.paths);
             const requestHeaders = headersToObject(requestInit.headers);

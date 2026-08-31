@@ -891,6 +891,15 @@ describe(RestVirClient.name, () => {
             assert.strictEquals(url, 'https://example.com/search?query=hello&page=2');
         });
 
+        it('percent-encodes search param values so they cannot inject extra params', () => {
+            const url = client.buildEndpointUrl(searchEndpoint, HttpMethod.Get, {
+                searchParams: {
+                    query: 'abc&isAdmin=true#x',
+                },
+            });
+            assert.strictEquals(url, 'https://example.com/search?query=abc%26isAdmin%3Dtrue%23x');
+        });
+
         it('omits undefined search param values', () => {
             const url = client.buildEndpointUrl(searchEndpoint, HttpMethod.Get, {
                 searchParams: {

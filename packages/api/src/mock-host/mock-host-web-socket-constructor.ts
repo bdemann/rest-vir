@@ -5,7 +5,7 @@ import {
     type AnyFunction,
     type MaybePromise,
 } from '@augment-vir/common';
-import {parseUrl} from 'url-vir';
+import {parseUrl, searchParamsToObject, UrlEncoding} from 'url-vir';
 import {type WebSocketDefinition} from '../api/web-socket.js';
 import {type CreateHostContextOutput} from '../implementation/host-context.js';
 import {extractSearchParams} from '../search-params.js';
@@ -99,7 +99,13 @@ export function createMockHostWebSocketConstructor<const HostContext = unknown>(
             /* RestVirClient builds the URL via the same `extractSearchParams` so an invalid search-param value throws on the client side before this constructor runs. */
             this.searchParams = extractSearchParams(
                 webSocketDefinition.searchParams,
-                parseUrl(this.url).searchParams,
+                /**
+                 * `RestVirClient` percent-encodes search params when building the URL, so decode
+                 * them here to match what a real server's query parser hands to implementations.
+                 */
+                searchParamsToObject(parseUrl(this.url).search, {
+                    encoding: UrlEncoding.Decode,
+                }),
             );
 
             // eslint-disable-next-line @typescript-eslint/no-this-alias

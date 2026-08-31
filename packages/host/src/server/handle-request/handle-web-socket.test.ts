@@ -5,7 +5,22 @@ import {implementApi} from '../../implementation/implement-api.js';
 import {createApiImplementor} from '../../implementation/implementor.js';
 import {testApi} from '../testing/test-api.js';
 import {RestVirHandlerError} from '../util/handler.error.js';
-import {rawMessageToString} from './handle-web-socket.js';
+import {rawMessageToString, sanitizeMessageForLog} from './handle-web-socket.js';
+
+describe(sanitizeMessageForLog.name, () => {
+    itCases(sanitizeMessageForLog, [
+        {
+            it: 'escapes CR/LF and ANSI escape sequences',
+            input: 'line1\r\nforged log line\u001b[31m',
+            expect: '"line1\\r\\nforged log line\\u001b[31m"',
+        },
+        {
+            it: 'truncates an oversized message',
+            input: 'a'.repeat(2000),
+            expect: `"${'a'.repeat(1000)}… (truncated from 2000 characters)"`,
+        },
+    ]);
+});
 
 describe(rawMessageToString.name, () => {
     itCases(rawMessageToString, [
