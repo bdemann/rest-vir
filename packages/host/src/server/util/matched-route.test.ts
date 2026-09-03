@@ -1,11 +1,13 @@
 import {assert} from '@augment-vir/assert';
 import {HttpMethod, HttpStatus} from '@augment-vir/common';
-import {describe, it} from '@augment-vir/test';
+import {describe, it, itCases} from '@augment-vir/test';
 import {defineApi, defineEndpoint} from '@rest-vir/api';
 import {implementApi} from '../../implementation/implement-api.js';
 import {createApiImplementor} from '../../implementation/implementor.js';
+import {type ServerRequest} from '../../implementation/raw-route-data.js';
 import {silentServerLogger} from '../../implementation/server-logger.js';
 import {startApiServer} from '../run-api/start-api-server.js';
+import {extractErrorRoutePath} from './matched-route.js';
 
 type MatchedRouteContext = {
     contextWasCreated: true;
@@ -159,4 +161,57 @@ describe('matched route lookup', () => {
             await serverOutput.kill();
         }
     });
+});
+
+describe(extractErrorRoutePath.name, () => {
+    itCases(extractErrorRoutePath, [
+        {
+            it: 'prefers the route path registered by this attachment',
+            input: {
+                request: {
+                    routeOptions: {
+                        url: '/fastify-template',
+                        config: {
+                            restVirRoute: {
+                                attachId: 'attach-1',
+                                routePath: '/rest-vir-route',
+                            },
+                        },
+                    },
+                } as unknown as ServerRequest,
+                attachId: 'attach-1',
+            },
+            expect: '/rest-vir-route',
+        },
+        {
+            it: 'falls back to the Fastify route template for a route from another attachment',
+            input: {
+                request: {
+                    routeOptions: {
+                        url: '/fastify-template',
+                        config: {
+                            restVirRoute: {
+                                attachId: 'attach-2',
+                                routePath: '/rest-vir-route',
+                            },
+                        },
+                    },
+                } as unknown as ServerRequest,
+                attachId: 'attach-1',
+            },
+            expect: '/fastify-template',
+        },
+        {
+            it: 'reports an unknown route when Fastify has no route either',
+            input: {
+                request: {
+                    routeOptions: {
+                        config: {},
+                    },
+                } as unknown as ServerRequest,
+                attachId: 'attach-1',
+            },
+            expect: '<unknown route>',
+        },
+    ]);
 });

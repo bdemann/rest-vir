@@ -51,3 +51,50 @@ export function extractMatchedRoutePath(
 
     return routeConfig.routePath;
 }
+
+/**
+ * Used when not even Fastify has a route template to report, which shouldn't be reachable from any
+ * request hook (Fastify's router has already run by then) but keeps the error message honest
+ * instead of printing `'undefined'`.
+ *
+ * @category Internal
+ */
+const unknownRoutePath = '<unknown route>';
+
+/**
+ * The route template to name in an error message for this request.
+ *
+ * Deliberately never `request.originalUrl`: that carries the query string, which may hold tokens,
+ * auth params, or signed-URL signatures, and error messages get forwarded to error trackers and
+ * other third parties far more readily than logs do. The route template is what makes an error
+ * findable anyway; the query adds nothing a responder uses. This also drops any CR/LF an attacker
+ * might smuggle into the URL.
+ *
+ * Prefers this attachment's own registered route path, then falls back to Fastify's matched route
+ * template, which covers routes registered by a _different_ `attachApi` call (the
+ * `@fastify/websocket` error handler is registered only once per Fastify instance, so it sees those
+ * too).
+ *
+ * @category Internal
+ * @category Package : @rest-vir/host
+ * @package [`@rest-vir/host`](https://www.npmjs.com/package/@rest-vir/host)
+ */
+export function extractErrorRoutePath(
+    this: void,
+    {
+        request,
+        attachId,
+    }: Readonly<{
+        request: Readonly<ServerRequest>;
+        attachId: string;
+    }>,
+): string {
+    return (
+        extractMatchedRoutePath({
+            request,
+            attachId,
+        }) ||
+        request.routeOptions.url ||
+        unknownRoutePath
+    );
+}
