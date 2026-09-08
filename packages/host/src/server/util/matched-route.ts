@@ -1,4 +1,6 @@
+import {omitObjectKeys} from '@augment-vir/common';
 import {type BaseRoutePath} from '@rest-vir/api';
+import {searchParamsToString, UrlEncoding} from 'url-vir';
 import {type ServerRequest} from '../../implementation/raw-route-data.js';
 
 /**
@@ -53,27 +55,8 @@ export function extractMatchedRoutePath(
 }
 
 /**
- * Used when not even Fastify has a route template to report, which shouldn't be reachable from any
- * request hook (Fastify's router has already run by then) but keeps the error message honest
- * instead of printing `'undefined'`.
- *
- * @category Internal
- */
-const unknownRoutePath = '<unknown route>';
-
-/**
- * The route template to name in an error message for this request.
- *
- * Deliberately never `request.originalUrl`: that carries the query string, which may hold tokens,
- * auth params, or signed-URL signatures, and error messages get forwarded to error trackers and
- * other third parties far more readily than logs do. The route template is what makes an error
- * findable anyway; the query adds nothing a responder uses. This also drops any CR/LF an attacker
- * might smuggle into the URL.
- *
- * Prefers this attachment's own registered route path, then falls back to Fastify's matched route
- * template, which covers routes registered by a _different_ `attachApi` call (the
- * `@fastify/websocket` error handler is registered only once per Fastify instance, so it sees those
- * too).
+ * The route path that error messages should name for this request, with each search param listed in
+ * `excludedSearchParams` omitted from its search string.
  *
  * @category Internal
  * @category Package : @rest-vir/host
@@ -84,17 +67,32 @@ export function extractErrorRoutePath(
     {
         request,
         attachId,
+        excludedSearchParams,
     }: Readonly<{
         request: Readonly<ServerRequest>;
         attachId: string;
+        excludedSearchParams?: ReadonlyArray<string> | undefined;
     }>,
 ): string {
-    return (
+    const routePath =
         extractMatchedRoutePath({
             request,
             attachId,
         }) ||
         request.routeOptions.url ||
-        unknownRoutePath
+        '<unknown route>';
+
+    const keptSearchParams = omitObjectKeys(
+        (request.query || {}) as Readonly<Record<string, string | string[]>>,
+        excludedSearchParams || [],
     );
+
+    /**
+     * Fastify hands over already-decoded search param values, so encode them on the way back out:
+     * that escapes any CR/LF an attacker smuggled through the query string, which would otherwise
+     * let a request forge whole log entries.
+     */
+    return `${routePath}${searchParamsToString(keptSearchParams, {
+        encoding: UrlEncoding.Encode,
+    })}`;
 }

@@ -144,7 +144,7 @@ const errorRouteApi = defineApi({
  * `throwErrorsForExternalHandling`, which is what lets a WebSocket failure escape `handleRoute` and
  * reach `@fastify/websocket`'s `errorHandler`.
  */
-async function startErrorRouteServer() {
+async function startErrorRouteServer(excludedErrorSearchParams?: ReadonlyArray<string>) {
     const loggedErrors: Error[] = [];
 
     const implementor = createApiImplementor<ErrorRouteContext>()(errorRouteApi);
@@ -195,6 +195,7 @@ async function startErrorRouteServer() {
     await attachApi(server, implementation, {
         externalOrigin: 'http://localhost',
         throwErrorsForExternalHandling: true,
+        excludedErrorSearchParams,
     });
 
     await server.listen({
@@ -213,65 +214,131 @@ async function startErrorRouteServer() {
     };
 }
 
-/** Asserts that no logged error carries the request's query string in its message or its stack. */
-function assertNoQueryInErrors(loggedErrors: ReadonlyArray<Error>, expectedRoutePath: string) {
+/** Every logged error's message and its stack, so that neither can smuggle a value out. */
+function extractLoggedErrorStrings(loggedErrors: ReadonlyArray<Error>) {
     assert.isAbove(loggedErrors.length, 0, 'expected at least one logged error');
 
-    const errorStrings = loggedErrors.map((error) => {
+    return loggedErrors.map((error) => {
         return [
             error.message,
             error.stack,
         ].join('\n');
     });
-
-    errorStrings.forEach((errorString) => {
-        assert.isFalse(
-            errorString.includes(secretSearchParamValue),
-            `logged error leaked a search param value: ${errorString}`,
-        );
-        assert.isFalse(
-            errorString.includes('?'),
-            `logged error leaked a query string: ${errorString}`,
-        );
-    });
-
-    assert.isTrue(
-        errorStrings.some((errorString) => errorString.includes(`'${expectedRoutePath}'`)),
-        `no logged error named the route template '${expectedRoutePath}'`,
-    );
 }
 
 describe('logged request errors', () => {
-    it('omits the query string from endpoint handler errors', async () => {
-        const {loggedErrors, port, kill} = await startErrorRouteServer();
+    it('omits excluded search params from endpoint handler errors', async () => {
+        const {loggedErrors, port, kill} = await startErrorRouteServer([
+            'code',
+        ]);
 
         try {
             const response = await fetch(
-                `http://127.0.0.1:${port}${contextFailureEndpoint.path}?code=${secretSearchParamValue}`,
+                `http://127.0.0.1:${port}${contextFailureEndpoint.path}?code=${secretSearchParamValue}&page=2`,
             );
 
             assert.strictEquals(response.status, HttpStatus.InternalServerError);
-            assertNoQueryInErrors(loggedErrors, contextFailureEndpoint.path);
+
+            const errorStrings = extractLoggedErrorStrings(loggedErrors);
+
+            errorStrings.forEach((errorString) => {
+                assert.isFalse(
+                    errorString.includes(secretSearchParamValue),
+                    `logged error leaked an excluded search param value: ${errorString}`,
+                );
+                assert.isFalse(
+                    errorString.includes('code='),
+                    `logged error named an excluded search param: ${errorString}`,
+                );
+            });
+
+            /** The rest of the query survives, so the error still names the request that caused it. */
+            assert.isTrue(
+                errorStrings.some((errorString) => {
+                    return errorString.includes(`'${contextFailureEndpoint.path}?page=2'`);
+                }),
+                `no logged error named the route path with its remaining search params: ${errorStrings.join('\n')}`,
+            );
         } finally {
             await kill();
         }
     });
 
-    it('omits the query string from WebSocket handler errors', async () => {
-        const {loggedErrors, port, kill} = await startErrorRouteServer();
+    it('omits excluded search params from WebSocket handler errors', async () => {
+        const {loggedErrors, port, kill} = await startErrorRouteServer([
+            'code',
+        ]);
 
         try {
             const webSocket = new WebSocket(
-                `ws://127.0.0.1:${port}${openFailureWebSocket.path}?code=${secretSearchParamValue}`,
+                `ws://127.0.0.1:${port}${openFailureWebSocket.path}?code=${secretSearchParamValue}&page=2`,
             );
 
             try {
                 await waitUntil.isTrue(() => loggedErrors.length > 0);
 
-                assertNoQueryInErrors(loggedErrors, openFailureWebSocket.path);
+                const errorStrings = extractLoggedErrorStrings(loggedErrors);
+
+                errorStrings.forEach((errorString) => {
+                    assert.isFalse(
+                        errorString.includes(secretSearchParamValue),
+                        `logged error leaked an excluded search param value: ${errorString}`,
+                    );
+                });
+
+                assert.isTrue(
+                    errorStrings.some((errorString) => {
+                        return errorString.includes(`'${openFailureWebSocket.path}?page=2'`);
+                    }),
+                    `no logged error named the route path with its remaining search params: ${errorStrings.join('\n')}`,
+                );
             } finally {
                 webSocket.close();
             }
+        } finally {
+            await kill();
+        }
+    });
+
+    it('encodes CR/LF smuggled through a search param', async () => {
+        const {loggedErrors, port, kill} = await startErrorRouteServer();
+
+        try {
+            await fetch(`http://127.0.0.1:${port}${contextFailureEndpoint.path}?note=forged%0A%0D`);
+
+            const errorStrings = extractLoggedErrorStrings(loggedErrors);
+
+            assert.isTrue(
+                errorStrings.some((errorString) => {
+                    return errorString.includes('note=forged%0A%0D');
+                }),
+                `no logged error carried the encoded search param: ${errorStrings.join('\n')}`,
+            );
+        } finally {
+            await kill();
+        }
+    });
+
+    it('keeps every search param when none are excluded', async () => {
+        const {loggedErrors, port, kill} = await startErrorRouteServer();
+
+        try {
+            await fetch(
+                `http://127.0.0.1:${port}${contextFailureEndpoint.path}?code=${secretSearchParamValue}`,
+            );
+
+            /**
+             * Redaction is opt-in: with no `excludedErrorSearchParams` configured, the whole query
+             * string reaches the error message.
+             */
+            assert.isTrue(
+                extractLoggedErrorStrings(loggedErrors).some((errorString) => {
+                    return errorString.includes(
+                        `'${contextFailureEndpoint.path}?code=${secretSearchParamValue}'`,
+                    );
+                }),
+                'expected the search param that was not excluded in the logged error',
+            );
         } finally {
             await kill();
         }

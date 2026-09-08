@@ -202,6 +202,73 @@ describe(extractErrorRoutePath.name, () => {
             expect: '/fastify-template',
         },
         {
+            it: 'omits excluded search params and keeps the rest',
+            input: {
+                request: {
+                    query: {
+                        code: 'super-secret-credential',
+                        page: '2',
+                    },
+                    routeOptions: {
+                        url: '/fastify-template',
+                        config: {
+                            restVirRoute: {
+                                attachId: 'attach-1',
+                                routePath: '/rest-vir-route',
+                            },
+                        },
+                    },
+                } as unknown as ServerRequest,
+                attachId: 'attach-1',
+                excludedSearchParams: [
+                    'code',
+                ],
+            },
+            expect: '/rest-vir-route?page=2',
+        },
+        {
+            it: 'keeps every search param when none are excluded',
+            input: {
+                request: {
+                    query: {
+                        code: 'super-secret-credential',
+                    },
+                    routeOptions: {
+                        url: '/fastify-template',
+                        config: {
+                            restVirRoute: {
+                                attachId: 'attach-1',
+                                routePath: '/rest-vir-route',
+                            },
+                        },
+                    },
+                } as unknown as ServerRequest,
+                attachId: 'attach-1',
+            },
+            expect: '/rest-vir-route?code=super-secret-credential',
+        },
+        {
+            it: 'encodes CR/LF in a kept search param',
+            input: {
+                request: {
+                    query: {
+                        note: 'forged\n\r',
+                    },
+                    routeOptions: {
+                        url: '/fastify-template',
+                        config: {
+                            restVirRoute: {
+                                attachId: 'attach-1',
+                                routePath: '/rest-vir-route',
+                            },
+                        },
+                    },
+                } as unknown as ServerRequest,
+                attachId: 'attach-1',
+            },
+            expect: '/rest-vir-route?note=forged%0A%0D',
+        },
+        {
             it: 'reports an unknown route when Fastify has no route either',
             input: {
                 request: {

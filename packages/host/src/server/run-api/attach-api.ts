@@ -109,6 +109,18 @@ export type ApiServerOptions = {
      * @default false
      */
     disableRestVirApiNameHeader?: boolean | undefined;
+    /**
+     * Names of search params that should never appear in a `RestVirHandlerError`'s message or
+     * stack. Every other search param is included, so that an error names the request that caused
+     * it.
+     *
+     * List every search param that carries a credential here: an auth `code`, an OAuth `state`, a
+     * signed-URL signature. Error messages are routinely forwarded to third-party error trackers,
+     * which is a place those values should never reach.
+     *
+     * @default undefined // no search params are omitted
+     */
+    excludedErrorSearchParams?: ReadonlyArray<string> | undefined;
 };
 
 /**
@@ -182,6 +194,7 @@ export async function attachApi(
                                 path: extractErrorRoutePath({
                                     request,
                                     attachId,
+                                    excludedSearchParams: options.excludedErrorSearchParams,
                                 }),
                                 apiName: api.definition.apiName,
                             },
@@ -259,6 +272,7 @@ export async function attachApi(
                             path: extractErrorRoutePath({
                                 request,
                                 attachId,
+                                excludedSearchParams: options.excludedErrorSearchParams,
                             }),
                             apiName: api.definition.apiName,
                         },
