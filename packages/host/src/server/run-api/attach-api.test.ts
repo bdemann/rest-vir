@@ -93,10 +93,7 @@ describe(extractRunningServerInfo.name, () => {
     ]);
 });
 
-/**
- * A value that only ever appears in the request's query string. If it shows up in a logged error,
- * the error is carrying credentials to wherever those errors get forwarded.
- */
+/** Only ever appears in a request's query string. */
 const secretSearchParamValue = 'super-secret-credential';
 
 type ErrorRouteContext = {
@@ -136,13 +133,12 @@ const errorRouteApi = defineApi({
 });
 
 /**
- * Starts a server whose endpoint blows up inside `createHostContext` (hitting the `preValidation`
- * catch-all in {@link attachApi}) and whose WebSocket blows up inside `open` (hitting the
- * `@fastify/websocket` `errorHandler` in {@link attachApi}), recording every error the server logs.
+ * The endpoint fails in `createHostContext` (the `preValidation` catch-all) and the WebSocket fails
+ * in `open` (`@fastify/websocket`'s `errorHandler`), covering both error paths in
+ * {@link attachApi}.
  *
- * `attachApi` is used directly rather than `startApiServer` because only the former allows
- * `throwErrorsForExternalHandling`, which is what lets a WebSocket failure escape `handleRoute` and
- * reach `@fastify/websocket`'s `errorHandler`.
+ * `startApiServer` can't be used here: it hardcodes `throwErrorsForExternalHandling: false`, which
+ * keeps a WebSocket failure from ever reaching `errorHandler`.
  */
 async function startErrorRouteServer(excludedErrorSearchParams?: ReadonlyArray<string>) {
     const loggedErrors: Error[] = [];
@@ -214,7 +210,7 @@ async function startErrorRouteServer(excludedErrorSearchParams?: ReadonlyArray<s
     };
 }
 
-/** Every logged error's message and its stack, so that neither can smuggle a value out. */
+/** Includes each stack, since a leaked value can hide there as well as in the message. */
 function extractLoggedErrorStrings(loggedErrors: ReadonlyArray<Error>) {
     assert.isAbove(loggedErrors.length, 0, 'expected at least one logged error');
 
@@ -252,7 +248,6 @@ describe('logged request errors', () => {
                 );
             });
 
-            /** The rest of the query survives, so the error still names the request that caused it. */
             assert.isTrue(
                 errorStrings.some((errorString) => {
                     return errorString.includes(`'${contextFailureEndpoint.path}?page=2'`);
@@ -327,10 +322,7 @@ describe('logged request errors', () => {
                 `http://127.0.0.1:${port}${contextFailureEndpoint.path}?code=${secretSearchParamValue}`,
             );
 
-            /**
-             * Redaction is opt-in: with no `excludedErrorSearchParams` configured, the whole query
-             * string reaches the error message.
-             */
+            /** Redaction is opt-in: with nothing configured, the whole query string gets through. */
             assert.isTrue(
                 extractLoggedErrorStrings(loggedErrors).some((errorString) => {
                     return errorString.includes(

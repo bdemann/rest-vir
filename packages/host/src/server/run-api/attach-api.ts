@@ -111,8 +111,7 @@ export type ApiServerOptions = {
     disableRestVirApiNameHeader?: boolean | undefined;
     /**
      * Names of search params that should never appear in a `RestVirHandlerError`'s message or
-     * stack. Every other search param is included, so that an error names the request that caused
-     * it.
+     * stack. Every other search param is included.
      *
      * @default undefined // no search params are omitted
      */
