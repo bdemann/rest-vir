@@ -1,6 +1,6 @@
-import {omitObjectKeys} from '@augment-vir/common';
+import {omitObjectKeys, type SelectFrom} from '@augment-vir/common';
 import {type BaseRoutePath} from '@rest-vir/api';
-import {searchParamsToString, UrlEncoding} from 'url-vir';
+import {buildUrl, parseUrl, searchParamsToString} from 'url-vir';
 import {type ServerRequest} from '../../implementation/raw-route-data.js';
 
 /**
@@ -66,33 +66,22 @@ export function extractErrorRoutePath(
     this: void,
     {
         request,
-        attachId,
         excludedSearchParams,
     }: Readonly<{
-        request: Readonly<ServerRequest>;
-        attachId: string;
+        request: Readonly<
+            SelectFrom<
+                ServerRequest,
+                {
+                    originalUrl: true;
+                }
+            >
+        >;
         excludedSearchParams?: ReadonlyArray<string> | undefined;
     }>,
 ): string {
-    const routePath =
-        extractMatchedRoutePath({
-            request,
-            attachId,
-        }) ||
-        request.routeOptions.url ||
-        '<unknown route>';
+    const {searchParams} = parseUrl(request.originalUrl);
 
-    const keptSearchParams = omitObjectKeys(
-        (request.query || {}) as Readonly<Record<string, string | string[]>>,
-        excludedSearchParams || [],
-    );
-
-    /**
-     * Fastify hands over already-decoded search param values, so encode them on the way back out:
-     * that escapes any CR/LF an attacker smuggled through the query string, which would otherwise
-     * let a request forge whole log entries.
-     */
-    return `${routePath}${searchParamsToString(keptSearchParams, {
-        encoding: UrlEncoding.Encode,
-    })}`;
+    return buildUrl(request.originalUrl, {
+        search: searchParamsToString(omitObjectKeys(searchParams, excludedSearchParams || [])),
+    }).fullPath;
 }

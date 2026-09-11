@@ -4,7 +4,6 @@ import {describe, it, itCases} from '@augment-vir/test';
 import {defineApi, defineEndpoint} from '@rest-vir/api';
 import {implementApi} from '../../implementation/implement-api.js';
 import {createApiImplementor} from '../../implementation/implementor.js';
-import {type ServerRequest} from '../../implementation/raw-route-data.js';
 import {silentServerLogger} from '../../implementation/server-logger.js';
 import {startApiServer} from '../run-api/start-api-server.js';
 import {extractErrorRoutePath} from './matched-route.js';
@@ -166,119 +165,70 @@ describe('matched route lookup', () => {
 describe(extractErrorRoutePath.name, () => {
     itCases(extractErrorRoutePath, [
         {
-            it: 'prefers the route path registered by this attachment',
-            input: {
-                request: {
-                    routeOptions: {
-                        url: '/fastify-template',
-                        config: {
-                            restVirRoute: {
-                                attachId: 'attach-1',
-                                routePath: '/rest-vir-route',
-                            },
-                        },
-                    },
-                } as unknown as ServerRequest,
-                attachId: 'attach-1',
-            },
-            expect: '/rest-vir-route',
-        },
-        {
-            it: 'falls back to the Fastify route template for a route from another attachment',
-            input: {
-                request: {
-                    routeOptions: {
-                        url: '/fastify-template',
-                        config: {
-                            restVirRoute: {
-                                attachId: 'attach-2',
-                                routePath: '/rest-vir-route',
-                            },
-                        },
-                    },
-                } as unknown as ServerRequest,
-                attachId: 'attach-1',
-            },
-            expect: '/fastify-template',
-        },
-        {
             it: 'omits excluded search params and keeps the rest',
             input: {
                 request: {
-                    query: {
-                        code: 'super-secret-credential',
-                        page: '2',
-                    },
-                    routeOptions: {
-                        url: '/fastify-template',
-                        config: {
-                            restVirRoute: {
-                                attachId: 'attach-1',
-                                routePath: '/rest-vir-route',
-                            },
-                        },
-                    },
-                } as unknown as ServerRequest,
-                attachId: 'attach-1',
+                    originalUrl: '/user/12345?code=super-secret-credential&page=2',
+                },
                 excludedSearchParams: [
                     'code',
                 ],
             },
-            expect: '/rest-vir-route?page=2',
+            expect: '/user/12345?page=2',
+        },
+        {
+            it: 'omits the whole search string when every param is excluded',
+            input: {
+                request: {
+                    originalUrl: '/user/12345?code=super-secret-credential',
+                },
+                excludedSearchParams: [
+                    'code',
+                ],
+            },
+            expect: '/user/12345',
         },
         {
             it: 'keeps every search param when none are excluded',
             input: {
                 request: {
-                    query: {
-                        code: 'super-secret-credential',
-                    },
-                    routeOptions: {
-                        url: '/fastify-template',
-                        config: {
-                            restVirRoute: {
-                                attachId: 'attach-1',
-                                routePath: '/rest-vir-route',
-                            },
-                        },
-                    },
-                } as unknown as ServerRequest,
-                attachId: 'attach-1',
+                    originalUrl: '/user/12345?code=super-secret-credential',
+                },
             },
-            expect: '/rest-vir-route?code=super-secret-credential',
+            expect: '/user/12345?code=super-secret-credential',
         },
         {
-            it: 'encodes CR/LF in a kept search param',
+            it: 'keeps a repeated search param and a param with no value',
             input: {
                 request: {
-                    query: {
-                        note: 'forged\n\r',
-                    },
-                    routeOptions: {
-                        url: '/fastify-template',
-                        config: {
-                            restVirRoute: {
-                                attachId: 'attach-1',
-                                routePath: '/rest-vir-route',
-                            },
-                        },
-                    },
-                } as unknown as ServerRequest,
-                attachId: 'attach-1',
+                    originalUrl: '/route?flag&sort=a&sort=b&code=super-secret-credential',
+                },
+                excludedSearchParams: [
+                    'code',
+                ],
             },
-            expect: '/rest-vir-route?note=forged%0A%0D',
+            expect: '/route?flag&sort=a&sort=b',
         },
         {
-            it: 'reports an unknown route when Fastify has no route either',
+            it: 'leaves CR/LF percent encoded',
             input: {
                 request: {
-                    routeOptions: {
-                        config: {},
-                    },
-                } as unknown as ServerRequest,
-                attachId: 'attach-1',
+                    originalUrl: '/route?note=forged%0A%0D',
+                },
             },
-            expect: '<unknown route>',
+            expect: '/route?note=forged%0A%0D',
+        },
+        {
+            it: 'handles a url with no search params',
+            input: {
+                request: {
+                    originalUrl: '/route',
+                },
+                excludedSearchParams: [
+                    'code',
+                ],
+            },
+            expect: '/route',
         },
     ]);
 });

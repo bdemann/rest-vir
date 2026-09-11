@@ -236,7 +236,7 @@ async function startServer({
         externalOrigin: serverOrigin,
         throwErrorsForExternalHandling: false,
         webSocketMaxPayload,
-        excludedErrorSearchParams: excludedErrorSearchParams ?? undefined,
+        excludedErrorSearchParams: excludedErrorSearchParams || undefined,
     });
 
     await server.listen({

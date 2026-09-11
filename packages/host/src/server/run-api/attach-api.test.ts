@@ -300,7 +300,7 @@ describe('logged request errors', () => {
         }
     });
 
-    it('encodes CR/LF smuggled through a search param', async () => {
+    it('leaves CR/LF smuggled through a search param percent encoded', async () => {
         const {loggedErrors, port, kill} = await startErrorRouteServer();
 
         try {
