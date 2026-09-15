@@ -1,6 +1,6 @@
 import {omitObjectKeys, type SelectFrom} from '@augment-vir/common';
 import {type BaseRoutePath} from '@rest-vir/api';
-import {buildUrl, parseUrl, searchParamsToString} from 'url-vir';
+import {buildUrl, parseUrl, SearchParamStrategy} from 'url-vir';
 import {type ServerRequest} from '../../implementation/raw-route-data.js';
 
 /**
@@ -81,7 +81,13 @@ export function extractErrorRoutePath(
 ): string {
     const {searchParams} = parseUrl(request.originalUrl);
 
-    return buildUrl(request.originalUrl, {
-        search: searchParamsToString(omitObjectKeys(searchParams, excludedSearchParams || [])),
-    }).fullPath;
+    return buildUrl(
+        request.originalUrl,
+        {
+            search: omitObjectKeys(searchParams, excludedSearchParams || []),
+        },
+        {
+            searchParamStrategy: SearchParamStrategy.Clear,
+        },
+    ).href;
 }
