@@ -2,6 +2,7 @@ import {check} from '@augment-vir/assert';
 import {
     combineErrorMessages,
     HttpStatus,
+    omitObjectKeys,
     stringify,
     wrapInTry,
     type ErrorHttpStatus,
@@ -33,6 +34,7 @@ export function handleSearchParams({
     route,
     serverLogger,
     api,
+    excludedErrorSearchParams,
 }: Readonly<{
     request: Readonly<
         SelectFrom<
@@ -47,6 +49,7 @@ export function handleSearchParams({
     route: Readonly<EndpointImplementation | WebSocketImplementation>;
     serverLogger: Readonly<ServerLogger>;
     api: Readonly<ApiDefinition>;
+    excludedErrorSearchParams?: ReadonlyArray<string> | undefined;
 }>):
     | {
           body?: string;
@@ -65,11 +68,13 @@ export function handleSearchParams({
         : check.isKeyOf(method, route.definition.requests)
           ? route.definition.requests[method]?.searchParams
           : undefined;
-    const rawQuery = (request.query || {}) as RouteSearchParamsType;
+    const rawQuery = (request.query || {}) as NonNullable<RouteSearchParamsType>;
 
     const searchParams = wrapInTry(() => extractSearchParams(searchParamRequirement, rawQuery));
 
     if (searchParams instanceof Error) {
+        const loggedQuery = omitObjectKeys(rawQuery, excludedErrorSearchParams || []);
+
         serverLogger.error(
             new RestVirHandlerError(
                 {
@@ -77,7 +82,7 @@ export function handleSearchParams({
                     ...route,
                 },
                 combineErrorMessages(
-                    `Search params failed for ${stringify(rawQuery)}.`,
+                    `Search params failed for ${stringify(loggedQuery)}.`,
                     searchParams,
                 ),
                 HttpStatus.BadRequest,
