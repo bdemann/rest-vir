@@ -169,10 +169,6 @@ const rejectingApi = defineApi({
 
 const rejectingImplementor = createApiImplementor<undefined>()(rejectingApi);
 
-/**
- * Rejects with a 5XX, which is the case that matters: the status is whatever the context creator
- * passes, so this message reaches an error tracker rather than only a log.
- */
 const rejectingApiImplementation = implementApi<undefined>()(rejectingApi, {
     createHostContext() {
         return {

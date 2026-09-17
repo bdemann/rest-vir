@@ -73,8 +73,6 @@ export function handleSearchParams({
     const searchParams = wrapInTry(() => extractSearchParams(searchParamRequirement, rawQuery));
 
     if (searchParams instanceof Error) {
-        const loggedQuery = omitObjectKeys(rawQuery, excludedErrorSearchParams || []);
-
         serverLogger.error(
             new RestVirHandlerError(
                 {
@@ -82,7 +80,7 @@ export function handleSearchParams({
                     ...route,
                 },
                 combineErrorMessages(
-                    `Search params failed for ${stringify(loggedQuery)}.`,
+                    `Search params failed for ${stringify(omitObjectKeys(rawQuery, excludedErrorSearchParams || []))}.`,
                     searchParams,
                 ),
                 HttpStatus.BadRequest,
